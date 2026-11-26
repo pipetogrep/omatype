@@ -57,8 +57,6 @@ Add `--json` to any command for scripting.
 
 ## Local Library (from OmaFont)
 
-![Local library view: sidebar, family list, specimen and Info pane](docs/omafont.png)
-
 ## The window
 
 **Sidebar** — where the families come from. All Fonts, Yours, System,
@@ -78,7 +76,7 @@ by** orders them by name, date added, number of styles or foundry.
 
 **Families, not weights.** Older font packs name every weight as its own
 family, so a plain font list shows Acme Sans, Acme Sans Black, Acme Sans Bold,
-Acme Sans Book and more as separate entries. OmaFont folds them into one
+Acme Sans Book and more as separate entries. Omatype folds them into one
 family, Acme Sans, with Black, Bold and Book among its styles. The Info pane says which names
 were folded in. Turn it off under **View ▸ Group weights into one family** if
 you prefer the raw names.
@@ -101,14 +99,6 @@ typing a filter searches all of them regardless. Your own fonts never fold.
 
 The sample line is editable, because a font is chosen against the words it
 will actually set. The slider, or `Ctrl` `+` and `−`, changes the type size.
-
-![The grid view: every family as a card](docs/grid.png)
-
-![The list view: a table of families, styles, kind, foundry, where they live and their tags](docs/list.png)
-
-![The repertoire view: every character in the font with its code point](docs/repertoire.png)
-
-![The compare view: six families stacked with the same sample line](docs/compare.png)
 
 **The Info pane** on the right starts with your own marks: a star, tags, and a
 note. Then it reads the font files themselves: kind, version, PostScript and
@@ -141,14 +131,12 @@ names. The chevron picks another scope:
 
 ## Installing fonts
 
-![A pack staged for install: preview, validation, and where it will go](docs/install.png)
-
 | How | What happens |
 |---|---|
 | Drop a file, folder or archive on the window | Everything installable inside it is staged |
 | **Install…** in the toolbar, or `Ctrl+O` | Same, through the desktop file chooser |
-| Open a font file from your file manager | Opens OmaFont with that font staged |
-| `omafont ~/Downloads/Pack.zip` | Same, from a terminal |
+| Open a font file from your file manager | Opens Omatype with that font staged |
+| `omatype ~/Downloads/Pack.zip` | Same, from a terminal |
 
 Staged fonts are **validated and previewed before anything is written**. The
 Info pane lists every family and face it is about to install, marks the ones
@@ -168,7 +156,7 @@ Fonts land in `~/.local/share/fonts/<Family>/` (or under `$XDG_DATA_HOME` if
 you have set it). No password is needed.
 
 **Applications already running will not see a new font until they restart.**
-That is fontconfig, not OmaFont. Apps opened afterwards pick it up straight
+That is fontconfig, not Omatype. Apps opened afterwards pick it up straight
 away. Some apps, such as DaVinci Resolve, read the font list only when they
 start, so quit and reopen them after installing.
 
@@ -181,8 +169,8 @@ single style deactivates just that face, which is how you resolve a duplicate.
 Deactivated fonts stay in the list, struck through, and under **Deactivated**
 in the sidebar. **Activate** brings them back.
 
-Behind it is one fontconfig file, `~/.config/fontconfig/conf.d/60-omafont-deactivated.conf`,
-which OmaFont writes and removes. Nothing else is changed.
+Behind it is one fontconfig file, `~/.config/fontconfig/conf.d/60-omatype-deactivated.conf`,
+which Omatype writes and removes. Nothing else is changed.
 
 ## Duplicates
 
@@ -260,37 +248,19 @@ appears on a machine that has that tool.
 | `?` | Keyboard shortcuts |
 | `Ctrl+Q` | Quit |
 
-## Command line
-
-The same engine, with no window:
-
-```bash
-omafont list                      # installed families, yours first (--all includes language fonts)
-omafont info Inter                # styles, designer, licence, glyph count, files
-omafont install ~/Downloads/Pack.zip
-omafont remove "Playfair Display"
-omafont validate ~/Downloads/Pack/*.ttf   # or a family name
-omafont deactivate "Noto Sans Tamil"
-omafont activate "Noto Sans Tamil"
-omafont export Inter ~/Desktop/inter-files
-```
-
-Add `--json` to any of them for scripts. `validate` exits 1 when a file has
-serious problems.
-
 ## Requirements
 
 Qt 6 (base, declarative, svg), fontconfig, libarchive, and an XDG desktop
 portal for the file choosers. All of these are on every Omarchy install.
 
-## What OmaFont writes
+## What Omatype writes
 
 | Where | What |
 |---|---|
 | `~/.local/share/fonts/<Family>/` | Fonts you install (or under `$XDG_DATA_HOME/fonts`) |
-| `~/.config/omafont/library.json` | Your collections, smart collections, tags, stars and notes |
-| `~/.config/omafont/omafont.conf` | Window settings: view, sort order, sample text |
-| `~/.config/fontconfig/conf.d/60-omafont-deactivated.conf` | The deactivated fonts; removed when nothing is deactivated |
+| `~/.config/omatype/library.json` | Your collections, smart collections, tags, stars and notes |
+| `~/.config/omatype/omatype.conf` | Window settings: view, sort order, sample text |
+| `~/.config/fontconfig/conf.d/60-omatype-deactivated.conf` | The deactivated fonts; removed when nothing is deactivated |
 
 Nothing outside your home folder is touched, and no password is needed for
 anything but installing the app itself.
