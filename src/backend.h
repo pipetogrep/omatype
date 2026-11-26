@@ -109,6 +109,12 @@ class Backend : public QObject {
     Q_PROPERTY(QString searchScope READ searchScope WRITE setSearchScope NOTIFY filterChanged)
     Q_PROPERTY(QString source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(QString sourceTitle READ sourceTitle NOTIFY sourceChanged)
+    // Refinements under the toolbar: they narrow whatever source is showing.
+    // designFilter takes a designFacets key; scriptFilter a script name;
+    // languageFilter a language code. Empty means any.
+    Q_PROPERTY(QString designFilter READ designFilter WRITE setDesignFilter NOTIFY refineChanged)
+    Q_PROPERTY(QString scriptFilter READ scriptFilter WRITE setScriptFilter NOTIFY refineChanged)
+    Q_PROPERTY(QString languageFilter READ languageFilter WRITE setLanguageFilter NOTIFY refineChanged)
     Q_PROPERTY(bool showCoverage READ showCoverage WRITE setShowCoverage NOTIFY showCoverageChanged)
     Q_PROPERTY(bool groupWeights READ groupWeights WRITE setGroupWeights NOTIFY groupWeightsChanged)
     Q_PROPERTY(QString sortOrder READ sortOrder WRITE setSortOrder NOTIFY sortOrderChanged)
@@ -194,6 +200,13 @@ public:
     void setSearchScope(const QString &scope);
     QString source() const { return m_source; }
     void setSource(const QString &source);
+    QString designFilter() const { return m_designFilter; }
+    QString scriptFilter() const { return m_scriptFilter; }
+    QString languageFilter() const { return m_languageFilter; }
+    void setDesignFilter(const QString &key);
+    void setScriptFilter(const QString &script);
+    void setLanguageFilter(const QString &code);
+    Q_INVOKABLE void clearRefine();
     QString sourceTitle() const;
     bool showCoverage() const { return m_showCoverage; }
     void setShowCoverage(bool show);
@@ -392,6 +405,7 @@ public slots:
 signals:
     void filterChanged();
     void sourceChanged();
+    void refineChanged();
     void showCoverageChanged();
     void groupWeightsChanged();
     void sortOrderChanged();
@@ -428,6 +442,8 @@ private:
     // core
     void rebuildRows();
     bool passesSource(const FontFamily &f) const;
+    bool passesRefine(const FontFamily &f) const;
+    void applyRefine();
     bool passesFilter(const FontFamily &f) const;
     void setScanning(bool on);
     void setBusy(bool on);
@@ -464,6 +480,9 @@ private:
     QSet<QString> m_charsetMatches;
     bool m_charsetPending = false;
     QString m_source = QStringLiteral("all");
+    QString m_designFilter;
+    QString m_scriptFilter;
+    QString m_languageFilter;
     bool m_showCoverage = false;
     bool m_groupWeights = true;
     QString m_sortOrder = QStringLiteral("name");

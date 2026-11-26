@@ -739,6 +739,38 @@ void Backend::setSource(const QString &source) {
     if (!m_selectedName.isEmpty() && m_model.indexOf(m_selectedName) < 0 && !staged()) selectFirst();
 }
 
+void Backend::applyRefine() {
+    emit refineChanged();
+    rebuildRows();
+    if (!m_selectedName.isEmpty() && m_model.indexOf(m_selectedName) < 0 && !staged()) selectFirst();
+}
+
+void Backend::setDesignFilter(const QString &key) {
+    if (m_designFilter == key) return;
+    m_designFilter = key;
+    applyRefine();
+}
+
+void Backend::setScriptFilter(const QString &script) {
+    if (m_scriptFilter == script) return;
+    m_scriptFilter = script;
+    applyRefine();
+}
+
+void Backend::setLanguageFilter(const QString &code) {
+    if (m_languageFilter == code) return;
+    m_languageFilter = code;
+    applyRefine();
+}
+
+void Backend::clearRefine() {
+    if (m_designFilter.isEmpty() && m_scriptFilter.isEmpty() && m_languageFilter.isEmpty()) return;
+    m_designFilter.clear();
+    m_scriptFilter.clear();
+    m_languageFilter.clear();
+    applyRefine();
+}
+
 QString Backend::sourceTitle() const {
     if (m_source == QLatin1String("all")) return tr("All Fonts");
     if (m_source == QLatin1String("yours")) return tr("Yours");
@@ -1095,6 +1127,18 @@ bool Backend::passesSource(const FontFamily &f) const {
     return true;
 }
 
+bool Backend::passesRefine(const FontFamily &f) const {
+    if (!m_scriptFilter.isEmpty() && !f.scripts.contains(m_scriptFilter)) return false;
+    if (!m_languageFilter.isEmpty() && !f.langs.contains(m_languageFilter)) return false;
+    if (m_designFilter.isEmpty()) return true;
+    if (m_designFilter == QLatin1String("mono")) return f.mono;
+    if (m_designFilter == QLatin1String("trait:Variable")) return f.variable;
+    const FontFileInfo *i = representativeInfo(f);
+    if (m_designFilter == QLatin1String("trait:Colour")) return i && i->color;
+    if (m_designFilter.startsWith(QLatin1String("class:"))) return i && i->classification() == m_designFilter.mid(6);
+    return true;
+}
+
 bool Backend::passesFilter(const FontFamily &f) const {
     const QString needle = m_filter.trimmed();
     if (needle.isEmpty()) return true;
@@ -1119,13 +1163,16 @@ bool Backend::passesFilter(const FontFamily &f) const {
 // on, and the language-coverage fonts folded away unless asked for. Typing a
 // filter searches everything: someone who types "tamil" wants the Tamil fonts.
 void Backend::rebuildRows() {
-    const bool filtering = !m_filter.trimmed().isEmpty();
+    // A script or language refinement is asking for exactly the fonts the
+    // fold would hide, so it unfolds them like a typed filter does.
+    const bool filtering = !m_filter.trimmed().isEmpty() || !m_scriptFilter.isEmpty() || !m_languageFilter.isEmpty();
     const bool fold = !filtering && !m_showCoverage
                    && (m_source == QLatin1String("all") || m_source == QLatin1String("system"));
     QList<FontFamily> mine, system;
     for (const FontFamily &f : m_families) {
         if (!passesSource(f)) continue;
         if (!passesFilter(f)) continue;
+        if (!passesRefine(f)) continue;
         // Your own fonts are never folded away, whatever they are called.
         if (fold && isCoverage(f.name) && !f.user) continue;
         (f.user ? mine : system).append(f);

@@ -495,6 +495,93 @@ ApplicationWindow {
                     Hairline { anchors.bottom: parent.bottom; width: parent.width }
                 }
 
+                // Refine row: design tabs, then script and language menus. They
+                // narrow whatever source the sidebar is showing.
+                Rectangle {
+                    objectName: "libraryRefineBar"
+                    Layout.fillWidth: true
+                    implicitHeight: 40
+                    color: Theme.windowBg
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: Theme.s4
+                        anchors.rightMargin: Theme.s4
+                        spacing: Theme.s1 + 2
+
+                        FilterTab {
+                            text: qsTr("All")
+                            active: backend.designFilter === ""
+                            onClicked: backend.designFilter = ""
+                        }
+                        Repeater {
+                            model: backend.designFacets
+                            FilterTab {
+                                required property var modelData
+                                text: modelData.name
+                                active: backend.designFilter === modelData.key
+                                onClicked: backend.designFilter = active ? "" : modelData.key
+                            }
+                        }
+
+                        Item { Layout.fillWidth: true }
+
+                        QuietMenuButton {
+                            id: refineScriptBtn
+                            text: backend.scriptFilter === "" ? qsTr("Scripts") : backend.scriptFilter
+                            onClicked: refineScriptMenu.popup(refineScriptBtn, 0, refineScriptBtn.height)
+                            Menu {
+                                id: refineScriptMenu
+                                height: Math.min(implicitHeight, 420)
+                                MenuItem { text: qsTr("Any script"); checkable: true; checked: backend.scriptFilter === ""; onTriggered: backend.scriptFilter = "" }
+                                MenuSeparator {}
+                                Repeater {
+                                    model: backend.scriptFacets
+                                    MenuItem {
+                                        required property var modelData
+                                        text: modelData.name
+                                        checkable: true
+                                        checked: backend.scriptFilter === modelData.name
+                                        onTriggered: backend.scriptFilter = modelData.name
+                                    }
+                                }
+                            }
+                        }
+                        QuietMenuButton {
+                            id: refineLanguageBtn
+                            text: {
+                                if (backend.languageFilter === "") return qsTr("Languages")
+                                const l = backend.languages.find(x => x.code === backend.languageFilter)
+                                return l ? l.name : backend.languageFilter
+                            }
+                            onClicked: refineLanguageMenu.popup(refineLanguageBtn, 0, refineLanguageBtn.height)
+                            Menu {
+                                id: refineLanguageMenu
+                                height: Math.min(implicitHeight, 420)
+                                MenuItem { text: qsTr("Any language"); checkable: true; checked: backend.languageFilter === ""; onTriggered: backend.languageFilter = "" }
+                                MenuSeparator {}
+                                Repeater {
+                                    model: backend.languages
+                                    MenuItem {
+                                        required property var modelData
+                                        text: modelData.name
+                                        checkable: true
+                                        checked: backend.languageFilter === modelData.code
+                                        onTriggered: backend.languageFilter = modelData.code
+                                    }
+                                }
+                            }
+                        }
+                        Button {
+                            flat: true
+                            visible: backend.designFilter !== "" || backend.scriptFilter !== "" || backend.languageFilter !== ""
+                            text: qsTr("Clear")
+                            font.pixelSize: Theme.fsLabel
+                            onClicked: backend.clearRefine()
+                        }
+                    }
+                    Hairline { anchors.bottom: parent.bottom; width: parent.width }
+                }
+
                 StackLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: true

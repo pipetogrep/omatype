@@ -110,12 +110,14 @@ Add `--json` to any command for scripting.
 ## The window
 
 **Sidebar** — where the families come from. All Fonts, Yours, System,
-Starred, Monospace, Recently Added, Deactivated, Duplicates; then **By
-design** (Serif, Sans-serif, Handwriting, Ornamental, Symbolic, Monospace,
-Variable, Colour glyphs, worked out from the files themselves); a writing
-system picker (Latin, Greek, Cyrillic, Arabic, Devanagari…); a language
-picker; your tags; and your collections and smart collections. `Ctrl+B` hides
-it.
+Starred, Monospace, Recently Added, Deactivated, Duplicates; then your tags,
+collections and smart collections. `Ctrl+B` hides it.
+
+**The refine row**, under the toolbar, narrows whatever source is showing:
+design tabs (Serif, Sans-serif, Handwriting, Ornamental, Symbolic, Monospace,
+Variable, Colour glyphs, worked out from the files themselves), then a
+**Scripts** menu (Latin, Greek, Cyrillic, Arabic, Devanagari…) and a
+**Languages** menu. **Clear** resets all three.
 
 **The list** shows the families of the chosen source, split into **Yours**,
 the ones in your font folder that you can remove, and **System**, which belong

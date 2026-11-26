@@ -4,6 +4,8 @@
         <file>Theme.qml</file>
         <file>Sheet.qml</file>
         <file>SheetFooter.qml</file>
+        <file>FilterTab.qml</file>
+        <file>QuietMenuButton.qml</file>
         <file>SectionLabel.qml</file>
         <file>FamilyRail.qml</file>
         <file>Specimen.qml</file>
