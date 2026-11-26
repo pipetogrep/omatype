@@ -14,17 +14,17 @@ T.MenuBarItem {
     hoverEnabled: true
     font.family: Theme.fontFamily
     font.pixelSize: Theme.fsControl
-    readonly property bool active: control.down || control.hovered || (control.menu !== null && control.menu.visible)
+    readonly property bool menuOpen: control.down || (control.menu !== null && control.menu.visible)
     contentItem: Text {
         text: control.text
         textFormat: Text.PlainText
         font: control.font
-        color: control.active ? Theme.textPrimary : Theme.textSecondary
+        color: control.menuOpen || control.hovered ? Theme.textPrimary : Theme.textSecondary
         verticalAlignment: Text.AlignVCenter
     }
     background: Rectangle {
         implicitHeight: Theme.hTitleBar - Theme.s2
         radius: Theme.rControl
-        color: control.active ? Theme.controlHover : "transparent"
+        color: control.menuOpen ? Theme.controlHover : "transparent"
     }
 }
