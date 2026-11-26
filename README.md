@@ -35,7 +35,8 @@ cd ~/omatype
 to `/usr/bin`, with a desktop entry and icon, so it shows up in the app
 launcher. To try it without installing, run `./bin/build` and then
 `./build/omatype`. `./bin/test` runs the offscreen Qt Test suite, and
-`./bin/screenshots` captures the website screenshots at 2× from your own fonts.
+`./bin/screenshots` captures the website screenshots at 2× from your own fonts,
+in the Catppuccin theme unless you pass `--theme <name>` (or `--theme current`).
 
 Update later with `git pull && ./bin/install`.
 

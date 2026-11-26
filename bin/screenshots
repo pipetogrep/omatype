@@ -1,12 +1,22 @@
 #!/usr/bin/env sh
 # Capture the marketing screenshots from the real interface at 2x (HiDPI).
 #
-#   ./bin/screenshots [output-folder]     (default: ./build-screenshots/out)
+#   ./bin/screenshots [--theme <omarchy-theme>] [output-folder]
+#
+# The theme defaults to catppuccin so the website's shots match each other
+# whatever your desktop is set to; --theme current uses your own. Output
+# defaults to ./build-screenshots/out.
 #
 # Uses the fonts installed on this machine. The app runs against a throwaway
 # copy of your Omatype and fontconfig settings, so nothing it writes reaches
 # your real config.
 set -eu
+
+THEME=catppuccin
+if [ "${1:-}" = "--theme" ]; then
+  THEME="${2:?--theme needs a name}"
+  shift 2
+fi
 
 ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 BUILD_DIR="$ROOT/build-screenshots"
@@ -27,6 +37,19 @@ trap 'rm -rf "$SANDBOX"' EXIT
 for d in omatype fontconfig; do
   [ -d "$CONFIG_SRC/$d" ] && cp -r "$CONFIG_SRC/$d" "$SANDBOX/$d"
 done
+
+# Point the app's Omarchy theme lookup at the chosen theme (OMATYPE_THEME_DIR
+# stands in for ~/.local/state/omarchy/current).
+if [ "$THEME" != "current" ]; then
+  THEME_SRC=""
+  for base in "${XDG_DATA_HOME:-$HOME/.local/share}/omarchy/themes" /usr/share/omarchy/themes; do
+    if [ -f "$base/$THEME/colors.toml" ]; then THEME_SRC="$base/$THEME"; break; fi
+  done
+  [ -n "$THEME_SRC" ] || { echo "No Omarchy theme named '$THEME' with a colors.toml" >&2; exit 1; }
+  mkdir -p "$SANDBOX/state"
+  ln -s "$THEME_SRC" "$SANDBOX/state/theme"
+  export OMATYPE_THEME_DIR="$SANDBOX/state"
+fi
 
 XDG_CONFIG_HOME="$SANDBOX" QT_QPA_PLATFORM=offscreen QT_SCALE_FACTOR=2 \
   ./omatype_screenshots "$OUT"
