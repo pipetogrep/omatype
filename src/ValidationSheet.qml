@@ -16,61 +16,69 @@ Sheet {
     standardButtons: Dialog.Close
     onClosed: backend.clearValidation()
 
-    readonly property int errors: backend.validationReport.filter(r => r.status === "error").length
-    readonly property int warnings: backend.validationReport.filter(r => r.status === "warning").length
+    // One list, rows divided by hairlines, icons in the sidebar's quiet
+    // treatment: the words say what is wrong, not the colour.
+    contentItem: Rectangle {
+        radius: Theme.rCard
+        color: Theme.panelRaised
+        border.width: Theme.hairline
+        border.color: Theme.border
+        clip: true
 
-    contentItem: ColumnLayout {
-        spacing: Theme.s2
-        RowLayout {
-            spacing: Theme.s2
-            Icon { name: sheet.errors > 0 ? "circle-alert" : "circle-check"; color: sheet.errors > 0 ? Theme.danger : sheet.warnings > 0 ? Theme.warning : Theme.success }
-            Label {
-                text: sheet.errors > 0 ? qsTr("Serious problems found in %1 of %2").arg(sheet.errors).arg(Theme.plural(backend.validationReport.length, qsTr("file"), qsTr("files")))
-                    : sheet.warnings > 0 ? qsTr("Minor problems found in %1 of %2").arg(sheet.warnings).arg(Theme.plural(backend.validationReport.length, qsTr("file"), qsTr("files")))
-                    : qsTr("No problems found in %1").arg(Theme.plural(backend.validationReport.length, qsTr("file"), qsTr("files")))
-                color: Theme.textPrimary
-                font.weight: Theme.wHeading
-            }
-        }
         ListView {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
+            id: list
+            anchors.fill: parent
+            anchors.margins: 1
             clip: true
             model: backend.validationReport
-            spacing: Theme.s1
             boundsBehavior: Flickable.StopAtBounds
             ScrollBar.vertical: ScrollBar {}
-            delegate: Rectangle {
+            delegate: Item {
+                id: row
                 required property var modelData
+                required property int index
                 width: ListView.view.width
-                height: column.implicitHeight + Theme.s3 * 2
-                radius: Theme.rControl
-                color: Theme.panelRaised
-                border.width: Theme.hairline
-                border.color: Theme.border
-                ColumnLayout {
-                    id: column
+                height: body.implicitHeight + Theme.s3 * 2
+
+                RowLayout {
+                    id: body
                     anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top
-                    anchors.margins: Theme.s3
-                    spacing: Theme.s1
-                    RowLayout {
-                        spacing: Theme.s2
-                        Icon {
-                            name: modelData.status === "error" ? "circle-alert" : modelData.status === "warning" ? "info" : "circle-check"
-                            color: modelData.status === "error" ? Theme.danger : modelData.status === "warning" ? Theme.warning : Theme.success
+                    anchors.leftMargin: Theme.s3; anchors.rightMargin: Theme.s3; anchors.topMargin: Theme.s3
+                    spacing: Theme.s2 + 2
+
+                    Icon {
+                        Layout.alignment: Qt.AlignTop
+                        Layout.topMargin: 3
+                        name: modelData.status === "error" ? "circle-alert" : modelData.status === "warning" ? "info" : "circle-check"
+                        size: 14
+                        color: Theme.textMuted
+                        opacity: 0.65
+                    }
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: Theme.s1
+                        RowLayout {
+                            spacing: Theme.s2
+                            Label { text: modelData.name; color: Theme.textPrimary; font.weight: Theme.wHeading; elide: Text.ElideMiddle; Layout.fillWidth: true }
+                            Label { text: (modelData.kind ?? "") + (modelData.glyphCount > 0 ? " · " + Theme.plural(modelData.glyphCount, qsTr("glyph"), qsTr("glyphs")) : ""); color: Theme.textMuted; font.pixelSize: Theme.fsLabel }
                         }
-                        Label { text: modelData.name; font.weight: Theme.wHeading; elide: Text.ElideMiddle; Layout.fillWidth: true }
-                        Label { text: (modelData.kind ?? "") + (modelData.glyphCount > 0 ? " · " + Theme.plural(modelData.glyphCount, qsTr("glyph"), qsTr("glyphs")) : ""); color: Theme.textMuted; font.pixelSize: Theme.fsLabel }
+                        Repeater {
+                            model: modelData.problems
+                            Label { required property string modelData; text: modelData; color: Theme.textSecondary; font.pixelSize: Theme.fsLabel; wrapMode: Text.Wrap; Layout.fillWidth: true }
+                        }
+                        Repeater {
+                            model: modelData.warnings
+                            Label { required property string modelData; text: modelData; color: Theme.textMuted; font.pixelSize: Theme.fsLabel; wrapMode: Text.Wrap; Layout.fillWidth: true }
+                        }
+                        Label { visible: modelData.status === "ok"; text: qsTr("Passed every check"); color: Theme.textMuted; font.pixelSize: Theme.fsLabel }
                     }
-                    Repeater {
-                        model: modelData.problems
-                        Label { required property string modelData; text: "✕  " + modelData; color: Theme.danger; font.pixelSize: Theme.fsLabel; wrapMode: Text.Wrap; Layout.fillWidth: true }
-                    }
-                    Repeater {
-                        model: modelData.warnings
-                        Label { required property string modelData; text: "!  " + modelData; color: Theme.warning; font.pixelSize: Theme.fsLabel; wrapMode: Text.Wrap; Layout.fillWidth: true }
-                    }
-                    Label { visible: modelData.status === "ok"; text: qsTr("Passed every check"); color: Theme.textMuted; font.pixelSize: Theme.fsLabel }
+                }
+                Rectangle {
+                    visible: row.index < list.count - 1
+                    anchors.bottom: parent.bottom
+                    width: parent.width
+                    height: Theme.hairline
+                    color: Theme.border
                 }
             }
         }

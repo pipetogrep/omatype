@@ -511,7 +511,7 @@ void Backend::buildTidy() {
             else if (!i->problems.isEmpty()) { broken.append(file); why.append(i->problems.first()); }
         }
         if (!broken.isEmpty())
-            out.append(item(QStringLiteral("invalid"), f.name, (broken.size() == 1 ? tr("%1: 1 file with problems").arg(f.name) : tr("%1: %2 files with problems").arg(f.name).arg(broken.size())),
+            out.append(item(QStringLiteral("invalid"), f.name, (broken.size() == 1 ? tr("%1: a file with problems").arg(f.name) : tr("%1: files with problems").arg(f.name)),
                             why.first(), broken, QStringLiteral("error")));
         // No Latin and not a language-coverage or symbol font: probably stray.
         if (!f.latin && !isCoverage(f.name) && f.user) {
@@ -533,8 +533,8 @@ void Backend::buildTidy() {
         }
     }
     if (coverageCount > 0)
-        out.append(item(QStringLiteral("coverage"), QString(), tr("%1 language-coverage families, %2").arg(coverageCount).arg(formatBytes(coverageBytes)),
-                        tr("Per-script Noto families installed by system packages. Deactivating them hides them from design-app font menus without uninstalling packages."),
+        out.append(item(QStringLiteral("coverage"), QString(), tr("Language-coverage families"),
+                        tr("Per-script Noto families installed by system packages, %1 on disk. Deactivating them hides them from application font menus without uninstalling packages.").arg(formatBytes(coverageBytes)),
                         coverageFiles, QStringLiteral("info")));
     std::stable_sort(out.begin(), out.end(), [](const QVariant &a, const QVariant &b) {
         auto rank = [](const QString &s) { return s == QLatin1String("error") ? 0 : s == QLatin1String("warning") ? 1 : 2; };

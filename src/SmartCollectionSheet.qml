@@ -97,9 +97,9 @@ Sheet {
                     placeholderText: sheet.hintFor(ruleRow.rule.field)
                     onTextEdited: { const r = sheet.rules.slice(); r[ruleRow.index] = Object.assign({}, r[ruleRow.index], { value: text }); sheet.rules = r }
                 }
-                ToolButton { icon.name: "x"; enabled: sheet.rules.length > 1; onClicked: { const r = sheet.rules.slice(); r.splice(ruleRow.index, 1); sheet.rules = r } }
+                Button { flat: true; text: qsTr("Remove"); enabled: sheet.rules.length > 1; onClicked: { const r = sheet.rules.slice(); r.splice(ruleRow.index, 1); sheet.rules = r } }
             }
         }
-        Button { text: qsTr("Add a rule"); icon.name: "plus"; flat: true; onClicked: sheet.rules = sheet.rules.concat([{ field: "family", op: "contains", value: "" }]) }
+        Button { text: qsTr("Add a rule"); flat: true; onClicked: sheet.rules = sheet.rules.concat([{ field: "family", op: "contains", value: "" }]) }
     }
 }

@@ -15,7 +15,6 @@ Sheet {
     height: Math.min(parent.height - Theme.s5 * 2, 620)
     modal: true
     title: qsTr("Tidy up")
-    standardButtons: Dialog.Close
     onAboutToShow: backend.buildTidy()
 
     Connections {
@@ -46,100 +45,108 @@ Sheet {
                          qsTr("Remove"), () => backend.tidyRemoveFiles(files))
     }
 
-    readonly property int errors: backend.tidyReport.filter(r => r.severity === "error").length
-    readonly property int warnings: backend.tidyReport.filter(r => r.severity === "warning").length
+    footer: SheetFooter {
+        sheet: sheet
+        Button { flat: true; text: qsTr("Check again"); onClicked: backend.buildTidy() }
+    }
 
-    contentItem: ColumnLayout {
-        spacing: Theme.s2
-        RowLayout {
+    // One list, rows divided by hairlines. Icons take the sidebar's quiet
+    // treatment whatever the severity; the words say how much it matters.
+    contentItem: Rectangle {
+        radius: Theme.rCard
+        color: Theme.panelRaised
+        border.width: Theme.hairline
+        border.color: Theme.border
+        clip: true
+
+        Column {
+            anchors.centerIn: parent
+            width: parent.width - Theme.s5 * 2
             spacing: Theme.s2
-            Icon {
-                name: sheet.errors > 0 ? "circle-alert" : backend.tidyReport.length > 0 ? "brush-cleaning" : "circle-check"
-                color: sheet.errors > 0 ? Theme.danger : sheet.warnings > 0 ? Theme.warning : Theme.success
-            }
+            visible: backend.tidyReport.length === 0
+            Icon { name: "circle-check"; size: 14; color: Theme.textMuted; opacity: 0.65; anchors.horizontalCenter: parent.horizontalCenter }
             Label {
-                Layout.fillWidth: true
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.Wrap
-                color: Theme.textPrimary
-                font.weight: Theme.wHeading
-                text: backend.tidyReport.length === 0 ? qsTr("Nothing to tidy. Every family is in order.")
-                    : qsTr("%1 worth a look").arg(Theme.plural(backend.tidyReport.length, qsTr("thing"), qsTr("things")))
+                color: Theme.textSecondary
+                text: qsTr("Nothing to tidy. Every family is in order.")
             }
-            Button { flat: true; icon.name: "refresh-cw"; text: qsTr("Check again"); onClicked: backend.buildTidy() }
         }
+
         ListView {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
+            id: list
+            anchors.fill: parent
+            anchors.margins: 1
             clip: true
             model: backend.tidyReport
-            spacing: Theme.s2
             boundsBehavior: Flickable.StopAtBounds
             ScrollBar.vertical: ScrollBar {}
-            delegate: Rectangle {
+            delegate: Item {
                 id: row
                 required property var modelData
+                required property int index
                 width: ListView.view.width
-                height: column.implicitHeight + Theme.s3 * 2
-                radius: Theme.rCard
-                color: Theme.panelRaised
-                border.width: Theme.hairline
-                border.color: Theme.border
+                height: body.implicitHeight + Theme.s3 * 2
                 readonly property bool mine: (modelData.files ?? []).length > 0 && modelData.files.every(f => f.indexOf(backend.fontRoot + "/") === 0)
-                ColumnLayout {
-                    id: column
+                readonly property bool fixable: modelData.kind === "invalid" || modelData.kind === "nolatin"
+
+                RowLayout {
+                    id: body
                     anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top
-                    anchors.margins: Theme.s3
-                    spacing: Theme.s2
-                    RowLayout {
-                        spacing: Theme.s2
-                        Icon {
-                            name: modelData.severity === "error" ? "circle-alert" : modelData.severity === "warning" ? "copy" : "info"
-                            color: modelData.severity === "error" ? Theme.danger : modelData.severity === "warning" ? Theme.warning : Theme.textMuted
-                        }
-                        Label { Layout.fillWidth: true; text: modelData.title; font.weight: Theme.wHeading; wrapMode: Text.Wrap }
-                        Button {
-                            flat: true
-                            visible: (modelData.family ?? "") !== ""
-                            text: qsTr("Show")
-                            onClicked: { backend.selectedName = modelData.family; sheet.close() }
-                        }
+                    anchors.leftMargin: Theme.s3; anchors.rightMargin: Theme.s2; anchors.topMargin: Theme.s3
+                    spacing: Theme.s2 + 2
+
+                    Icon {
+                        Layout.alignment: Qt.AlignTop
+                        Layout.topMargin: 3
+                        name: modelData.severity === "error" ? "circle-alert" : modelData.severity === "warning" ? "copy" : "info"
+                        size: 14
+                        color: Theme.textMuted
+                        opacity: 0.65
                     }
-                    Label { Layout.fillWidth: true; text: modelData.detail; color: Theme.textSecondary; font.pixelSize: Theme.fsLabel; wrapMode: Text.Wrap }
-                    Flow {
+                    ColumnLayout {
                         Layout.fillWidth: true
+                        Layout.alignment: Qt.AlignTop
                         spacing: Theme.s1
-                        // OTF/TTF twins: keep one format.
-                        Button { visible: modelData.kind === "twins"; enabled: !backend.busy; text: qsTr("Keep OTF"); onClicked: sheet.keepFormat(modelData.family, modelData.files ?? [], "otf") }
-                        Button { visible: modelData.kind === "twins"; enabled: !backend.busy; text: qsTr("Keep TTF"); onClicked: sheet.keepFormat(modelData.family, modelData.files ?? [], "ttf") }
-                        // Static beside variable: the static copies are deactivated, not deleted.
-                        Button { visible: modelData.kind === "variable"; enabled: !backend.busy; text: qsTr("Keep the variable font"); onClicked: backend.tidyKeepVariable(modelData.family) }
-                        // Broken files and stray non-Latin fonts.
-                        Button { visible: modelData.kind === "invalid" || modelData.kind === "nolatin"; enabled: !backend.busy; icon.name: "eye-off"; text: qsTr("Deactivate"); onClicked: backend.tidyDeactivateFiles(modelData.files) }
-                        Button { visible: (modelData.kind === "invalid" || modelData.kind === "nolatin") && row.mine; enabled: !backend.busy; icon.name: "trash-2"; text: qsTr("Remove…"); onClicked: sheet.removeFiles(modelData.files ?? []) }
-                        // System Noto language-coverage families: deactivate in one click or inspect in Library.
-                        Button {
-                            visible: modelData.kind === "coverage" && (modelData.files ?? []).length > 0
-                            enabled: !backend.busy
-                            icon.name: "eye-off"
-                            text: qsTr("Deactivate all")
-                            onClicked: backend.tidyDeactivateFiles(modelData.files)
-                        }
-                        Button {
-                            visible: modelData.kind === "coverage"
-                            flat: true
-                            text: qsTr("Show in Library")
-                            onClicked: { sheet.showCoverageRequested(); sheet.close() }
-                        }
+                        Label { Layout.fillWidth: true; text: modelData.title; color: Theme.textPrimary; font.weight: Theme.wHeading; wrapMode: Text.Wrap }
+                        Label { Layout.fillWidth: true; text: modelData.detail; color: Theme.textSecondary; font.pixelSize: Theme.fsLabel; wrapMode: Text.Wrap }
                         Label {
+                            Layout.fillWidth: true
                             visible: modelData.kind === "twins" || modelData.kind === "variable"
                             text: modelData.kind === "variable" ? qsTr("The static copies are deactivated, not deleted.")
                                 : row.mine ? qsTr("Your copies are deleted, after asking; package copies are deactivated.")
                                 : qsTr("Package copies are deactivated, never deleted.")
                             color: Theme.textMuted
                             font.pixelSize: Theme.fsCaption
-                            Layout.alignment: Qt.AlignVCenter
+                            wrapMode: Text.Wrap
                         }
                     }
+                    // Actions, as text, on the right.
+                    RowLayout {
+                        Layout.alignment: Qt.AlignTop
+                        Layout.topMargin: -Theme.s1
+                        spacing: 0
+                        // OTF/TTF twins: keep one format.
+                        Button { flat: true; visible: modelData.kind === "twins"; enabled: !backend.busy; text: qsTr("Keep OTF"); onClicked: sheet.keepFormat(modelData.family, modelData.files ?? [], "otf") }
+                        Button { flat: true; visible: modelData.kind === "twins"; enabled: !backend.busy; text: qsTr("Keep TTF"); onClicked: sheet.keepFormat(modelData.family, modelData.files ?? [], "ttf") }
+                        // Static beside variable: the static copies are deactivated, not deleted.
+                        Button { flat: true; visible: modelData.kind === "variable"; enabled: !backend.busy; text: qsTr("Keep variable"); onClicked: backend.tidyKeepVariable(modelData.family) }
+                        // Broken files and stray non-Latin fonts.
+                        Button { flat: true; visible: row.fixable; enabled: !backend.busy; text: qsTr("Deactivate"); onClicked: backend.tidyDeactivateFiles(modelData.files) }
+                        Button { flat: true; visible: row.fixable && row.mine; enabled: !backend.busy; text: qsTr("Remove"); onClicked: sheet.removeFiles(modelData.files ?? []) }
+                        // System Noto language-coverage families.
+                        Button { flat: true; visible: modelData.kind === "coverage" && (modelData.files ?? []).length > 0; enabled: !backend.busy; text: qsTr("Deactivate all"); onClicked: backend.tidyDeactivateFiles(modelData.files) }
+                        Button { flat: true; visible: modelData.kind === "coverage"; text: qsTr("Show in Library"); onClicked: { sheet.showCoverageRequested(); sheet.close() } }
+                        Button { flat: true; visible: (modelData.family ?? "") !== ""; text: qsTr("Show"); onClicked: { backend.selectedName = modelData.family; sheet.close() } }
+                    }
+                }
+                Rectangle {
+                    visible: row.index < list.count - 1
+                    anchors.bottom: parent.bottom
+                    width: parent.width
+                    height: Theme.hairline
+                    color: Theme.border
                 }
             }
         }
