@@ -169,7 +169,7 @@ Rectangle {
             Heading { text: qsTr("Discover") }
             DiscoverRow { sourceFilter: "all"; label: qsTr("Browse Catalog"); iconName: "globe"; count: catalog.totalCount }
             DiscoverRow { sourceFilter: "google"; label: qsTr("Google Fonts"); iconName: "type"; count: catalog.googleCount }
-            DiscoverRow { sourceFilter: "indie"; label: qsTr("Indie Foundries"); iconName: "sparkles"; count: catalog.indieCount }
+            DiscoverRow { sourceFilter: "indie"; label: qsTr("Indie Foundries"); iconName: "pen-tool"; count: catalog.indieCount }
             DiscoverRow { sourceFilter: "shortlist"; label: qsTr("Shortlist"); iconName: "bookmark"; count: catalog.shortlistCount; visible: catalog.shortlistCount > 0 || (sidebar.mode === "discover" && catalog.sourceFilter === "shortlist") }
             DiscoverRow { sourceFilter: "installed"; label: qsTr("Installed"); iconName: "check"; count: catalog.installedCatalogCount; visible: catalog.installedCatalogCount > 0 || (sidebar.mode === "discover" && catalog.sourceFilter === "installed") }
 
