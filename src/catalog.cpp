@@ -654,7 +654,7 @@ void Catalog::mergeCatalogs(const QList<CatalogFamily> &googleFamilies) {
         if (QFileInfo::exists(cp)) e.previewFile = cp;
         m_indexById.insert(e.id, m_all.size());
         m_all.append(std::move(e));
-        if (!m_hideNoto || !m_all.last().isNoto) ++m_googleCount;
+        if (!m_all.last().isNoto) ++m_googleCount;
     }
 
     syncInstalled();
@@ -739,13 +739,6 @@ void Catalog::setSortBy(const QString &sort) {
     rebuildModel();
 }
 
-void Catalog::setHideNoto(bool hide) {
-    if (m_hideNoto == hide) return;
-    m_hideNoto = hide;
-    emit filterChanged();
-    rebuildModel();
-}
-
 void Catalog::setSampleText(const QString &text) {
     if (m_sampleText == text) return;
     m_sampleText = text;
@@ -775,7 +768,7 @@ void Catalog::rebuildModel() {
         if (m_sourceFilter == QLatin1String("installed") && !e.installed) continue;
 
         // Hide per-script Noto families unless the user is searching or explicitly showing them.
-        if (m_hideNoto && e.isNoto && q.isEmpty() && m_sourceFilter != QLatin1String("shortlist") && m_sourceFilter != QLatin1String("installed"))
+        if (e.isNoto && q.isEmpty() && m_sourceFilter != QLatin1String("shortlist") && m_sourceFilter != QLatin1String("installed"))
             continue;
 
         if (!m_category.isEmpty() && e.category.compare(m_category, Qt::CaseInsensitive) != 0) continue;
@@ -1103,7 +1096,7 @@ void Catalog::installFamily(const QString &id, bool preferVariable, const QStrin
     m_all[it.value()].installing = true;
     m_model.updateEntry(id, m_all.at(it.value()), {CatalogModel::InstallingRole});
     if (m_selectedId == id) emit selectionChanged();
-    setInstallStatus(tr("Downloading %1…").arg(m_all.at(it.value()).family));
+    emit installStateChanged();
 
     if (m_all.at(it.value()).source == QLatin1String("google") && !m_all.at(it.value()).manifestLoaded) {
         fetchGoogleManifest(id, [this, id, preferVariable, selectedFilenames](bool ok) {
@@ -1116,7 +1109,7 @@ void Catalog::installFamily(const QString &id, bool preferVariable, const QStrin
                 m_installingIds.remove(id);
                 if (m_selectedId == id) emit selectionChanged();
                 const QString msg = tr("Could not fetch download manifest for %1").arg(id);
-                setInstallStatus(msg);
+                emit installStateChanged();
                 if (m_backend) m_backend->setStatus(msg, true);
                 emit installFinished(id, false, msg);
                 return;
@@ -1154,7 +1147,7 @@ void Catalog::startInstallDownload(const QString &id, bool preferVariable, const
         m_model.updateEntry(id, m_all.at(it.value()), {CatalogModel::InstallingRole});
         if (m_selectedId == id) emit selectionChanged();
         const QString msg = tr("No downloadable font files found for %1").arg(entry.family);
-        setInstallStatus(msg);
+        emit installStateChanged();
         if (m_backend) m_backend->setStatus(msg, true);
         emit installFinished(id, false, msg);
         return;
@@ -1236,7 +1229,7 @@ void Catalog::startInstallDownload(const QString &id, bool preferVariable, const
 
             if (state->written == 0) {
                 const QString msg = tr("Install failed for %1: %2").arg(state->family, state->firstError);
-                setInstallStatus(msg);
+                emit installStateChanged();
                 if (m_backend) m_backend->setStatus(msg, true);
                 emit installFinished(id, false, msg);
                 return;
@@ -1248,7 +1241,7 @@ void Catalog::startInstallDownload(const QString &id, bool preferVariable, const
                 m_backend->recordCatalogInstall(state->family, state->sourceLabel, state->dest);
                 m_backend->setStatus(tr("Installed %1.").arg(state->family));
             }
-            setInstallStatus(msg);
+            emit installStateChanged();
             emit countsChanged();
             emit installFinished(id, true, msg);
         });
@@ -1331,23 +1324,6 @@ void Catalog::installShortlist() {
     }
 }
 
-QVariantList Catalog::shortlistItems() const {
-    QVariantList out;
-    for (const QString &id : m_shortlist) {
-        const auto it = m_indexById.constFind(id);
-        if (it == m_indexById.cend()) continue;
-        const CatalogFamily &e = m_all.at(it.value());
-        out.append(QVariantMap{
-            {QStringLiteral("id"), e.id},
-            {QStringLiteral("family"), e.family},
-            {QStringLiteral("designersText"), e.designersText()},
-            {QStringLiteral("installed"), e.installed},
-            {QStringLiteral("installing"), e.installing},
-        });
-    }
-    return out;
-}
-
 void Catalog::saveShortlist() {
     QSettings s;
     s.setValue(QStringLiteral("catalog/shortlist"), m_shortlist);
@@ -1356,11 +1332,6 @@ void Catalog::saveShortlist() {
 void Catalog::loadShortlist() {
     QSettings s;
     m_shortlist = s.value(QStringLiteral("catalog/shortlist")).toStringList();
-}
-
-void Catalog::setInstallStatus(const QString &msg) {
-    m_installStatus = msg;
-    emit installStateChanged();
 }
 
 void Catalog::openUrl(const QString &url) const {

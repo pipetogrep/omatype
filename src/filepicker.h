@@ -18,8 +18,6 @@ public:
     explicit PortalFileChooser(QObject *parent = nullptr);
 
     // `patterns` are globs, e.g. {"*.md", "*.markdown"}; empty means any file.
-    Q_INVOKABLE void openFile(const QString &title, const QString &filterName = QString(),
-                              const QStringList &patterns = {});
     // Several files at once; the answer arrives as `selectedMany`.
     Q_INVOKABLE void openFiles(const QString &title, const QString &filterName = QString(),
                                const QStringList &patterns = {});

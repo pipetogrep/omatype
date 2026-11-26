@@ -83,15 +83,6 @@ PortalFileChooser::PortalFileChooser(QObject *parent) : QObject(parent) {
     registerFilterTypes();
 }
 
-void PortalFileChooser::openFile(const QString &title, const QString &filterName,
-                                 const QStringList &patterns) {
-    QVariantMap options;
-    if (!patterns.isEmpty())
-        options.insert(QStringLiteral("filters"), filtersFor(filterName, patterns));
-    m_pendingKind = Pending::Single;
-    request(QStringLiteral("OpenFile"), title, options);
-}
-
 void PortalFileChooser::openFiles(const QString &title, const QString &filterName,
                                   const QStringList &patterns) {
     QVariantMap options;

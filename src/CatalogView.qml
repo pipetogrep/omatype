@@ -99,11 +99,11 @@ Rectangle {
                     id: catalogSearchField
                     objectName: "searchField"
                     Layout.fillWidth: true
-                    Layout.preferredWidth: 112
+                    Layout.preferredWidth: 150
                     Layout.minimumWidth: 88
-                    Layout.maximumWidth: 112
+                    Layout.maximumWidth: 150
                     text: catalog.query
-                    placeholderText: qsTr("Search…")
+                    placeholderText: qsTr("Search")
                     leftPadding: Theme.s2 + Theme.szIcon + Theme.s1
                     rightPadding: text !== "" ? 26 : Theme.s2
                     font.pixelSize: Theme.fsLabel

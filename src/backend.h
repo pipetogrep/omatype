@@ -150,7 +150,6 @@ class Backend : public QObject {
 
     Q_PROPERTY(bool staging READ staging NOTIFY stageChanged)
     Q_PROPERTY(bool staged READ staged NOTIFY stageChanged)
-    Q_PROPERTY(QVariantList stagedFaces READ stagedFaces NOTIFY stageChanged)
     Q_PROPERTY(QVariantList stagedSelected READ stagedSelected NOTIFY stageChanged)
     Q_PROPERTY(QStringList stagedFamilies READ stagedFamilies NOTIFY stageChanged)
     Q_PROPERTY(QString stagedGroup READ stagedGroup NOTIFY stageChanged)
@@ -173,7 +172,6 @@ class Backend : public QObject {
     Q_PROPERTY(bool canSetTerminalFont READ canSetTerminalFont CONSTANT)
     Q_PROPERTY(QVariantList repertoire READ repertoire NOTIFY repertoireChanged)
     Q_PROPERTY(int repertoireTotal READ repertoireTotal NOTIFY repertoireChanged)
-    Q_PROPERTY(QString repertoireFile READ repertoireFile NOTIFY repertoireChanged)
     Q_PROPERTY(QStringList compareList READ compareList NOTIFY compareChanged)
     Q_PROPERTY(QVariantList compareRows READ compareRows NOTIFY compareChanged)
     Q_PROPERTY(QVariantList tidyReport READ tidyReport NOTIFY tidyChanged)
@@ -252,7 +250,6 @@ public:
 
     bool staging() const;
     bool staged() const { return !m_stagedFaces.isEmpty(); }
-    QVariantList stagedFaces() const;
     QVariantList stagedSelected() const;
     QStringList stagedFamilies() const;
     QString stagedGroup() const;
@@ -279,7 +276,6 @@ public:
     bool canSetTerminalFont() const { return !m_fontSetTool.isEmpty(); }
     QVariantList repertoire() const { return m_repertoire; }
     int repertoireTotal() const { return m_repertoireTotal; }
-    QString repertoireFile() const { return m_repertoireFile; }
     QStringList compareList() const { return m_compare; }
     QVariantList compareRows() const;
     QVariantList tidyReport() const { return m_tidy; }
@@ -334,14 +330,11 @@ public:
     Q_INVOKABLE QString formatBytes(qint64 bytes) const;
     // A path under the home folder, written the short way: "~/.local/share/fonts".
     Q_INVOKABLE static QString tildePath(const QString &path);
-    Q_INVOKABLE QVariantMap fileInfo(const QString &path) const;
     Q_INVOKABLE QStringList ruleFields() const { return Library::ruleFields(); }
     Q_INVOKABLE QStringList ruleOps() const { return Library::ruleOps(); }
     Q_INVOKABLE QVariantMap smartCollection(const QString &id) const;
     Q_INVOKABLE bool inCollection(const QString &id, const QString &familyName) const;
     Q_INVOKABLE QStringList allTags() const { return m_library.allTags(); }
-    Q_INVOKABLE QStringList tagsOf(const QString &familyName) const { return m_library.tags.value(familyName); }
-    Q_INVOKABLE QString designClassOf(const QString &familyName) const;
     Q_INVOKABLE QVariantList discoverApps() const;
 
 public slots:

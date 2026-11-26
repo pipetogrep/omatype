@@ -44,7 +44,6 @@ QtObject {
     readonly property color accentText:
         (0.2126 * accent.r + 0.7152 * accent.g + 0.0722 * accent.b) > 0.55 ? "#04121A" : "#F2F7FF"
 
-    function hovered(base) { return Qt.lighter(base, 1.06) }
     function pressedOn(base) { return Qt.darker(base, 1.08) }
     function withAlpha(c, a) { return Qt.rgba(c.r, c.g, c.b, a) }
     // "1 style" / "18 styles": no translator is loaded, so %n forms would
@@ -73,14 +72,12 @@ QtObject {
     readonly property int rControl: 4
     readonly property int rMenu: 6
     readonly property int rCard: 6
-    readonly property int rPanel: 0
     readonly property int rChip: 3
 
     // ── Lines ───────────────────────────────────────────────────────────────
     readonly property int hairline: 1
     readonly property int focusRing: 1
     readonly property int selectionRing: 2
-    readonly property int activeUnderline: 2
 
     // ── Density ─────────────────────────────────────────────────────────────
     property string density: "compact"
@@ -102,15 +99,12 @@ QtObject {
         return "monospace"
     }
 
-    readonly property int fsBase: 12
     readonly property int fsLabel: 12
     readonly property int fsControl: 13
-    readonly property int fsHeading: 13
     readonly property int fsTitle: 15
     readonly property int fsSection: 14
     readonly property int fsCaption: 10
     readonly property int wHeading: Font.DemiBold
-    readonly property int wNormal: Font.Normal
     readonly property real capsTracking: 0.8
 
     // The specimen's own scale: the display name, then the five labelled lines.
@@ -126,31 +120,24 @@ QtObject {
     readonly property int hControl: Math.round(28 * densityScale)
     readonly property int hToolButton: Math.round(34 * densityScale)
     readonly property int hRow: Math.round(30 * densityScale)
-    readonly property int hRailRow: Math.round(36 * densityScale)
-    readonly property int hCardHeader: Math.round(36 * densityScale)
     readonly property int hNavHeader: Math.round(36 * densityScale)
     readonly property int hToolTile: Math.round(58 * densityScale)
     readonly property int wSidebar: 236
     readonly property int wFactLabel: 88
-    readonly property int wNavigator: 272
-    readonly property int wNavigatorMin: 200
     readonly property int wInspector: 336
     readonly property int wInspectorMin: 280
-    readonly property int wSearch: 280
+    readonly property int wSearch: 240
     readonly property int wSpecimenGutter: 44
     readonly property int szIcon: 16
     readonly property int szIconLarge: 20
     readonly property int szIconHero: 40
     readonly property int szIconHit: Math.round(28 * densityScale)
-    readonly property int szStatusDot: 8
-    readonly property int wSplitter: 4
 
     // ── Motion ──────────────────────────────────────────────────────────────
     readonly property bool reducedMotion: backend.reducedMotion
     readonly property bool highContrast: backend.highContrast
     readonly property int dFast: reducedMotion ? 0 : 100
     readonly property int dNormal: reducedMotion ? 0 : 130
-    readonly property int dSlow: 160
     readonly property int easing: Easing.OutCubic
     readonly property int tooltipDelay: 450
 }

@@ -8,7 +8,6 @@
         <file>QuietMenuButton.qml</file>
         <file>OverflowTabs.qml</file>
         <file>SectionLabel.qml</file>
-        <file>FamilyRail.qml</file>
         <file>Specimen.qml</file>
         <file>Inspector.qml</file>
         <file>HelpSheet.qml</file>
@@ -37,7 +36,6 @@
         <file alias="ComboBox.qml">style/OmaTypeStyle/ComboBox.qml</file>
         <file alias="Dialog.qml">style/OmaTypeStyle/Dialog.qml</file>
         <file alias="DialogButtonBox.qml">style/OmaTypeStyle/DialogButtonBox.qml</file>
-        <file alias="Frame.qml">style/OmaTypeStyle/Frame.qml</file>
         <file alias="ItemDelegate.qml">style/OmaTypeStyle/ItemDelegate.qml</file>
         <file alias="Label.qml">style/OmaTypeStyle/Label.qml</file>
         <file alias="Menu.qml">style/OmaTypeStyle/Menu.qml</file>
@@ -45,22 +43,15 @@
         <file alias="MenuBarItem.qml">style/OmaTypeStyle/MenuBarItem.qml</file>
         <file alias="MenuItem.qml">style/OmaTypeStyle/MenuItem.qml</file>
         <file alias="MenuSeparator.qml">style/OmaTypeStyle/MenuSeparator.qml</file>
-        <file alias="Pane.qml">style/OmaTypeStyle/Pane.qml</file>
         <file alias="Popup.qml">style/OmaTypeStyle/Popup.qml</file>
-        <file alias="ProgressBar.qml">style/OmaTypeStyle/ProgressBar.qml</file>
-        <file alias="RadioButton.qml">style/OmaTypeStyle/RadioButton.qml</file>
         <file alias="ScrollBar.qml">style/OmaTypeStyle/ScrollBar.qml</file>
         <file alias="ScrollIndicator.qml">style/OmaTypeStyle/ScrollIndicator.qml</file>
         <file alias="ScrollView.qml">style/OmaTypeStyle/ScrollView.qml</file>
         <file alias="Slider.qml">style/OmaTypeStyle/Slider.qml</file>
-        <file alias="SpinBox.qml">style/OmaTypeStyle/SpinBox.qml</file>
         <file alias="Switch.qml">style/OmaTypeStyle/Switch.qml</file>
-        <file alias="TabBar.qml">style/OmaTypeStyle/TabBar.qml</file>
-        <file alias="TabButton.qml">style/OmaTypeStyle/TabButton.qml</file>
         <file alias="TextArea.qml">style/OmaTypeStyle/TextArea.qml</file>
         <file alias="TextField.qml">style/OmaTypeStyle/TextField.qml</file>
         <file alias="ToolButton.qml">style/OmaTypeStyle/ToolButton.qml</file>
-        <file alias="ToolSeparator.qml">style/OmaTypeStyle/ToolSeparator.qml</file>
         <file alias="ToolTip.qml">style/OmaTypeStyle/ToolTip.qml</file>
     </qresource>
 </RCC>

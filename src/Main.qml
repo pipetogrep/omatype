@@ -418,12 +418,12 @@ ApplicationWindow {
                             objectName: "librarySearchField"
                             // Gives way before the toolbar runs under the panel.
                             Layout.fillWidth: true
-                            Layout.preferredWidth: 200
+                            Layout.preferredWidth: Theme.wSearch
                             Layout.minimumWidth: 120
-                            Layout.maximumWidth: 200
+                            Layout.maximumWidth: Theme.wSearch
                             placeholderText: backend.searchScope === "designer" ? qsTr("Designer or foundry")
-                                           : backend.searchScope === "characters" ? qsTr("Characters…")
-                                           : qsTr("Search…")
+                                           : backend.searchScope === "characters" ? qsTr("Characters")
+                                           : qsTr("Search")
                             leftPadding: Theme.s2 + Theme.szIcon + Theme.s1
                             rightPadding: Theme.szIconHit + Theme.s1
                             font.pixelSize: Theme.fsLabel

@@ -217,13 +217,6 @@ static QVariantMap stagedFaceMap(const Backend &b, const FontFace &face, const Q
     return m;
 }
 
-QVariantList Backend::stagedFaces() const {
-    const QString destDir = m_fontRoot + QLatin1Char('/') + slug(stagedGroup());
-    QVariantList out;
-    for (const FontFace &f : m_stagedFaces) out.append(stagedFaceMap(*this, f, m_stagedInfo, destDir));
-    return out;
-}
-
 // Packs often ship the same faces as both OTF and TTF; the two formats
 // frequently disagree about family names and cannot be merged reliably, so the
 // person picks one or takes both.

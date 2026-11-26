@@ -134,14 +134,6 @@ QHash<QString, QString> OmarchyTheme::colorsFromFile(const QString &path) {
     return colors;
 }
 
-QString OmarchyTheme::foregroundFor(const QString &color) {
-    bool known = false;
-    const bool dark = isDark(color, &known);
-    if (!known)
-        return QStringLiteral("black");
-    return dark ? QStringLiteral("white") : QStringLiteral("black");
-}
-
 bool OmarchyTheme::isDark(const QString &color, bool *known) {
     const QColor parsed = QColor::fromString(color);
     if (!parsed.isValid()) {
@@ -155,7 +147,6 @@ bool OmarchyTheme::isDark(const QString &color, bool *known) {
 void OmarchyTheme::reload() {
     watchTheme();
 
-    const bool wasDark = m_darkMode;
     const qreal wasTextScale = m_textScale;
     const QString wasBackground = m_background;
     const QString wasForeground = m_foreground;
@@ -197,8 +188,6 @@ void OmarchyTheme::reload() {
             m_darkMode = dark;
     }
 
-    if (m_darkMode != wasDark)
-        emit darkModeChanged();
     if (!qFuzzyCompare(m_textScale, wasTextScale))
         emit textScaleChanged();
     if (m_background != wasBackground || m_foreground != wasForeground

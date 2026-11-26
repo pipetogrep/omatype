@@ -124,7 +124,6 @@ class Catalog : public QObject {
     Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
     Q_PROPERTY(QString error READ error NOTIFY errorChanged)
     Q_PROPERTY(int totalCount READ totalCount NOTIFY countsChanged)
-    Q_PROPERTY(int filteredCount READ filteredCount NOTIFY countsChanged)
     Q_PROPERTY(int googleCount READ googleCount NOTIFY countsChanged)
     Q_PROPERTY(int indieCount READ indieCount NOTIFY countsChanged)
     Q_PROPERTY(int shortlistCount READ shortlistCount NOTIFY shortlistChanged)
@@ -136,7 +135,6 @@ class Catalog : public QObject {
     Q_PROPERTY(bool variableOnly READ variableOnly WRITE setVariableOnly NOTIFY filterChanged)
     Q_PROPERTY(QString scriptFilter READ scriptFilter WRITE setScriptFilter NOTIFY filterChanged)
     Q_PROPERTY(QString sortBy READ sortBy WRITE setSortBy NOTIFY filterChanged)
-    Q_PROPERTY(bool hideNoto READ hideNoto WRITE setHideNoto NOTIFY filterChanged)
     Q_PROPERTY(QString sampleText READ sampleText WRITE setSampleText NOTIFY sampleTextChanged)
 
     Q_PROPERTY(QString selectedId READ selectedId WRITE selectFamily NOTIFY selectionChanged)
@@ -145,8 +143,6 @@ class Catalog : public QObject {
     Q_PROPERTY(QVariantList selectedFiles READ selectedFiles NOTIFY manifestChanged)
 
     Q_PROPERTY(bool installingAny READ installingAny NOTIFY installStateChanged)
-    Q_PROPERTY(QString installStatus READ installStatus NOTIFY installStateChanged)
-    Q_PROPERTY(QVariantList shortlistItems READ shortlistItems NOTIFY shortlistChanged)
 
 public:
     explicit Catalog(Backend *backend, QObject *parent = nullptr);
@@ -155,7 +151,6 @@ public:
     bool loading() const { return m_loading; }
     QString error() const { return m_error; }
     int totalCount() const { return m_googleCount + m_indieCount; }
-    int filteredCount() const { return m_model.rowCount(); }
     int googleCount() const { return m_googleCount; }
     int indieCount() const { return m_indieCount; }
     int shortlistCount() const { return m_shortlist.size(); }
@@ -173,8 +168,6 @@ public:
     void setScriptFilter(const QString &script);
     QString sortBy() const { return m_sortBy; }
     void setSortBy(const QString &sort);
-    bool hideNoto() const { return m_hideNoto; }
-    void setHideNoto(bool hide);
     QString sampleText() const { return m_sampleText; }
     void setSampleText(const QString &text);
 
@@ -184,8 +177,6 @@ public:
     QVariantList selectedFiles() const;
 
     bool installingAny() const { return !m_installingIds.isEmpty(); }
-    QString installStatus() const { return m_installStatus; }
-    QVariantList shortlistItems() const;
 
     // Pure helpers (also exercised by tests).
     static QString normalizeId(const QString &family);
@@ -248,7 +239,6 @@ private:
     QString previewTextKey() const;
     void saveShortlist();
     void loadShortlist();
-    void setInstallStatus(const QString &msg);
 
     Backend *m_backend = nullptr;
     QNetworkAccessManager m_nam;
@@ -271,7 +261,6 @@ private:
     bool m_variableOnly = false;
     QString m_scriptFilter;
     QString m_sortBy = QStringLiteral("popular");
-    bool m_hideNoto = true;
     QString m_sampleText = QStringLiteral("Typography is what language looks like.");
 
     QString m_selectedId;
@@ -285,7 +274,6 @@ private:
 
     // Install tracking.
     QSet<QString> m_installingIds;
-    QString m_installStatus;
     QStringList m_shortlist;
 
     static constexpr int kMaxConcurrentPreviews = 6;

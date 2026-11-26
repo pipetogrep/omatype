@@ -303,7 +303,7 @@ Sheet {
             TextField {
                 id: appFilter
                 Layout.preferredWidth: 240
-                placeholderText: qsTr("Search applications…")
+                placeholderText: qsTr("Search applications")
                 onTextChanged: sheet.searchQuery = text
             }
         }

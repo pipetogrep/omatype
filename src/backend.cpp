@@ -882,13 +882,6 @@ int Backend::duplicateCount() const { return std::count_if(m_families.cbegin(), 
 
 int Backend::starredCount() const { return std::count_if(m_families.cbegin(), m_families.cend(), [](const FontFamily &f) { return f.starred; }); }
 
-QString Backend::designClassOf(const QString &familyName) const {
-    const FontFamily *f = family(familyName);
-    if (!f) return {};
-    const FontFileInfo *i = representativeInfo(*f);
-    return i ? i->classification() : QString();
-}
-
 // Browse by look: what the files say the design is, plus the traits.
 QVariantList Backend::designFacets() const {
     QHash<QString, int> counts;
@@ -1087,11 +1080,6 @@ void Backend::clearCompare() {
     m_compare.clear();
     QSettings().setValue(QStringLiteral("compare"), m_compare);
     emit compareChanged();
-}
-
-QVariantMap Backend::fileInfo(const QString &path) const {
-    if (const FontFileInfo *i = info(path)) return infoToMap(*i);
-    return infoToMap(FontFile::read(path));
 }
 
 void Backend::selectFirst() {
