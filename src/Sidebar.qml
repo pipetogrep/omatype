@@ -29,16 +29,24 @@ Rectangle {
         property string iconName: ""
         property int count: -1
         Layout.fillWidth: true
+        Layout.leftMargin: Theme.s2
+        Layout.rightMargin: Theme.s2
         width: ListView.view ? ListView.view.width : parent.width
         height: Theme.hRow
         highlighted: sidebar.mode === "discover" && catalog.sourceFilter === sourceFilter
-        leftPadding: Theme.s4
-        rightPadding: Theme.s3
+        leftPadding: Theme.s2
+        rightPadding: Theme.s2
         onClicked: sidebar.discoverSelected(sourceFilter)
         Accessible.name: label
         contentItem: RowLayout {
-            spacing: Theme.s2
-            Icon { name: drow.iconName; size: Theme.szIcon; color: drow.highlighted ? Theme.accent : Theme.textMuted; visible: drow.iconName !== "" }
+            spacing: Theme.s2 + 2
+            Icon {
+                name: drow.iconName
+                size: 14
+                color: drow.highlighted ? Theme.accent : Theme.textMuted
+                opacity: drow.highlighted ? 0.9 : 0.65
+                visible: drow.iconName !== ""
+            }
             Text {
                 Layout.fillWidth: true
                 text: drow.label
@@ -48,6 +56,7 @@ Rectangle {
                 color: drow.highlighted ? Theme.textPrimary : Theme.textSecondary
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.fsControl
+                font.weight: drow.highlighted ? Font.Medium : Font.Normal
             }
             Label {
                 visible: drow.count > 0
@@ -74,16 +83,24 @@ Rectangle {
         property bool editable: false
         // Full width in the sidebar's ColumnLayout, which overrides `width`.
         Layout.fillWidth: true
+        Layout.leftMargin: Theme.s2
+        Layout.rightMargin: Theme.s2
         width: ListView.view ? ListView.view.width : parent.width
         height: Theme.hRow
         highlighted: sidebar.mode === "library" && backend.source === source
-        leftPadding: Theme.s4
-        rightPadding: Theme.s3
+        leftPadding: Theme.s2
+        rightPadding: Theme.s2
         onClicked: { sidebar.librarySelected(); backend.source = source }
         Accessible.name: label
         contentItem: RowLayout {
-            spacing: Theme.s2
-            Icon { name: row.iconName; size: Theme.szIcon; color: row.highlighted ? Theme.accent : Theme.textMuted; visible: row.iconName !== "" }
+            spacing: Theme.s2 + 2
+            Icon {
+                name: row.iconName
+                size: 14
+                color: row.highlighted ? Theme.accent : Theme.textMuted
+                opacity: row.highlighted ? 0.9 : 0.65
+                visible: row.iconName !== ""
+            }
             Text {
                 Layout.fillWidth: true
                 text: row.label
@@ -93,6 +110,7 @@ Rectangle {
                 color: row.highlighted ? Theme.textPrimary : Theme.textSecondary
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.fsControl
+                font.weight: row.highlighted ? Font.Medium : Font.Normal
             }
             Label {
                 visible: row.count > 0
@@ -116,7 +134,8 @@ Rectangle {
         Layout.fillWidth: true
         Layout.leftMargin: Theme.s4
         Layout.rightMargin: Theme.s2
-        Layout.topMargin: Theme.s3
+        Layout.topMargin: Theme.s4
+        Layout.bottomMargin: 6
         spacing: Theme.s2
         Label {
             text: parent.text
