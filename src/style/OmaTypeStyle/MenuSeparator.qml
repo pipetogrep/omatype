@@ -8,12 +8,17 @@ T.MenuSeparator {
                             implicitContentWidth + leftPadding + rightPadding)
     implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
                              implicitContentHeight + topPadding + bottomPadding)
-    padding: Theme.s1
-    leftPadding: Theme.s2
-    rightPadding: Theme.s2
-    contentItem: Rectangle {
-        implicitWidth: Theme.s5 * 6
+    topPadding: Theme.s1
+    bottomPadding: Theme.s1
+    leftPadding: 0
+    rightPadding: 0
+    contentItem: Item {
         implicitHeight: Theme.hairline
-        color: Theme.border
+        Rectangle {
+            x: -Theme.s1
+            width: parent.width + Theme.s1 * 2
+            height: Theme.hairline
+            color: Theme.border
+        }
     }
 }

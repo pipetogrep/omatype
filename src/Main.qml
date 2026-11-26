@@ -154,8 +154,6 @@ ApplicationWindow {
                             MenuItem { text: qsTr("Repertoire"); enabled: win.hasFamily; onTriggered: backend.saveSpecimenPdf("repertoire") }
                         }
                         MenuSeparator {}
-                        MenuItem { text: qsTr("Tidy up…"); icon.name: "brush-cleaning"; onTriggered: tidySheet.open() }
-                        MenuSeparator {}
                         MenuItem { text: qsTr("Quit"); onTriggered: win.close() }
                     }
                     Menu {
@@ -239,6 +237,13 @@ ApplicationWindow {
                                    onTriggered: nameSheet.openRename(backend.source.substring(backend.source.indexOf(":") + 1), backend.sourceTitle) }
                         MenuItem { text: qsTr("Delete this collection…"); icon.name: "trash-2"; enabled: backend.source.indexOf("coll:") === 0 || backend.source.indexOf("smart:") === 0
                                    onTriggered: win.confirmDeleteCollection(backend.source.substring(backend.source.indexOf(":") + 1), backend.sourceTitle, backend.source.indexOf("smart:") === 0) }
+                    }
+                    Menu {
+                        title: qsTr("Tools")
+                        MenuItem { text: qsTr("Tidy up…"); icon.name: "brush-cleaning"; onTriggered: tidySheet.open() }
+                        MenuSeparator {}
+                        MenuItem { text: qsTr("Refresh catalog"); icon.name: "refresh-cw"; enabled: !catalog.loading; onTriggered: catalog.load(true) }
+                        MenuItem { text: qsTr("Rescan local fonts"); icon.name: "refresh-cw"; enabled: !backend.scanning; onTriggered: backend.refresh() }
                     }
                     Menu {
                         title: qsTr("Help")

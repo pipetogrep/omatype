@@ -1242,16 +1242,11 @@ void Catalog::startInstallDownload(const QString &id, bool preferVariable, const
                 return;
             }
 
-            QString msg = state->written == 1
-                ? tr("Installed %1 from %2.").arg(state->family, state->sourceLabel)
-                : tr("Installed %1 (%2 files) from %3.").arg(state->family).arg(state->written).arg(state->sourceLabel);
+            const QString msg = tr("Installed. Restart open apps to use it.");
 
             if (m_backend) {
-                const QStringList apps = m_backend->runningDesignApps();
-                if (!apps.isEmpty())
-                    msg += tr(" Restart %1 to pick it up.").arg(apps.join(QStringLiteral(", ")));
                 m_backend->recordCatalogInstall(state->family, state->sourceLabel, state->dest);
-                m_backend->setStatus(msg);
+                m_backend->setStatus(tr("Installed %1.").arg(state->family));
             }
             setInstallStatus(msg);
             emit countsChanged();

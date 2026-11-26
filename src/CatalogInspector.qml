@@ -265,15 +265,38 @@ Rectangle {
                         TextLink { text: qsTr("Uninstall"); onClicked: catalog.uninstallFamily(panel.fam.id) }
                     }
 
-                    Label {
+                    Rectangle {
                         visible: panel.feedbackText !== "" && panel.feedbackId === (panel.fam.id ?? "")
                         Layout.fillWidth: true
                         Layout.topMargin: Theme.s1
-                        text: panel.feedbackText
-                        color: panel.feedbackError ? Theme.danger : Theme.textSecondary
-                        font.pixelSize: Theme.fsLabel
-                        wrapMode: Text.Wrap
-                        lineHeight: 1.35
+                        implicitHeight: fbRow.implicitHeight + Theme.s2 * 2
+                        radius: Theme.rControl
+                        color: Theme.withAlpha(panel.feedbackError ? Theme.danger : Theme.success, 0.10)
+                        border.width: Theme.hairline
+                        border.color: Theme.withAlpha(panel.feedbackError ? Theme.danger : Theme.success, 0.30)
+
+                        RowLayout {
+                            id: fbRow
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.leftMargin: Theme.s2 + 2
+                            anchors.rightMargin: Theme.s2 + 2
+                            spacing: Theme.s2
+
+                            Icon {
+                                name: panel.feedbackError ? "circle-alert" : "circle-check"
+                                size: 14
+                                color: panel.feedbackError ? Theme.danger : Theme.success
+                            }
+                            Label {
+                                Layout.fillWidth: true
+                                text: panel.feedbackText
+                                color: Theme.textPrimary
+                                font.pixelSize: Theme.fsLabel
+                                wrapMode: Text.Wrap
+                            }
+                        }
                     }
                 }
             }
