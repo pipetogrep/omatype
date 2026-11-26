@@ -59,7 +59,7 @@ Rectangle {
         if (fam.installed ?? false) return qsTr("Installed")
         if (selectedFilenames.length > 0)
             return qsTr("Install %1").arg(Theme.plural(selectedFilenames.length, qsTr("style"), qsTr("styles")))
-        return (fam.variable ?? false) ? qsTr("Install variable") : qsTr("Install")
+        return qsTr("Install")
     }
 
     Loader {
