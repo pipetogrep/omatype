@@ -118,16 +118,27 @@ ApplicationWindow {
         anchors.fill: parent
         spacing: 0
 
-        // Title and menus
+        // Window header bar (Omarchy uses titleless Hyprland windows)
         Rectangle {
             Layout.fillWidth: true
             implicitHeight: Theme.hTitleBar
-            color: Theme.windowBg
+            color: Theme.panelBg
             RowLayout {
                 anchors.fill: parent
-                anchors.leftMargin: Theme.s2
+                anchors.leftMargin: Theme.s4
                 anchors.rightMargin: Theme.s3
-                spacing: Theme.s2
+                spacing: Theme.s3
+                Label {
+                    text: Theme.appName
+                    color: Theme.textPrimary
+                    font.pixelSize: Theme.fsControl
+                    font.weight: Font.DemiBold
+                }
+                Rectangle {
+                    implicitWidth: Theme.hairline
+                    implicitHeight: 14
+                    color: Theme.border
+                }
                 MenuBar {
                     Layout.fillHeight: true
                     Menu {
@@ -236,6 +247,7 @@ ApplicationWindow {
                 }
                 Item { Layout.fillWidth: true }
             }
+            Hairline { anchors.bottom: parent.bottom; width: parent.width }
         }
 
         // Library Toolbar (hidden in Discover mode, which has its own single unified bar)
