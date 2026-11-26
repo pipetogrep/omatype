@@ -2,8 +2,6 @@
 
 An open-source font browser and manager for Omarchy — bringing an Adobe Fonts-style discovery and one-click installation workflow to Linux design tools like FigCraft and ArtCraft.
 
-> **Attribution:** Omatype is forked from [OmaFont](https://github.com/28allday/omafont-app), originally created by **Gavin Nugent** under the MIT License. All original copyright notices and attribution are preserved in [LICENSE](LICENSE).
-
 Browse open-source type catalogs (Google Fonts and curated open-source foundries) with live previews, designer attribution, shortlisting, weight management, and one-click installation without juggling zip files — alongside full local font management, deactivation, collections, and specimen views.
 
 ![Omatype Discover view: open-source font catalog with live specimens, designer attribution, shortlisting, and one-click install](docs/discover.png)
@@ -12,7 +10,7 @@ Browse open-source type catalogs (Google Fonts and curated open-source foundries
 
 Omatype brings an **Adobe Fonts-style discovery experience** to Linux and Omarchy — no zip files, no manual extracting:
 
-- **Google Fonts (1,950+ families)** indexed live with 24-hour local caching, plus **30 curated indie open-source typefaces** from **Velvetyne Type Foundry**, **Indestructible Type**, **The League of Moveable Type**, **Vercel (Geist)**, **GitHub Next (Monaspace)**, **Nerd Fonts**, and independent designers.
+- **Google Fonts (1,740+ families)** indexed live with 24-hour local caching, plus **23 curated indie open-source typefaces** from **Velvetyne Type Foundry**, **Indestructible Type**, **The League of Moveable Type**, **Vercel (Geist)**, **GitHub Next (Monaspace)**, **Nerd Fonts**, and independent designers.
 - **Instant live previews** — streams tiny 3–12 KB subsetted TrueType previews on demand and caches them in `~/.cache/omatype/previews/` so scrolling through thousands of typefaces stays fast and responsive.
 - **Type-first browsing** — custom editable sample text with typographic presets (*Sentence*, *Editorial*, *Paragraph*, *Figures*, *Alphabet*), adjustable preview size, grid or full-width waterfall rows, and faceted filters for classification, variable fonts, writing systems, and sort order.
 - **Designer attribution & provenance** — every detail view credits the type designer(s), foundry/source, license (SIL OFL 1.1 / Apache 2.0), variable axes, scripts, and links to the upstream specimen and repository.
@@ -264,6 +262,10 @@ portal for the file choosers. All of these are on every Omarchy install.
 
 Nothing outside your home folder is touched, and no password is needed for
 anything but installing the app itself.
+
+## Attribution
+
+Omatype is forked from [OmaFont](https://github.com/28allday/omafont-app), originally created by **Gavin Nugent** under the MIT License. All original copyright notices and attribution are preserved in [LICENSE](LICENSE).
 
 ## Licence
 

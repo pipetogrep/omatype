@@ -151,6 +151,8 @@ private slots:
             catalog.toggleShortlist(QStringLiteral("playfair-display"));
             if (auto *win = qobject_cast<QQuickWindow *>(engine.rootObjects().first())) {
                 if (win->activeFocusItem()) win->activeFocusItem()->setFocus(false);
+                // Move virtual pointer off (0,0) so the File menu isn't hovered in captures.
+                QTest::mouseMove(win, QPoint(720, 430));
                 // Give all visible cards (Google + indie foundries) time to finish loading.
                 QTest::qWait(5000);
                 win->grabWindow().save(shotPath);

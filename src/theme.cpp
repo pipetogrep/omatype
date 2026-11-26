@@ -24,6 +24,8 @@ const QString kLightSelection = QStringLiteral("#2077b2");
 const QString kDefaultAccent = QStringLiteral("#5584aa");
 
 QString currentDir() {
+    const QString overrideDir = qEnvironmentVariable("OMATYPE_THEME_DIR");
+    if (!overrideDir.isEmpty()) return overrideDir;
     return QDir::homePath() + QStringLiteral("/.local/state/omarchy/current");
 }
 
