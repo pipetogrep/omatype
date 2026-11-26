@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Omafont 1.0
+import Omatype 1.0
 
 // Every visible family as a card: a big "Ag" in its own face, the name under
 // it. The grid view, for finding a font by how it looks rather than by name.

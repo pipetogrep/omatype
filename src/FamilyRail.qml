@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Omafont 1.0
+import Omatype 1.0
 
 // The list of installed families: Yours first, then System, each name set in
 // its own face so the rail shows fonts rather than a column of names. Only

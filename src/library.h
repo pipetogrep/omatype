@@ -46,7 +46,7 @@ struct DisabledFace {
     static DisabledFace fromJson(const QJsonObject &o);
 };
 
-// Everything OmaFont remembers between runs that is not a font file:
+// Everything Omatype remembers between runs that is not a font file:
 // collections, smart collections, which faces are deactivated, and when each
 // family was installed. One JSON file; pure data, no Qt GUI.
 class Library {
@@ -54,14 +54,14 @@ public:
     QList<Collection> collections;
     QList<SmartCollection> smart;
     QList<DisabledFace> disabled;
-    QHash<QString, QDateTime> added;   // family → when OmaFont installed it
+    QHash<QString, QDateTime> added;   // family → when Omatype installed it
     QHash<QString, QString> sources;   // family → what it was installed from
     QHash<QString, QStringList> tags;  // family → tags, lower-case, unique
     QStringList starred;               // families with a star
     QHash<QString, QString> notes;     // family → free text
 
-    static QString defaultPath();      // $XDG_CONFIG_HOME/omafont/library.json
-    static QString fontconfigPath();   // $XDG_CONFIG_HOME/fontconfig/conf.d/60-omafont-deactivated.conf
+    static QString defaultPath();      // $XDG_CONFIG_HOME/omatype/library.json
+    static QString fontconfigPath();   // $XDG_CONFIG_HOME/fontconfig/conf.d/60-omatype-deactivated.conf
 
     bool load(const QString &path, QString *error = nullptr);
     bool save(const QString &path, QString *error = nullptr) const;

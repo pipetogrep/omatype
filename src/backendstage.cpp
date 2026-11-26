@@ -78,7 +78,7 @@ void Backend::stage(const QStringList &paths) {
 void Backend::extractNext() {
     if (m_stageArchives.isEmpty()) { scanStage(); return; }
     if (!m_stageTemp) {
-        m_stageTemp = std::make_unique<QTemporaryDir>(QDir::tempPath() + QStringLiteral("/omafont-stage-XXXXXX"));
+        m_stageTemp = std::make_unique<QTemporaryDir>(QDir::tempPath() + QStringLiteral("/omatype-stage-XXXXXX"));
         if (!m_stageTemp->isValid()) {
             m_stageArchives.clear();
             setStatus(tr("Could not make a temporary folder to unpack into"), true);
@@ -372,7 +372,7 @@ QString Backend::installFaces(const QString &group, const QList<FontFace> &faces
         }
         // Copy beside the target and rename over it, so a failed copy leaves
         // the old file where it was.
-        const QString part = dest + QStringLiteral("/.omafont-") + name + QStringLiteral(".part");
+        const QString part = dest + QStringLiteral("/.omatype-") + name + QStringLiteral(".part");
         QFile::remove(part);
         if (!QFile::copy(face.file, part)) { QFile::remove(part); return tr("Could not copy %1").arg(src.fileName()); }
         QFile::setPermissions(part, QFile::ReadOwner | QFile::WriteOwner | QFile::ReadGroup | QFile::ReadOther);

@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Omafont 1.0
+import Omatype 1.0
 
 // The library sidebar: where the families come from. Fixed sources first
 // (All, Yours, System, Monospace, Recently Added, Deactivated, Duplicates), a

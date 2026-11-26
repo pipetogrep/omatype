@@ -68,8 +68,8 @@ static QString configHome() {
     return c;
 }
 
-QString Library::defaultPath() { return configHome() + QStringLiteral("/omafont/library.json"); }
-QString Library::fontconfigPath() { return configHome() + QStringLiteral("/fontconfig/conf.d/60-omafont-deactivated.conf"); }
+QString Library::defaultPath() { return configHome() + QStringLiteral("/omatype/library.json"); }
+QString Library::fontconfigPath() { return configHome() + QStringLiteral("/fontconfig/conf.d/60-omatype-deactivated.conf"); }
 
 // ── Load / save ─────────────────────────────────────────────────────────────
 
@@ -162,7 +162,7 @@ static QString globEscape(const QString &path) { return path.toHtmlEscaped(); }
 
 QString Library::fontconfigXml() const {
     QString xml = QStringLiteral("<?xml version=\"1.0\"?>\n<!DOCTYPE fontconfig SYSTEM \"fonts.dtd\">\n"
-                                 "<!-- Written by OmaFont. Faces deactivated in the Fonts app; edit there, not here. -->\n"
+                                 "<!-- Written by Omatype. Faces deactivated in the Fonts app; edit there, not here. -->\n"
                                  "<fontconfig>\n");
     if (!disabled.isEmpty()) {
         xml += QStringLiteral("  <selectfont>\n    <rejectfont>\n");

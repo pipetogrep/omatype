@@ -186,7 +186,7 @@ QString Backend::writeSpecimenPdf(const QString &path, const QString &kind, cons
     writer.setPageSize(QPageSize(QPageSize::A4));
     writer.setResolution(300);
     writer.setTitle(familyName + QStringLiteral(" — ") + kind);
-    writer.setCreator(QStringLiteral("OmaFont"));
+    writer.setCreator(QStringLiteral("Omatype"));
     QPainter p(&writer);
     if (!p.isActive()) return tr("Could not open %1 for writing").arg(path);
     const qreal dpi = writer.resolution();
@@ -203,7 +203,7 @@ QString Backend::writeSpecimenPdf(const QString &path, const QString &kind, cons
         p.setFont(f);
         p.setPen(QColor(0x72, 0x7E, 0x90));
         p.drawText(QRectF(body.left(), page.bottom() - margin * 0.7, body.width(), pt(12)), Qt::AlignRight | Qt::AlignVCenter,
-                   tr("OmaFont · page %1").arg(pageNo));
+                   tr("Omatype · page %1").arg(pageNo));
         p.setPen(Qt::black);
     };
 

@@ -1,10 +1,10 @@
 pragma Singleton
 
 import QtQuick
-import Omafont 1.0
+import Omatype 1.0
 
 // The single source of every colour, dimension, radius, duration and type size
-// in OmaFont. Nothing outside this file may contain a colour literal or a magic
+// in Omatype. Nothing outside this file may contain a colour literal or a magic
 // dimension. The palette is the shared Oma design system, and it is FIXED:
 // a surface that judges type must stay colour-stable whatever the desktop is
 // doing, because a surround that changes hue changes how the letterforms read.
@@ -15,7 +15,7 @@ import Omafont 1.0
 QtObject {
     id: theme
 
-    readonly property string appName: "OmaFont"
+    readonly property string appName: "Omatype"
 
     // ── Colour ──────────────────────────────────────────────────────────────
     readonly property color windowBg: "#0B0E13"

@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Omafont 1.0
+import Omatype 1.0
 
 // Up to six families side by side: the same sample line in each, at the
 // specimen size, so a choice can be made by looking rather than remembering.

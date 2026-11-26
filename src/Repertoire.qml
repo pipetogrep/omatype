@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Omafont 1.0
+import Omatype 1.0
 
 // Every character the selected face covers, as a grid of glyphs with their
 // code points. Loaded from fontconfig's charset for the preview file.

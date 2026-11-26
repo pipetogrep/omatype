@@ -62,7 +62,7 @@ struct FontFamily {
     QString foundry;
     QStringList langs;     // union of the faces' language codes
     QStringList scripts;   // writing systems covered, from the languages: Latin, Greek, Cyrillic…
-    QDateTime added;       // when OmaFont installed it, if it did
+    QDateTime added;       // when Omatype installed it, if it did
     QString source;        // what it was installed from
     QStringList members;   // fontconfig families folded into this one (Acme Sans Black, Acme Sans Light…)
     QStringList tags;

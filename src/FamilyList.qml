@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Omafont 1.0
+import Omatype 1.0
 
 // The table view: one row per family with its facts in columns, for scanning
 // a library by kind, style count and where it lives.

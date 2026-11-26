@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Window
-import Omafont 1.0
+import Omatype 1.0
 
 // One icon family, one geometry, one stroke weight.
 //

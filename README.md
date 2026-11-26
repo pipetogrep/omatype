@@ -1,10 +1,10 @@
-# OmaFont
+# Omatype
 
-A font manager for Omarchy. See what is installed, preview any family in its
-own typeface, read what the files say about themselves, install a whole pack
-in one go, deactivate what you do not want without deleting it, group fonts
-into collections, and hand a monospace family to the terminal. Part of the
-Oma creative suite.
+An open-source font browser and manager for Omarchy — bringing an Adobe Fonts-style discovery and one-click installation workflow to Linux design tools like FigCraft and ArtCraft.
+
+> **Attribution:** Omatype is forked from [OmaFont](https://github.com/28allday/omafont-app), originally created by **Gavin Nugent** under the MIT License. All original copyright notices and attribution are preserved in [LICENSE](LICENSE).
+
+Browse open-source type catalogs (Google Fonts and curated open-source foundries) with live previews, designer attribution, shortlisting, weight management, and one-click installation without juggling zip files — alongside full local font management, deactivation, collections, and specimen views.
 
 ![OmaFont showing Playfair Display: the sidebar, the family list, the specimen and the Info pane](docs/omafont.png)
 

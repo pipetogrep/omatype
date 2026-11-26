@@ -1240,7 +1240,7 @@ void Backend::finishScanIfDone() {
     markDuplicates(m_families);
     markSymbolic();
 
-    if (m_scanTruncated) setStatus(tr("Font list truncated: more fonts here than OmaFont will show"), true);
+    if (m_scanTruncated) setStatus(tr("Font list truncated: more fonts here than Omatype will show"), true);
 
     rebuildRows();
 

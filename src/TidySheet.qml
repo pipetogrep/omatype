@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Omafont 1.0
+import Omatype 1.0
 
 // The Tidy room: everything worth cleaning up, each with a fix. A fix that
 // deletes files asks first (Main owns the confirmation sheet); deactivating is

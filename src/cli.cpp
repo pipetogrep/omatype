@@ -12,8 +12,8 @@
 #include <QTextStream>
 #include <QTimer>
 
-#ifndef OMAFONT_VERSION
-#define OMAFONT_VERSION "dev"
+#ifndef OMATYPE_VERSION
+#define OMATYPE_VERSION "dev"
 #endif
 
 namespace {
@@ -26,18 +26,18 @@ QTextStream &out() { static QTextStream s(stdout); return s; }
 QTextStream &err() { static QTextStream s(stderr); return s; }
 
 void usage() {
-    out() << "OmaFont — fonts for Omarchy.\n\n"
-             "  omafont                         open the window\n"
-             "  omafont <file|folder|archive>…  open the window with those staged\n"
-             "  omafont --version               which version this is\n"
-             "  omafont list [--all] [--json]   installed families (yours first)\n"
-             "  omafont info <family> [--json]  styles and files of one family\n"
-             "  omafont install <path>… [--json]  install fonts, folders or archives\n"
-             "  omafont remove <family> [--json]  remove one of your families\n"
-             "  omafont validate <file|family>… [--json]  check font files for problems\n"
-             "  omafont deactivate <family> [--json]  hide a family from every app, keeping its files\n"
-             "  omafont activate <family> [--json]    bring it back\n"
-             "  omafont export <family> <folder> [--json]  copy a family's files somewhere\n\n"
+    out() << "Omatype — fonts for Omarchy.\n\n"
+             "  omatype                         open the window\n"
+             "  omatype <file|folder|archive>…  open the window with those staged\n"
+             "  omatype --version               which version this is\n"
+             "  omatype list [--all] [--json]   installed families (yours first)\n"
+             "  omatype info <family> [--json]  styles and files of one family\n"
+             "  omatype install <path>… [--json]  install fonts, folders or archives\n"
+             "  omatype remove <family> [--json]  remove one of your families\n"
+             "  omatype validate <file|family>… [--json]  check font files for problems\n"
+             "  omatype deactivate <family> [--json]  hide a family from every app, keeping its files\n"
+             "  omatype activate <family> [--json]    bring it back\n"
+             "  omatype export <family> <folder> [--json]  copy a family's files somewhere\n\n"
              "--all includes the language-coverage families that the window folds away.\n";
     out().flush();
 }
@@ -129,7 +129,7 @@ int Cli::run(Backend &backend, const QStringList &words) {
         return 0;
     }
     if (verb == QLatin1String("--version")) {
-        out() << "omafont " << OMAFONT_VERSION << '\n';
+        out() << "omatype " << OMATYPE_VERSION << '\n';
         out().flush();
         return 0;
     }
@@ -224,7 +224,7 @@ int Cli::run(Backend &backend, const QStringList &words) {
         const QString name = args.join(QLatin1Char(' '));
         const FontFamily *f = backend.family(name);
         if (!f) return fail(QStringLiteral("No family called \"%1\"").arg(name), json);
-        if (!f->user) return fail(QStringLiteral("%1 belongs to a package; OmaFont only removes fonts under %2").arg(name, backend.fontRoot()), json);
+        if (!f->user) return fail(QStringLiteral("%1 belongs to a package; Omatype only removes fonts under %2").arg(name, backend.fontRoot()), json);
         backend.setSelectedName(name);
         backend.removeSelected();
         if (backend.statusIsError()) return fail(backend.status(), json);

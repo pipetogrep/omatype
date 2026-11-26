@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Omafont 1.0
+import Omatype 1.0
 
 // The type specimen: the name at display size, the sample line at five labelled
 // sizes, and the character set. It renders from the font FILE, never from an

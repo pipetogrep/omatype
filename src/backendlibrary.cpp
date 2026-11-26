@@ -8,7 +8,7 @@
 #include <algorithm>
 
 // The library: collections, smart collections, deactivated faces and install
-// dates. Everything OmaFont remembers that is not a font file.
+// dates. Everything Omatype remembers that is not a font file.
 
 // A library that would not read is never written over: what is in memory is
 // then empty, and saving it would throw away every collection, tag and note.
@@ -20,7 +20,7 @@ void Backend::saveLibrary() {
 
 // The fontconfig fragment that hides deactivated faces from every application.
 // Written whenever the set changes; removed when it is empty so a clean system
-// has no OmaFont file in it.
+// has no Omatype file in it.
 QString Backend::writeFontconfig() {
     // Without the library, the faces already hidden are unknown; rewriting
     // the file would bring them all back.
@@ -529,7 +529,7 @@ void Backend::buildTidy() {
     if (coverageCount > 0)
         out.append(item(QStringLiteral("coverage"), QString(), tr("%1 language-coverage families, %2").arg(coverageCount).arg(formatBytes(coverageBytes)),
                         tr("The per-script Noto families from your packages. They are what lets the browser show every language, so they stay; "
-                           "OmaFont folds them out of the way. Most of the size is the noto-fonts-extra package, which nothing requires."),
+                           "Omatype folds them out of the way. Most of the size is the noto-fonts-extra package, which nothing requires."),
                         {}, QStringLiteral("info")));
     std::stable_sort(out.begin(), out.end(), [](const QVariant &a, const QVariant &b) {
         auto rank = [](const QString &s) { return s == QLatin1String("error") ? 0 : s == QLatin1String("warning") ? 1 : 2; };

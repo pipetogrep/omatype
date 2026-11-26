@@ -12,8 +12,8 @@
 #include <QQuickWindow>
 #include <QSettings>
 
-#ifndef OMAFONT_VERSION
-#define OMAFONT_VERSION "dev"
+#ifndef OMATYPE_VERSION
+#define OMATYPE_VERSION "dev"
 #endif
 
 int main(int argc, char *argv[]) {
@@ -27,17 +27,17 @@ int main(int argc, char *argv[]) {
 
     // The identity trio. setDesktopFileName is what becomes the Wayland app_id,
     // which is what Hyprland rules, the taskbar and the icon lookup key off.
-    app.setApplicationName(QStringLiteral("omafont"));
-    app.setOrganizationName(QStringLiteral("omafont"));
-    app.setApplicationDisplayName(QStringLiteral("OmaFont"));
-    app.setApplicationVersion(QStringLiteral(OMAFONT_VERSION));
-    app.setDesktopFileName(QStringLiteral("omafont"));
-    app.setWindowIcon(QIcon::fromTheme(QStringLiteral("omafont")));
+    app.setApplicationName(QStringLiteral("omatype"));
+    app.setOrganizationName(QStringLiteral("omatype"));
+    app.setApplicationDisplayName(QStringLiteral("Omatype"));
+    app.setApplicationVersion(QStringLiteral(OMATYPE_VERSION));
+    app.setDesktopFileName(QStringLiteral("omatype"));
+    app.setWindowIcon(QIcon::fromTheme(QStringLiteral("omatype")));
 
-    // OmaFont's own Controls style (src/style/OmaFontStyle, in qrc under the
+    // Omatype's own Controls style (src/style/OmaTypeStyle, in qrc under the
     // default qt/qml import path): the Oma suite look, falling back to Basic
     // for anything it does not restyle.
-    QQuickStyle::setStyle(QStringLiteral("OmaFontStyle"));
+    QQuickStyle::setStyle(QStringLiteral("OmaTypeStyle"));
 
     if (headless) {
         Backend backend;
@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
     }
 
     QCommandLineParser parser;
-    parser.setApplicationDescription(QStringLiteral("OmaFont — fonts for Omarchy."));
+    parser.setApplicationDescription(QStringLiteral("Omatype — fonts for Omarchy."));
     parser.addHelpOption();
     parser.addPositionalArgument(QStringLiteral("file"), QStringLiteral("Font files, folders or archives to stage for installing."));
     parser.process(app);
@@ -55,11 +55,11 @@ int main(int argc, char *argv[]) {
     OmarchyTheme theme;
     Backend backend;
 
-    qmlRegisterSingletonInstance("Omafont", 1, 0, "OmarchyTheme", &theme);
-    qmlRegisterSingletonType(QUrl(QStringLiteral("qrc:/Theme.qml")), "Omafont", 1, 0, "Theme");
-    qmlRegisterSingletonType(QUrl(QStringLiteral("qrc:/ui/icons/Icons.qml")), "Omafont", 1, 0, "Icons");
-    qmlRegisterType(QUrl(QStringLiteral("qrc:/ui/Icon.qml")), "Omafont", 1, 0, "Icon");
-    qmlRegisterSingletonType(QUrl(QStringLiteral("qrc:/ui/Sheets.qml")), "Omafont", 1, 0, "Sheets");
+    qmlRegisterSingletonInstance("Omatype", 1, 0, "OmarchyTheme", &theme);
+    qmlRegisterSingletonType(QUrl(QStringLiteral("qrc:/Theme.qml")), "Omatype", 1, 0, "Theme");
+    qmlRegisterSingletonType(QUrl(QStringLiteral("qrc:/ui/icons/Icons.qml")), "Omatype", 1, 0, "Icons");
+    qmlRegisterType(QUrl(QStringLiteral("qrc:/ui/Icon.qml")), "Omatype", 1, 0, "Icon");
+    qmlRegisterSingletonType(QUrl(QStringLiteral("qrc:/ui/Sheets.qml")), "Omatype", 1, 0, "Sheets");
 
     // Carry the desktop's text size into the default font so every control
     // grows with `omarchy display text size`, without a restart.
@@ -82,12 +82,12 @@ int main(int argc, char *argv[]) {
     engine.rootContext()->setContextProperty(QStringLiteral("theme"), &theme);
     engine.load(QUrl(QStringLiteral("qrc:/Main.qml")));
     if (engine.rootObjects().isEmpty()) {
-        qCritical() << "Could not load the OmaFont interface.";
+        qCritical() << "Could not load the Omatype interface.";
         return -1;
     }
 
     backend.refresh();
-    // `omafont Foo.ttf` and "Open with" stage what was handed over.
+    // `omatype Foo.ttf` and "Open with" stage what was handed over.
     const QStringList files = parser.positionalArguments();
     if (!files.isEmpty()) backend.stage(files);
 

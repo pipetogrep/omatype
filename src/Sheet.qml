@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls
-import Omafont 1.0
+import Omatype 1.0
 
 // The one kind of dialog this app puts in front of someone.
 //

@@ -75,7 +75,7 @@ QVariant filtersFor(const QString &name, const QStringList &patterns) {
 }
 
 QString handleToken() {
-    return QStringLiteral("omafont_%1").arg(QRandomGenerator::global()->generate());
+    return QStringLiteral("omatype_%1").arg(QRandomGenerator::global()->generate());
 }
 }
 

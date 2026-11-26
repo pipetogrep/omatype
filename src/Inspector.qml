@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Omafont 1.0
+import Omatype 1.0
 
 // The right-hand panel: what the specimen is showing and what can be done to
 // it. With a family selected it is the Info pane: identity, design, legal,
@@ -598,7 +598,7 @@ Rectangle {
                     Label {
                         Layout.fillWidth: true
                         wrapMode: Text.Wrap
-                        text: qsTr("No password is needed. Apps already running will see the new font after they restart; that is fontconfig, not OmaFont.")
+                        text: qsTr("No password is needed. Apps already running will see the new font after they restart; that is fontconfig, not Omatype.")
                         color: Theme.textMuted
                         font.pixelSize: Theme.fsLabel
                     }
