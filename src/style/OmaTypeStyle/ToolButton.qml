@@ -27,22 +27,28 @@ T.ToolButton {
     readonly property color ink: checked || highlighted ? Theme.accent
                                 : hovered ? Theme.textPrimary : Theme.textSecondary
 
-    contentItem: Row {
-        spacing: control.spacing
-        Icon {
-            visible: control.icon.name !== ""
-            name: control.icon.name
-            size: control.icon.width
-            color: control.ink
-            anchors.verticalCenter: parent.verticalCenter
-        }
-        Text {
-            visible: control.text !== "" && !control.iconOnly
-            text: control.text
-            textFormat: Text.PlainText
-            font: control.font
-            color: control.ink
-            anchors.verticalCenter: parent.verticalCenter
+    contentItem: Item {
+        implicitWidth: contentRow.implicitWidth
+        implicitHeight: contentRow.implicitHeight
+        Row {
+            id: contentRow
+            anchors.centerIn: parent
+            spacing: control.spacing
+            Icon {
+                visible: control.icon.name !== ""
+                name: control.icon.name
+                size: control.icon.width
+                color: control.ink
+                anchors.verticalCenter: parent.verticalCenter
+            }
+            Text {
+                visible: control.text !== "" && !control.iconOnly
+                text: control.text
+                textFormat: Text.PlainText
+                font: control.font
+                color: control.ink
+                anchors.verticalCenter: parent.verticalCenter
+            }
         }
     }
 
