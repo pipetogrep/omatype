@@ -465,11 +465,12 @@ ApplicationWindow {
             }
         }
 
-        // Single unified Footer (in Discover mode: merges Shortlist actions when active)
+        // Footer: shown in Library mode, or in Discover mode only when busy / reporting status
         Rectangle {
             objectName: "statusBar"
+            visible: !win.inDiscover || backend.busy || backend.staging || catalog.installingAny || backend.status !== ""
             Layout.fillWidth: true
-            implicitHeight: win.inDiscover && catalog.shortlistCount > 0 ? 38 : Theme.hStatusBar
+            implicitHeight: visible ? Theme.hStatusBar : 0
             color: Theme.windowBg
             Hairline { anchors.top: parent.top; width: parent.width }
             RowLayout {
@@ -477,42 +478,6 @@ ApplicationWindow {
                 anchors.leftMargin: Theme.s4
                 anchors.rightMargin: Theme.s3
                 spacing: Theme.s3
-
-                // Discover shortlist inline in the single footer (items left, actions right, quiet secondary CTA)
-                RowLayout {
-                    visible: win.inDiscover && catalog.shortlistCount > 0
-                    Layout.fillWidth: true
-                    spacing: Theme.s2
-                    Icon { name: "bookmark"; size: 13; color: Theme.textSecondary }
-                    StatusText { text: qsTr("Shortlist"); color: Theme.textPrimary; font.weight: Font.Medium }
-                    Repeater {
-                        model: catalog.shortlistItems.slice(0, 5)
-                        Button {
-                            required property var modelData
-                            flat: true
-                            implicitHeight: 24
-                            text: modelData.family + (modelData.installed ? " ✓" : "")
-                            font.pixelSize: Theme.fsLabel
-                            onClicked: catalog.selectFamily(modelData.id)
-                        }
-                    }
-                    StatusText { visible: catalog.shortlistCount > 5; text: qsTr("+%1").arg(catalog.shortlistCount - 5) }
-                    Item { Layout.fillWidth: true }
-                    Button { flat: true; implicitHeight: 24; text: qsTr("Clear"); font.pixelSize: Theme.fsLabel; onClicked: catalog.clearShortlist() }
-                    Button {
-                        implicitHeight: 26
-                        text: qsTr("Install %1").arg(catalog.shortlistCount)
-                        font.pixelSize: Theme.fsLabel
-                        enabled: !catalog.installingAny
-                        onClicked: catalog.installShortlist()
-                    }
-                }
-
-                // Quiet count when Discover has no shortlist
-                StatusText {
-                    visible: win.inDiscover && catalog.shortlistCount === 0
-                    text: catalog.loading ? qsTr("Loading catalog…") : Theme.plural(catalog.filteredCount, qsTr("typeface"), qsTr("typefaces"))
-                }
 
                 // Library footer cells
                 StatusText { visible: !win.inDiscover; text: backend.sourceTitle; color: Theme.textPrimary; font.weight: Theme.wHeading }

@@ -302,6 +302,35 @@ Rectangle {
             Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: Theme.hairline; color: Theme.withAlpha(Theme.border, 0.5) }
         }
 
+        // ── Contextual Shortlist actions (only when viewing Shortlist) ──────
+        Rectangle {
+            visible: catalog.sourceFilter === "shortlist" && catalog.shortlistCount > 0
+            Layout.fillWidth: true
+            implicitHeight: visible ? 40 : 0
+            color: Theme.windowBg
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: Theme.s5
+                anchors.rightMargin: Theme.s5
+                spacing: Theme.s2
+                Label {
+                    text: Theme.plural(catalog.shortlistCount, qsTr("shortlisted typeface"), qsTr("shortlisted typefaces"))
+                    color: Theme.textSecondary
+                    font.pixelSize: Theme.fsLabel
+                }
+                Item { Layout.fillWidth: true }
+                Button { flat: true; implicitHeight: 26; text: qsTr("Clear"); font.pixelSize: Theme.fsLabel; onClicked: catalog.clearShortlist() }
+                Button {
+                    implicitHeight: 26
+                    text: qsTr("Install all")
+                    font.pixelSize: Theme.fsLabel
+                    enabled: !catalog.installingAny
+                    onClicked: catalog.installShortlist()
+                }
+            }
+            Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: Theme.hairline; color: Theme.withAlpha(Theme.border, 0.45) }
+        }
+
         // ── Optional custom sample input (only shown when user clicks "Type custom text…") ─
         Rectangle {
             visible: root.editingSample
