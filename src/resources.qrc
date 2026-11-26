@@ -17,6 +17,9 @@
         <file>NameSheet.qml</file>
         <file>TidySheet.qml</file>
         <file>CompareView.qml</file>
+        <file>CatalogView.qml</file>
+        <file>CatalogInspector.qml</file>
+        <file>data/curated-catalog.json</file>
         <file alias="ui/Sheets.qml">Sheets.qml</file>
         <file>ui/Icon.qml</file>
         <file>ui/icons/Icons.qml</file>

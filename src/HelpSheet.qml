@@ -15,7 +15,9 @@ Sheet {
     standardButtons: Dialog.Close
 
     readonly property var keys: [
-        ["Ctrl+O", qsTr("Install fonts from a file, folder or archive")],
+        ["Ctrl+G", qsTr("Discover open-source font catalogs")],
+        ["Ctrl+Shift+L", qsTr("Switch to your local Library")],
+        ["Ctrl+O", qsTr("Install local fonts from a file, folder or archive")],
         ["Enter", qsTr("Install what is staged")],
         ["Esc", qsTr("Clear the stage, then the filter")],
         ["/", qsTr("Filter the families")],

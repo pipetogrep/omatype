@@ -1,4 +1,5 @@
 #include "backend.h"
+#include "catalog.h"
 #include "cli.h"
 #include "theme.h"
 
@@ -54,6 +55,7 @@ int main(int argc, char *argv[]) {
 
     OmarchyTheme theme;
     Backend backend;
+    Catalog catalog(&backend);
 
     qmlRegisterSingletonInstance("Omatype", 1, 0, "OmarchyTheme", &theme);
     qmlRegisterSingletonType(QUrl(QStringLiteral("qrc:/Theme.qml")), "Omatype", 1, 0, "Theme");
@@ -79,6 +81,7 @@ int main(int argc, char *argv[]) {
         for (const QQmlError &warning : warnings) qWarning().noquote() << warning.toString();
     });
     engine.rootContext()->setContextProperty(QStringLiteral("backend"), &backend);
+    engine.rootContext()->setContextProperty(QStringLiteral("catalog"), &catalog);
     engine.rootContext()->setContextProperty(QStringLiteral("theme"), &theme);
     engine.load(QUrl(QStringLiteral("qrc:/Main.qml")));
     if (engine.rootObjects().isEmpty()) {
@@ -87,6 +90,7 @@ int main(int argc, char *argv[]) {
     }
 
     backend.refresh();
+    catalog.load();
     // `omatype Foo.ttf` and "Open with" stage what was handed over.
     const QStringList files = parser.positionalArguments();
     if (!files.isEmpty()) backend.stage(files);

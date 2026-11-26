@@ -11,6 +11,7 @@ INCLUDEPATH += src
 
 HEADERS += \
     src/backend.h \
+    src/catalog.h \
     src/fontfile.h \
     src/library.h \
     src/cli.h \
@@ -23,6 +24,7 @@ SOURCES += \
     src/backendstage.cpp \
     src/backendlibrary.cpp \
     src/backendexport.cpp \
+    src/catalog.cpp \
     src/fontfile.cpp \
     src/library.cpp \
     src/cli.cpp \

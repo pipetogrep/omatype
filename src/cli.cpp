@@ -1,5 +1,6 @@
 #include "cli.h"
 #include "backend.h"
+#include "catalog.h"
 #include "fontfile.h"
 
 #include <QDir>
@@ -20,19 +21,24 @@ namespace {
 
 const QStringList kVerbs = {QStringLiteral("list"), QStringLiteral("info"), QStringLiteral("install"),
                             QStringLiteral("remove"), QStringLiteral("validate"), QStringLiteral("activate"),
-                            QStringLiteral("deactivate"), QStringLiteral("export"), QStringLiteral("help")};
+                            QStringLiteral("deactivate"), QStringLiteral("export"),
+                            QStringLiteral("search"), QStringLiteral("get"), QStringLiteral("help")};
 
 QTextStream &out() { static QTextStream s(stdout); return s; }
 QTextStream &err() { static QTextStream s(stderr); return s; }
 
 void usage() {
-    out() << "Omatype — fonts for Omarchy.\n\n"
+    out() << "Omatype — open-source type discovery and font manager for Omarchy.\n\n"
              "  omatype                         open the window\n"
              "  omatype <file|folder|archive>…  open the window with those staged\n"
              "  omatype --version               which version this is\n"
+             "  omatype search [query] [--category <cat>] [--source google|indie] [--json]\n"
+             "                                  search Google Fonts & curated open-source foundries\n"
+             "  omatype get <family> [--static] [--json]\n"
+             "                                  one-click install a catalog font without zip files\n"
              "  omatype list [--all] [--json]   installed families (yours first)\n"
              "  omatype info <family> [--json]  styles and files of one family\n"
-             "  omatype install <path>… [--json]  install fonts, folders or archives\n"
+             "  omatype install <path>… [--json]  install local fonts, folders or archives\n"
              "  omatype remove <family> [--json]  remove one of your families\n"
              "  omatype validate <file|family>… [--json]  check font files for problems\n"
              "  omatype deactivate <family> [--json]  hide a family from every app, keeping its files\n"
@@ -131,6 +137,79 @@ int Cli::run(Backend &backend, const QStringList &words) {
     if (verb == QLatin1String("--version")) {
         out() << "omatype " << OMATYPE_VERSION << '\n';
         out().flush();
+        return 0;
+    }
+
+    if (verb == QLatin1String("search")) {
+        const bool refresh = args.removeAll(QStringLiteral("--refresh")) > 0;
+        QString category, source;
+        for (int i = 0; i < args.size(); ) {
+            if (args[i] == QLatin1String("--category") && i + 1 < args.size()) {
+                category = args[i + 1];
+                args.remove(i, 2);
+            } else if (args[i] == QLatin1String("--source") && i + 1 < args.size()) {
+                source = args[i + 1];
+                args.remove(i, 2);
+            } else {
+                ++i;
+            }
+        }
+        Catalog catalog(&backend);
+        if (!catalog.loadBlocking(refresh)) return fail(QStringLiteral("Could not load font catalog"), json);
+        const auto hits = catalog.searchFamilies(args.join(QLatin1Char(' ')), category, source, 40);
+        if (json) {
+            QJsonArray a;
+            for (const CatalogFamily &e : hits) {
+                QJsonObject o;
+                o.insert(QStringLiteral("id"), e.id);
+                o.insert(QStringLiteral("family"), e.family);
+                o.insert(QStringLiteral("designers"), QJsonArray::fromStringList(e.designers));
+                o.insert(QStringLiteral("source"), e.sourceLabel);
+                o.insert(QStringLiteral("category"), e.category);
+                o.insert(QStringLiteral("license"), e.license);
+                o.insert(QStringLiteral("variable"), e.variable);
+                o.insert(QStringLiteral("styles"), e.styles.size());
+                o.insert(QStringLiteral("installed"), e.installed);
+                a.append(o);
+            }
+            emitJson(a);
+            return 0;
+        }
+        if (hits.isEmpty()) {
+            out() << "No catalog fonts matched.\n";
+            out().flush();
+            return 0;
+        }
+        for (const CatalogFamily &e : hits) {
+            out() << "  " << (e.variable ? "VF " : "   ") << e.family;
+            if (!e.designers.isEmpty()) out() << "  by " << e.designersText();
+            out() << "  [" << e.sourceLabel << " · " << e.category << "]\n";
+        }
+        out().flush();
+        return 0;
+    }
+
+    if (verb == QLatin1String("get")) {
+        const bool preferVariable = args.removeAll(QStringLiteral("--static")) == 0;
+        if (args.isEmpty()) return fail(QStringLiteral("get needs a family name (e.g. omatype get Inter)"), json);
+        const QString name = args.join(QLatin1Char(' '));
+        Catalog catalog(&backend);
+        if (!catalog.loadBlocking(false)) return fail(QStringLiteral("Could not load font catalog"), json);
+        QString dir;
+        int count = 0;
+        const QString error = catalog.installFamilyBlocking(name, preferVariable, {}, &dir, &count);
+        if (!error.isEmpty()) return fail(error, json);
+        if (json) {
+            QJsonObject o;
+            o.insert(QStringLiteral("ok"), true);
+            o.insert(QStringLiteral("family"), name);
+            o.insert(QStringLiteral("files"), count);
+            o.insert(QStringLiteral("directory"), dir);
+            emitJson(o);
+        } else {
+            out() << "Installed " << name << " (" << count << " file" << (count == 1 ? "" : "s") << ") → " << dir << '\n';
+            out().flush();
+        }
         return 0;
     }
 

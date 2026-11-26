@@ -306,6 +306,8 @@ public:
     QString writeSpecimenPdf(const QString &path, const QString &kind, const QString &familyName);
     QString setDisabled(const QStringList &files, bool disabled);
     QVariantList validate(const QStringList &files) const;
+    void recordCatalogInstall(const QString &family, const QString &source, const QString &dir);
+    QStringList runningDesignApps() const;
 
     // Small conveniences for QML, which has no clean way to do either.
     Q_INVOKABLE QUrl fileUrl(const QString &path) const { return QUrl::fromLocalFile(path); }

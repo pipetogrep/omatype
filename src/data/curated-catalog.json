@@ -1,0 +1,1831 @@
+{
+  "version": 1,
+  "generated": "2026-11-26",
+  "families": [
+    {
+      "id": "sporting-grotesque",
+      "family": "Sporting Grotesque",
+      "foundry": "Velvetyne Type Foundry",
+      "source": "indie",
+      "sourceLabel": "Velvetyne Type Foundry",
+      "designers": [
+        "Lucas Le Bihan"
+      ],
+      "category": "Sans Serif",
+      "license": "SIL OFL 1.1",
+      "description": "A quirky, high-contrast grotesque with eccentric details, made for bold editorial headlines.",
+      "homepage": "https://velvetyne.fr/fonts/sporting-grotesque/",
+      "repoUrl": "https://github.com/velvetyne/Sporting-Grotesque",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": false,
+      "axes": [],
+      "styles": [
+        "Regular",
+        "Bold"
+      ],
+      "previewUrl": "https://raw.githubusercontent.com/velvetyne/Sporting-Grotesque/main/fonts/SportingGrotesque-Regular.otf",
+      "files": [
+        {
+          "filename": "SportingGrotesque-Regular.otf",
+          "url": "https://raw.githubusercontent.com/velvetyne/Sporting-Grotesque/main/fonts/SportingGrotesque-Regular.otf",
+          "style": "Regular",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "SportingGrotesque-Bold.otf",
+          "url": "https://raw.githubusercontent.com/velvetyne/Sporting-Grotesque/main/fonts/SportingGrotesque-Bold.otf",
+          "style": "Bold",
+          "weight": 700,
+          "italic": false,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "le-murmure",
+      "family": "Le Murmure",
+      "foundry": "Velvetyne Type Foundry",
+      "source": "indie",
+      "sourceLabel": "Velvetyne Type Foundry",
+      "designers": [
+        "Jérémy Landes",
+        "Alexis Taieb"
+      ],
+      "category": "Display",
+      "license": "SIL OFL 1.1",
+      "description": "A sharp, condensed display face with idiosyncratic alternates, originally commissioned for the Murmure agency.",
+      "homepage": "https://velvetyne.fr/fonts/le-murmure/",
+      "repoUrl": "https://gitlab.com/velvetyne/murmure",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": false,
+      "axes": [],
+      "styles": [
+        "Regular"
+      ],
+      "previewUrl": "https://gitlab.com/velvetyne/murmure/-/raw/main/fonts/le-murmure.ttf",
+      "files": [
+        {
+          "filename": "le-murmure.ttf",
+          "url": "https://gitlab.com/velvetyne/murmure/-/raw/main/fonts/le-murmure.ttf",
+          "style": "Regular",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "gulax",
+      "family": "Gulax",
+      "foundry": "Velvetyne Type Foundry",
+      "source": "indie",
+      "sourceLabel": "Velvetyne Type Foundry",
+      "designers": [
+        "Morgan Gilbert"
+      ],
+      "category": "Display",
+      "license": "SIL OFL 1.1",
+      "description": "A soft, blobby display typeface with liquid curves and playful, organic letterforms.",
+      "homepage": "https://velvetyne.fr/fonts/gulax/",
+      "repoUrl": "https://gitlab.com/velvetyne/Gulax",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": false,
+      "axes": [],
+      "styles": [
+        "Regular"
+      ],
+      "previewUrl": "https://gitlab.com/velvetyne/Gulax/-/raw/master/fonts/otf/Gulax-Regular.otf",
+      "files": [
+        {
+          "filename": "Gulax-Regular.otf",
+          "url": "https://gitlab.com/velvetyne/Gulax/-/raw/master/fonts/otf/Gulax-Regular.otf",
+          "style": "Regular",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "trickster",
+      "family": "Trickster",
+      "foundry": "Velvetyne Type Foundry",
+      "source": "indie",
+      "sourceLabel": "Velvetyne Type Foundry",
+      "designers": [
+        "Jérémy Landes"
+      ],
+      "category": "Display",
+      "license": "SIL OFL 1.1",
+      "description": "A chimeric display face mixing serif, sans and blackletter structures into one shape-shifting alphabet.",
+      "homepage": "https://velvetyne.fr/fonts/trickster/",
+      "repoUrl": "https://github.com/velvetyne/Trickster",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": false,
+      "axes": [],
+      "styles": [
+        "Regular"
+      ],
+      "previewUrl": "https://raw.githubusercontent.com/velvetyne/Trickster/master/fonts/Trickster-Reg.ttf",
+      "files": [
+        {
+          "filename": "Trickster-Reg.ttf",
+          "url": "https://raw.githubusercontent.com/velvetyne/Trickster/master/fonts/Trickster-Reg.ttf",
+          "style": "Regular",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "avara",
+      "family": "Avara",
+      "foundry": "Velvetyne Type Foundry",
+      "source": "indie",
+      "sourceLabel": "Velvetyne Type Foundry",
+      "designers": [
+        "Raphaël Bastide"
+      ],
+      "category": "Serif",
+      "license": "SIL OFL 1.1",
+      "description": "A sharp, high-contrast serif with angular cuts, designed collaboratively as a libre project.",
+      "homepage": "https://velvetyne.fr/fonts/avara/",
+      "repoUrl": "https://gitlab.com/velvetyne/Avara",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": false,
+      "axes": [],
+      "styles": [
+        "Bold",
+        "BoldItalic",
+        "Black"
+      ],
+      "previewUrl": "https://gitlab.com/velvetyne/Avara/-/raw/master/fonts/webfonts/Bold/Avara-Bold.ttf",
+      "files": [
+        {
+          "filename": "Avara-Bold.ttf",
+          "url": "https://gitlab.com/velvetyne/Avara/-/raw/master/fonts/webfonts/Bold/Avara-Bold.ttf",
+          "style": "Bold",
+          "weight": 700,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "Avara-BoldItalic.ttf",
+          "url": "https://gitlab.com/velvetyne/Avara/-/raw/master/fonts/webfonts/BoldItalic/Avara-BoldItalic.ttf",
+          "style": "BoldItalic",
+          "weight": 700,
+          "italic": true,
+          "variable": false
+        },
+        {
+          "filename": "Avara-Black.ttf",
+          "url": "https://gitlab.com/velvetyne/Avara/-/raw/master/fonts/webfonts/Black/Avara-Black.ttf",
+          "style": "Black",
+          "weight": 900,
+          "italic": false,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "basteleur",
+      "family": "Basteleur",
+      "foundry": "Velvetyne Type Foundry",
+      "source": "indie",
+      "sourceLabel": "Velvetyne Type Foundry",
+      "designers": [
+        "Keussel"
+      ],
+      "category": "Serif",
+      "license": "SIL OFL 1.1",
+      "description": "A lively serif inspired by medieval and Renaissance printing, full of ink-trap character.",
+      "homepage": "https://velvetyne.fr/fonts/basteleur/",
+      "repoUrl": "https://gitlab.com/velvetyne/basteleur",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": false,
+      "axes": [],
+      "styles": [
+        "Moonlight",
+        "Bold"
+      ],
+      "previewUrl": "https://gitlab.com/velvetyne/basteleur/-/raw/master/fonts/ttf/Basteleur-Moonlight.ttf",
+      "files": [
+        {
+          "filename": "Basteleur-Moonlight.ttf",
+          "url": "https://gitlab.com/velvetyne/basteleur/-/raw/master/fonts/ttf/Basteleur-Moonlight.ttf",
+          "style": "Moonlight",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "Basteleur-Bold.ttf",
+          "url": "https://gitlab.com/velvetyne/basteleur/-/raw/master/fonts/ttf/Basteleur-Bold.ttf",
+          "style": "Bold",
+          "weight": 700,
+          "italic": false,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "backout",
+      "family": "BackOut",
+      "foundry": "Velvetyne Type Foundry",
+      "source": "indie",
+      "sourceLabel": "Velvetyne Type Foundry",
+      "designers": [
+        "Frank Adebiaye"
+      ],
+      "category": "Display",
+      "license": "SIL OFL 1.1",
+      "description": "A heavy, rounded geometric display face inspired by 1960s–70s Swiss and Italian lettering.",
+      "homepage": "https://velvetyne.fr/fonts/backout/",
+      "repoUrl": "https://gitlab.com/velvetyne/backout",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": false,
+      "axes": [],
+      "styles": [
+        "Regular"
+      ],
+      "previewUrl": "https://gitlab.com/velvetyne/backout/-/raw/master/fonts/BackOut.ttf",
+      "files": [
+        {
+          "filename": "BackOut.ttf",
+          "url": "https://gitlab.com/velvetyne/backout/-/raw/master/fonts/BackOut.ttf",
+          "style": "Regular",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "compagnon",
+      "family": "Compagnon",
+      "foundry": "Velvetyne Type Foundry",
+      "source": "indie",
+      "sourceLabel": "Velvetyne Type Foundry",
+      "designers": [
+        "Juliette Duhé",
+        "Léa Pradine",
+        "Valentin Papon",
+        "Sébastien Riollier",
+        "Chloé Lozano"
+      ],
+      "category": "Monospace",
+      "license": "SIL OFL 1.1",
+      "description": "A typewriter-inspired family with a distinct personality per weight, referencing early 20th-century office type.",
+      "homepage": "https://velvetyne.fr/fonts/compagnon/",
+      "repoUrl": "https://gitlab.com/velvetyne/compagnon",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": false,
+      "axes": [],
+      "styles": [
+        "Roman",
+        "Light",
+        "LightItalic",
+        "Medium",
+        "Bold"
+      ],
+      "previewUrl": "https://gitlab.com/velvetyne/compagnon/-/raw/master/fonts/Compagnon-Roman.otf",
+      "files": [
+        {
+          "filename": "Compagnon-Roman.otf",
+          "url": "https://gitlab.com/velvetyne/compagnon/-/raw/master/fonts/Compagnon-Roman.otf",
+          "style": "Roman",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "Compagnon-Light.otf",
+          "url": "https://gitlab.com/velvetyne/compagnon/-/raw/master/fonts/Compagnon-Light.otf",
+          "style": "Light",
+          "weight": 300,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "Compagnon-LightItalic.otf",
+          "url": "https://gitlab.com/velvetyne/compagnon/-/raw/master/fonts/Compagnon-LightItalic.otf",
+          "style": "LightItalic",
+          "weight": 300,
+          "italic": true,
+          "variable": false
+        },
+        {
+          "filename": "Compagnon-Medium.otf",
+          "url": "https://gitlab.com/velvetyne/compagnon/-/raw/master/fonts/Compagnon-Medium.otf",
+          "style": "Medium",
+          "weight": 500,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "Compagnon-Bold.otf",
+          "url": "https://gitlab.com/velvetyne/compagnon/-/raw/master/fonts/Compagnon-Bold.otf",
+          "style": "Bold",
+          "weight": 700,
+          "italic": false,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "sligoil",
+      "family": "Sligoil",
+      "foundry": "Velvetyne Type Foundry",
+      "source": "indie",
+      "sourceLabel": "Velvetyne Type Foundry",
+      "designers": [
+        "Ariel Martín Pérez"
+      ],
+      "category": "Monospace",
+      "license": "SIL OFL 1.1",
+      "description": "A micro-sized monospace with sturdy shapes, crisp at tiny sizes and expressive when blown up.",
+      "homepage": "https://velvetyne.fr/fonts/sligoil/",
+      "repoUrl": "https://gitlab.com/velvetyne/sligoil",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": true,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 90,
+          "max": 120,
+          "defaultValue": 90
+        }
+      ],
+      "styles": [
+        "Regular"
+      ],
+      "previewUrl": "https://gitlab.com/velvetyne/sligoil/-/raw/main/fonts/variable/SligoilVF.ttf",
+      "files": [
+        {
+          "filename": "SligoilVF.ttf",
+          "url": "https://gitlab.com/velvetyne/sligoil/-/raw/main/fonts/variable/SligoilVF.ttf",
+          "style": "Variable",
+          "weight": 90,
+          "italic": false,
+          "variable": true
+        },
+        {
+          "filename": "Sligoil-Micro.ttf",
+          "url": "https://gitlab.com/velvetyne/sligoil/-/raw/main/fonts/ttf/Sligoil-Micro.ttf",
+          "style": "Regular",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "Sligoil-MicroMedium.ttf",
+          "url": "https://gitlab.com/velvetyne/sligoil/-/raw/main/fonts/ttf/Sligoil-MicroMedium.ttf",
+          "style": "Medium",
+          "weight": 500,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "Sligoil-MicroBold.ttf",
+          "url": "https://gitlab.com/velvetyne/sligoil/-/raw/main/fonts/ttf/Sligoil-MicroBold.ttf",
+          "style": "Bold",
+          "weight": 700,
+          "italic": false,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "jost",
+      "family": "Jost*",
+      "foundry": "Indestructible Type",
+      "source": "indie",
+      "sourceLabel": "Indestructible Type",
+      "designers": [
+        "Owen Earl"
+      ],
+      "category": "Sans Serif",
+      "license": "SIL OFL 1.1",
+      "description": "A geometric sans-serif inspired by 1920s German sans faces like Futura, tuned for modern screens and editorial layouts.",
+      "homepage": "https://indestructibletype.com/Jost.html",
+      "repoUrl": "https://github.com/indestructible-type/Jost",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": true,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 100,
+          "max": 900,
+          "defaultValue": 400
+        },
+        {
+          "tag": "ital",
+          "min": 0,
+          "max": 2,
+          "defaultValue": 0
+        }
+      ],
+      "styles": [
+        "Regular",
+        "Italic"
+      ],
+      "previewUrl": "https://raw.githubusercontent.com/indestructible-type/Jost/master/fonts/Jost-VF.ttf",
+      "files": [
+        {
+          "filename": "Jost-VF.ttf",
+          "url": "https://raw.githubusercontent.com/indestructible-type/Jost/master/fonts/Jost-VF.ttf",
+          "style": "Variable",
+          "weight": 400,
+          "italic": false,
+          "variable": true
+        },
+        {
+          "filename": "Jost-400-Book.ttf",
+          "url": "https://raw.githubusercontent.com/indestructible-type/Jost/master/fonts/ttf/Jost-400-Book.ttf",
+          "style": "Book",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "Jost-400-BookItalic.ttf",
+          "url": "https://raw.githubusercontent.com/indestructible-type/Jost/master/fonts/ttf/Jost-400-BookItalic.ttf",
+          "style": "BookItalic",
+          "weight": 400,
+          "italic": true,
+          "variable": false
+        },
+        {
+          "filename": "Jost-300-Light.ttf",
+          "url": "https://raw.githubusercontent.com/indestructible-type/Jost/master/fonts/ttf/Jost-300-Light.ttf",
+          "style": "Light",
+          "weight": 300,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "Jost-500-Medium.ttf",
+          "url": "https://raw.githubusercontent.com/indestructible-type/Jost/master/fonts/ttf/Jost-500-Medium.ttf",
+          "style": "Medium",
+          "weight": 500,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "Jost-700-Bold.ttf",
+          "url": "https://raw.githubusercontent.com/indestructible-type/Jost/master/fonts/ttf/Jost-700-Bold.ttf",
+          "style": "Bold",
+          "weight": 700,
+          "italic": false,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "besley",
+      "family": "Besley*",
+      "foundry": "Indestructible Type",
+      "source": "indie",
+      "sourceLabel": "Indestructible Type",
+      "designers": [
+        "Owen Earl"
+      ],
+      "category": "Serif",
+      "license": "SIL OFL 1.1",
+      "description": "A Clarendon-style slab serif with generous curves, available in width and weight variations.",
+      "homepage": "https://indestructibletype.com/Besley.html",
+      "repoUrl": "https://github.com/indestructible-type/Besley",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": true,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 400,
+          "max": 900,
+          "defaultValue": 400
+        },
+        {
+          "tag": "wdth",
+          "min": 75,
+          "max": 100,
+          "defaultValue": 100
+        }
+      ],
+      "styles": [
+        "Regular",
+        "Italic"
+      ],
+      "previewUrl": "https://raw.githubusercontent.com/indestructible-type/Besley/master/fonts/variable/Besley%5Bwdth%2Cwght%5D.ttf",
+      "files": [
+        {
+          "filename": "Besley[wdth,wght].ttf",
+          "url": "https://raw.githubusercontent.com/indestructible-type/Besley/master/fonts/variable/Besley%5Bwdth%2Cwght%5D.ttf",
+          "style": "Variable",
+          "weight": 400,
+          "italic": false,
+          "variable": true
+        },
+        {
+          "filename": "Besley-Italic[wdth,wght].ttf",
+          "url": "https://raw.githubusercontent.com/indestructible-type/Besley/master/fonts/variable/Besley-Italic%5Bwdth%2Cwght%5D.ttf",
+          "style": "Variable Italic",
+          "weight": 400,
+          "italic": true,
+          "variable": true
+        },
+        {
+          "filename": "Besley-Regular.ttf",
+          "url": "https://raw.githubusercontent.com/indestructible-type/Besley/master/fonts/ttf/Besley-Regular.ttf",
+          "style": "Regular",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "bodoni-moda",
+      "family": "Bodoni Moda",
+      "foundry": "Indestructible Type",
+      "source": "indie",
+      "sourceLabel": "Indestructible Type",
+      "designers": [
+        "Owen Earl"
+      ],
+      "category": "Serif",
+      "license": "SIL OFL 1.1",
+      "description": "A high-contrast Didone with optical sizes, bringing fashion-magazine elegance to both text and display.",
+      "homepage": "https://indestructibletype.com/Bodoni.html",
+      "repoUrl": "https://github.com/indestructible-type/Bodoni",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": true,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 400,
+          "max": 900,
+          "defaultValue": 400
+        },
+        {
+          "tag": "opsz",
+          "min": 6,
+          "max": 96,
+          "defaultValue": 11
+        }
+      ],
+      "styles": [
+        "Regular",
+        "Italic"
+      ],
+      "previewUrl": "https://raw.githubusercontent.com/indestructible-type/Bodoni/master/fonts/variable/BodoniModa%5Bopsz%2Cwght%5D.ttf",
+      "files": [
+        {
+          "filename": "BodoniModa[opsz,wght].ttf",
+          "url": "https://raw.githubusercontent.com/indestructible-type/Bodoni/master/fonts/variable/BodoniModa%5Bopsz%2Cwght%5D.ttf",
+          "style": "Variable",
+          "weight": 400,
+          "italic": false,
+          "variable": true
+        },
+        {
+          "filename": "BodoniModa-Italic[opsz,wght].ttf",
+          "url": "https://raw.githubusercontent.com/indestructible-type/Bodoni/master/fonts/variable/BodoniModa-Italic%5Bopsz%2Cwght%5D.ttf",
+          "style": "Variable Italic",
+          "weight": 400,
+          "italic": true,
+          "variable": true
+        },
+        {
+          "filename": "BodoniModa-Regular.ttf",
+          "url": "https://raw.githubusercontent.com/indestructible-type/Bodoni/master/fonts/ttf/BodoniModa-Regular.ttf",
+          "style": "Regular",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "BodoniModa-Italic.ttf",
+          "url": "https://raw.githubusercontent.com/indestructible-type/Bodoni/master/fonts/ttf/BodoniModa-Italic.ttf",
+          "style": "Italic",
+          "weight": 400,
+          "italic": true,
+          "variable": false
+        },
+        {
+          "filename": "BodoniModa-Bold.ttf",
+          "url": "https://raw.githubusercontent.com/indestructible-type/Bodoni/master/fonts/ttf/BodoniModa-Bold.ttf",
+          "style": "Bold",
+          "weight": 700,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "BodoniModa-BoldItalic.ttf",
+          "url": "https://raw.githubusercontent.com/indestructible-type/Bodoni/master/fonts/ttf/BodoniModa-BoldItalic.ttf",
+          "style": "BoldItalic",
+          "weight": 700,
+          "italic": true,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "league-spartan",
+      "family": "League Spartan",
+      "foundry": "The League of Moveable Type",
+      "source": "indie",
+      "sourceLabel": "The League of Moveable Type",
+      "designers": [
+        "Micah Rich",
+        "Caroline Hadilaksono",
+        "Tyler Finck"
+      ],
+      "category": "Sans Serif",
+      "license": "SIL OFL 1.1",
+      "description": "A bold geometric sans-serif based on classic early-20th-century geometric type, expanded to a full variable family.",
+      "homepage": "https://www.theleagueofmoveabletype.com/league-spartan",
+      "repoUrl": "https://github.com/theleagueof/league-spartan",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": true,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 100,
+          "max": 900,
+          "defaultValue": 100
+        }
+      ],
+      "styles": [
+        "Regular"
+      ],
+      "previewUrl": "https://raw.githubusercontent.com/theleagueof/league-spartan/master/fonts/variable/LeagueSpartan%5Bwght%5D.ttf",
+      "files": [
+        {
+          "filename": "LeagueSpartan[wght].ttf",
+          "url": "https://raw.githubusercontent.com/theleagueof/league-spartan/master/fonts/variable/LeagueSpartan%5Bwght%5D.ttf",
+          "style": "Variable",
+          "weight": 100,
+          "italic": false,
+          "variable": true
+        },
+        {
+          "filename": "LeagueSpartan-Regular.ttf",
+          "url": "https://raw.githubusercontent.com/theleagueof/league-spartan/master/fonts/ttf/LeagueSpartan-Regular.ttf",
+          "style": "Regular",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "LeagueSpartan-Light.ttf",
+          "url": "https://raw.githubusercontent.com/theleagueof/league-spartan/master/fonts/ttf/LeagueSpartan-Light.ttf",
+          "style": "Light",
+          "weight": 300,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "LeagueSpartan-Bold.ttf",
+          "url": "https://raw.githubusercontent.com/theleagueof/league-spartan/master/fonts/ttf/LeagueSpartan-Bold.ttf",
+          "style": "Bold",
+          "weight": 700,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "LeagueSpartan-Black.ttf",
+          "url": "https://raw.githubusercontent.com/theleagueof/league-spartan/master/fonts/ttf/LeagueSpartan-Black.ttf",
+          "style": "Black",
+          "weight": 900,
+          "italic": false,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "junction",
+      "family": "Junction",
+      "foundry": "The League of Moveable Type",
+      "source": "indie",
+      "sourceLabel": "The League of Moveable Type",
+      "designers": [
+        "Caroline Hadilaksono"
+      ],
+      "category": "Sans Serif",
+      "license": "SIL OFL 1.1",
+      "description": "A humanist sans-serif with open forms that balances warmth and clarity in text and UI.",
+      "homepage": "https://www.theleagueofmoveabletype.com/junction",
+      "repoUrl": "https://github.com/theleagueof/junction",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": false,
+      "axes": [],
+      "styles": [
+        "Regular",
+        "Light",
+        "Bold"
+      ],
+      "previewUrl": "https://raw.githubusercontent.com/theleagueof/junction/master/Junction-regular.otf",
+      "files": [
+        {
+          "filename": "Junction-regular.otf",
+          "url": "https://raw.githubusercontent.com/theleagueof/junction/master/Junction-regular.otf",
+          "style": "Regular",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "Junction-light.otf",
+          "url": "https://raw.githubusercontent.com/theleagueof/junction/master/Junction-light.otf",
+          "style": "Light",
+          "weight": 300,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "Junction-bold.otf",
+          "url": "https://raw.githubusercontent.com/theleagueof/junction/master/Junction-bold.otf",
+          "style": "Bold",
+          "weight": 700,
+          "italic": false,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "ostrich-sans",
+      "family": "Ostrich Sans",
+      "foundry": "The League of Moveable Type",
+      "source": "indie",
+      "sourceLabel": "The League of Moveable Type",
+      "designers": [
+        "Tyler Finck"
+      ],
+      "category": "Display",
+      "license": "SIL OFL 1.1",
+      "description": "A gorgeous ultra-condensed sans with long necks, plus inline, dashed and rounded variants for posters.",
+      "homepage": "https://www.theleagueofmoveabletype.com/ostrich-sans",
+      "repoUrl": "https://github.com/theleagueof/ostrich-sans",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": false,
+      "axes": [],
+      "styles": [
+        "Medium",
+        "Light",
+        "Bold",
+        "Heavy",
+        "Black",
+        "Inline",
+        "Rounded"
+      ],
+      "previewUrl": "https://raw.githubusercontent.com/theleagueof/ostrich-sans/master/OstrichSans-Medium.otf",
+      "files": [
+        {
+          "filename": "OstrichSans-Medium.otf",
+          "url": "https://raw.githubusercontent.com/theleagueof/ostrich-sans/master/OstrichSans-Medium.otf",
+          "style": "Medium",
+          "weight": 500,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "OstrichSans-Light.otf",
+          "url": "https://raw.githubusercontent.com/theleagueof/ostrich-sans/master/OstrichSans-Light.otf",
+          "style": "Light",
+          "weight": 300,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "OstrichSans-Bold.otf",
+          "url": "https://raw.githubusercontent.com/theleagueof/ostrich-sans/master/OstrichSans-Bold.otf",
+          "style": "Bold",
+          "weight": 700,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "OstrichSans-Heavy.otf",
+          "url": "https://raw.githubusercontent.com/theleagueof/ostrich-sans/master/OstrichSans-Heavy.otf",
+          "style": "Heavy",
+          "weight": 800,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "OstrichSans-Black.otf",
+          "url": "https://raw.githubusercontent.com/theleagueof/ostrich-sans/master/OstrichSans-Black.otf",
+          "style": "Black",
+          "weight": 900,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "OstrichSansInline-Regular.otf",
+          "url": "https://raw.githubusercontent.com/theleagueof/ostrich-sans/master/OstrichSansInline-Regular.otf",
+          "style": "Inline",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "OstrichSansRounded-Medium.otf",
+          "url": "https://raw.githubusercontent.com/theleagueof/ostrich-sans/master/OstrichSansRounded-Medium.otf",
+          "style": "Rounded",
+          "weight": 500,
+          "italic": false,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "sorts-mill-goudy",
+      "family": "Sorts Mill Goudy",
+      "foundry": "The League of Moveable Type",
+      "source": "indie",
+      "sourceLabel": "The League of Moveable Type",
+      "designers": [
+        "Barry Schwartz"
+      ],
+      "category": "Serif",
+      "license": "SIL OFL 1.1",
+      "description": "A faithful revival of Frederic Goudy's Goudy Oldstyle, with refined italics for book typography.",
+      "homepage": "https://www.theleagueofmoveabletype.com/sorts-mill-goudy",
+      "repoUrl": "https://github.com/theleagueof/sorts-mill-goudy",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": false,
+      "axes": [],
+      "styles": [
+        "Regular",
+        "Italic"
+      ],
+      "previewUrl": "https://raw.githubusercontent.com/theleagueof/sorts-mill-goudy/master/OFLGoudyStMTT.ttf",
+      "files": [
+        {
+          "filename": "OFLGoudyStMTT.ttf",
+          "url": "https://raw.githubusercontent.com/theleagueof/sorts-mill-goudy/master/OFLGoudyStMTT.ttf",
+          "style": "Regular",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "OFLGoudyStMTT-Italic.ttf",
+          "url": "https://raw.githubusercontent.com/theleagueof/sorts-mill-goudy/master/OFLGoudyStMTT-Italic.ttf",
+          "style": "Italic",
+          "weight": 400,
+          "italic": true,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "chunk-five",
+      "family": "ChunkFive",
+      "foundry": "The League of Moveable Type",
+      "source": "indie",
+      "sourceLabel": "The League of Moveable Type",
+      "designers": [
+        "Meredith Mandel"
+      ],
+      "category": "Display",
+      "license": "SIL OFL 1.1",
+      "description": "An ultra-bold slab serif with chunky Egyptian proportions — loud, friendly headline type.",
+      "homepage": "https://www.theleagueofmoveabletype.com/chunk",
+      "repoUrl": "https://github.com/theleagueof/chunk",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": false,
+      "axes": [],
+      "styles": [
+        "Regular",
+        "Print"
+      ],
+      "previewUrl": "https://raw.githubusercontent.com/theleagueof/chunk/master/ChunkFive-Regular.ttf",
+      "files": [
+        {
+          "filename": "ChunkFive-Regular.ttf",
+          "url": "https://raw.githubusercontent.com/theleagueof/chunk/master/ChunkFive-Regular.ttf",
+          "style": "Regular",
+          "weight": 900,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "Chunk Five Print.ttf",
+          "url": "https://raw.githubusercontent.com/theleagueof/chunk/master/Chunk%20Five%20Print.ttf",
+          "style": "Print",
+          "weight": 900,
+          "italic": false,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "geist",
+      "family": "Geist",
+      "foundry": "Vercel",
+      "source": "indie",
+      "sourceLabel": "Vercel",
+      "designers": [
+        "Basement Studio",
+        "Andrés Briganti"
+      ],
+      "category": "Sans Serif",
+      "license": "SIL OFL 1.1",
+      "description": "Vercel's crisp Swiss-inspired sans-serif built for interfaces, dashboards and developer tooling.",
+      "homepage": "https://vercel.com/font",
+      "repoUrl": "https://github.com/vercel/geist-font",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": true,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 100,
+          "max": 900,
+          "defaultValue": 400
+        }
+      ],
+      "styles": [
+        "Regular",
+        "Italic"
+      ],
+      "previewUrl": "https://raw.githubusercontent.com/vercel/geist-font/main/fonts/Geist/variable/Geist%5Bwght%5D.ttf",
+      "files": [
+        {
+          "filename": "Geist[wght].ttf",
+          "url": "https://raw.githubusercontent.com/vercel/geist-font/main/fonts/Geist/variable/Geist%5Bwght%5D.ttf",
+          "style": "Variable",
+          "weight": 400,
+          "italic": false,
+          "variable": true
+        },
+        {
+          "filename": "Geist-Italic[wght].ttf",
+          "url": "https://raw.githubusercontent.com/vercel/geist-font/main/fonts/Geist/variable/Geist-Italic%5Bwght%5D.ttf",
+          "style": "Variable Italic",
+          "weight": 400,
+          "italic": true,
+          "variable": true
+        },
+        {
+          "filename": "Geist-Regular.ttf",
+          "url": "https://raw.githubusercontent.com/vercel/geist-font/main/fonts/Geist/ttf/Geist-Regular.ttf",
+          "style": "Regular",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "geist-mono",
+      "family": "Geist Mono",
+      "foundry": "Vercel",
+      "source": "indie",
+      "sourceLabel": "Vercel",
+      "designers": [
+        "Basement Studio",
+        "Andrés Briganti"
+      ],
+      "category": "Monospace",
+      "license": "SIL OFL 1.1",
+      "description": "The monospaced companion to Geist, designed for code, terminals and technical UI.",
+      "homepage": "https://vercel.com/font",
+      "repoUrl": "https://github.com/vercel/geist-font",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": true,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 100,
+          "max": 900,
+          "defaultValue": 400
+        }
+      ],
+      "styles": [
+        "Regular",
+        "Italic"
+      ],
+      "previewUrl": "https://raw.githubusercontent.com/vercel/geist-font/main/fonts/GeistMono/variable/GeistMono%5Bwght%5D.ttf",
+      "files": [
+        {
+          "filename": "GeistMono[wght].ttf",
+          "url": "https://raw.githubusercontent.com/vercel/geist-font/main/fonts/GeistMono/variable/GeistMono%5Bwght%5D.ttf",
+          "style": "Variable",
+          "weight": 400,
+          "italic": false,
+          "variable": true
+        },
+        {
+          "filename": "GeistMono-Italic[wght].ttf",
+          "url": "https://raw.githubusercontent.com/vercel/geist-font/main/fonts/GeistMono/variable/GeistMono-Italic%5Bwght%5D.ttf",
+          "style": "Variable Italic",
+          "weight": 400,
+          "italic": true,
+          "variable": true
+        },
+        {
+          "filename": "GeistMono-Regular.ttf",
+          "url": "https://raw.githubusercontent.com/vercel/geist-font/main/fonts/GeistMono/ttf/GeistMono-Regular.ttf",
+          "style": "Regular",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "monaspace-neon",
+      "family": "Monaspace Neon",
+      "foundry": "GitHub Next",
+      "source": "indie",
+      "sourceLabel": "GitHub Next",
+      "designers": [
+        "Riley Cran",
+        "Lettermatic",
+        "GitHub Next"
+      ],
+      "category": "Monospace",
+      "license": "SIL OFL 1.1",
+      "description": "Part of GitHub's Monaspace superfamily: a neo-grotesque sans voice with texture healing for even, readable code.",
+      "homepage": "https://monaspace.githubnext.com/",
+      "repoUrl": "https://github.com/githubnext/monaspace",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": true,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 200,
+          "max": 800,
+          "defaultValue": 200
+        },
+        {
+          "tag": "wdth",
+          "min": 100,
+          "max": 125,
+          "defaultValue": 100
+        },
+        {
+          "tag": "slnt",
+          "min": -11,
+          "max": 0,
+          "defaultValue": 0
+        }
+      ],
+      "styles": [
+        "Regular",
+        "Italic"
+      ],
+      "previewUrl": "https://raw.githubusercontent.com/githubnext/monaspace/main/fonts/Variable%20Fonts/Monaspace%20Neon/Monaspace%20Neon%20Var.ttf",
+      "files": [
+        {
+          "filename": "Monaspace Neon Var.ttf",
+          "url": "https://raw.githubusercontent.com/githubnext/monaspace/main/fonts/Variable%20Fonts/Monaspace%20Neon/Monaspace%20Neon%20Var.ttf",
+          "style": "Variable",
+          "weight": 200,
+          "italic": false,
+          "variable": true
+        }
+      ]
+    },
+    {
+      "id": "monaspace-argon",
+      "family": "Monaspace Argon",
+      "foundry": "GitHub Next",
+      "source": "indie",
+      "sourceLabel": "GitHub Next",
+      "designers": [
+        "Riley Cran",
+        "Lettermatic",
+        "GitHub Next"
+      ],
+      "category": "Monospace",
+      "license": "SIL OFL 1.1",
+      "description": "Part of GitHub's Monaspace superfamily: a humanist sans voice with texture healing for even, readable code.",
+      "homepage": "https://monaspace.githubnext.com/",
+      "repoUrl": "https://github.com/githubnext/monaspace",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": true,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 200,
+          "max": 800,
+          "defaultValue": 200
+        },
+        {
+          "tag": "wdth",
+          "min": 100,
+          "max": 125,
+          "defaultValue": 100
+        },
+        {
+          "tag": "slnt",
+          "min": -11,
+          "max": 0,
+          "defaultValue": 0
+        }
+      ],
+      "styles": [
+        "Regular",
+        "Italic"
+      ],
+      "previewUrl": "https://raw.githubusercontent.com/githubnext/monaspace/main/fonts/Variable%20Fonts/Monaspace%20Argon/Monaspace%20Argon%20Var.ttf",
+      "files": [
+        {
+          "filename": "Monaspace Argon Var.ttf",
+          "url": "https://raw.githubusercontent.com/githubnext/monaspace/main/fonts/Variable%20Fonts/Monaspace%20Argon/Monaspace%20Argon%20Var.ttf",
+          "style": "Variable",
+          "weight": 200,
+          "italic": false,
+          "variable": true
+        }
+      ]
+    },
+    {
+      "id": "monaspace-xenon",
+      "family": "Monaspace Xenon",
+      "foundry": "GitHub Next",
+      "source": "indie",
+      "sourceLabel": "GitHub Next",
+      "designers": [
+        "Riley Cran",
+        "Lettermatic",
+        "GitHub Next"
+      ],
+      "category": "Monospace",
+      "license": "SIL OFL 1.1",
+      "description": "Part of GitHub's Monaspace superfamily: a slab-serif voice with texture healing for even, readable code.",
+      "homepage": "https://monaspace.githubnext.com/",
+      "repoUrl": "https://github.com/githubnext/monaspace",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": true,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 200,
+          "max": 800,
+          "defaultValue": 200
+        },
+        {
+          "tag": "wdth",
+          "min": 100,
+          "max": 125,
+          "defaultValue": 100
+        },
+        {
+          "tag": "slnt",
+          "min": -11,
+          "max": 0,
+          "defaultValue": 0
+        }
+      ],
+      "styles": [
+        "Regular",
+        "Italic"
+      ],
+      "previewUrl": "https://raw.githubusercontent.com/githubnext/monaspace/main/fonts/Variable%20Fonts/Monaspace%20Xenon/Monaspace%20Xenon%20Var.ttf",
+      "files": [
+        {
+          "filename": "Monaspace Xenon Var.ttf",
+          "url": "https://raw.githubusercontent.com/githubnext/monaspace/main/fonts/Variable%20Fonts/Monaspace%20Xenon/Monaspace%20Xenon%20Var.ttf",
+          "style": "Variable",
+          "weight": 200,
+          "italic": false,
+          "variable": true
+        }
+      ]
+    },
+    {
+      "id": "commit-mono",
+      "family": "Commit Mono",
+      "foundry": "Eigil Nikolajsen",
+      "source": "indie",
+      "sourceLabel": "Eigil Nikolajsen",
+      "designers": [
+        "Eigil Nikolajsen"
+      ],
+      "category": "Monospace",
+      "license": "SIL OFL 1.1",
+      "description": "An anonymous, neutral coding font with smart kerning that keeps monospaced text calm and readable.",
+      "homepage": "https://commitmono.com/",
+      "repoUrl": "https://github.com/eigilnikolajsen/commit-mono",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": false,
+      "axes": [],
+      "styles": [
+        "Regular",
+        "Italic",
+        "Bold",
+        "BoldItalic"
+      ],
+      "previewUrl": "https://raw.githubusercontent.com/eigilnikolajsen/commit-mono/main/src/fonts/fontlab/CommitMonoV143-400Regular.otf",
+      "files": [
+        {
+          "filename": "CommitMonoV143-400Regular.otf",
+          "url": "https://raw.githubusercontent.com/eigilnikolajsen/commit-mono/main/src/fonts/fontlab/CommitMonoV143-400Regular.otf",
+          "style": "Regular",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "CommitMonoV143-400Italic.otf",
+          "url": "https://raw.githubusercontent.com/eigilnikolajsen/commit-mono/main/src/fonts/fontlab/CommitMonoV143-400Italic.otf",
+          "style": "Italic",
+          "weight": 400,
+          "italic": true,
+          "variable": false
+        },
+        {
+          "filename": "CommitMonoV143-700Regular.otf",
+          "url": "https://raw.githubusercontent.com/eigilnikolajsen/commit-mono/main/src/fonts/fontlab/CommitMonoV143-700Regular.otf",
+          "style": "Bold",
+          "weight": 700,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "CommitMonoV143-700Italic.otf",
+          "url": "https://raw.githubusercontent.com/eigilnikolajsen/commit-mono/main/src/fonts/fontlab/CommitMonoV143-700Italic.otf",
+          "style": "BoldItalic",
+          "weight": 700,
+          "italic": true,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "maple-mono",
+      "family": "Maple Mono",
+      "foundry": "subframe7536",
+      "source": "indie",
+      "sourceLabel": "subframe7536",
+      "designers": [
+        "subframe7536"
+      ],
+      "category": "Monospace",
+      "license": "SIL OFL 1.1",
+      "description": "A rounded, friendly coding font with cursive italics, ligatures and excellent CJK pairing.",
+      "homepage": "https://font.subf.dev/",
+      "repoUrl": "https://github.com/subframe7536/maple-font",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": true,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 100,
+          "max": 800,
+          "defaultValue": 400
+        }
+      ],
+      "styles": [
+        "Regular",
+        "Italic"
+      ],
+      "previewUrl": "https://raw.githubusercontent.com/subframe7536/maple-font/v7/source/MapleMono%5Bwght%5D-VF.ttf",
+      "files": [
+        {
+          "filename": "MapleMono[wght]-VF.ttf",
+          "url": "https://raw.githubusercontent.com/subframe7536/maple-font/v7/source/MapleMono%5Bwght%5D-VF.ttf",
+          "style": "Variable",
+          "weight": 400,
+          "italic": false,
+          "variable": true
+        },
+        {
+          "filename": "MapleMono-Italic[wght]-VF.ttf",
+          "url": "https://raw.githubusercontent.com/subframe7536/maple-font/v7/source/MapleMono-Italic%5Bwght%5D-VF.ttf",
+          "style": "Variable Italic",
+          "weight": 400,
+          "italic": true,
+          "variable": true
+        }
+      ]
+    },
+    {
+      "id": "ia-writer-quattro",
+      "family": "iA Writer Quattro",
+      "foundry": "Information Architects",
+      "source": "indie",
+      "sourceLabel": "Information Architects",
+      "designers": [
+        "Information Architects"
+      ],
+      "category": "Sans Serif",
+      "license": "SIL OFL 1.1",
+      "description": "A duospace-derived writing font with four widths, tuned for focused long-form writing.",
+      "homepage": "https://github.com/iaolo/iA-Fonts",
+      "repoUrl": "https://github.com/iaolo/iA-Fonts",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": true,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 400,
+          "max": 700,
+          "defaultValue": 400
+        },
+        {
+          "tag": "SPCG",
+          "min": 0,
+          "max": 150,
+          "defaultValue": 0
+        }
+      ],
+      "styles": [
+        "Regular",
+        "Italic"
+      ],
+      "previewUrl": "https://raw.githubusercontent.com/iaolo/iA-Fonts/master/iA%20Writer%20Quattro/Variable/iAWriterQuattroV.ttf",
+      "files": [
+        {
+          "filename": "iAWriterQuattroV.ttf",
+          "url": "https://raw.githubusercontent.com/iaolo/iA-Fonts/master/iA%20Writer%20Quattro/Variable/iAWriterQuattroV.ttf",
+          "style": "Variable",
+          "weight": 400,
+          "italic": false,
+          "variable": true
+        },
+        {
+          "filename": "iAWriterQuattroV-Italic.ttf",
+          "url": "https://raw.githubusercontent.com/iaolo/iA-Fonts/master/iA%20Writer%20Quattro/Variable/iAWriterQuattroV-Italic.ttf",
+          "style": "Variable Italic",
+          "weight": 400,
+          "italic": true,
+          "variable": true
+        },
+        {
+          "filename": "iAWriterQuattroS-Regular.ttf",
+          "url": "https://raw.githubusercontent.com/iaolo/iA-Fonts/master/iA%20Writer%20Quattro/Static/iAWriterQuattroS-Regular.ttf",
+          "style": "Regular",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "iAWriterQuattroS-Italic.ttf",
+          "url": "https://raw.githubusercontent.com/iaolo/iA-Fonts/master/iA%20Writer%20Quattro/Static/iAWriterQuattroS-Italic.ttf",
+          "style": "Italic",
+          "weight": 400,
+          "italic": true,
+          "variable": false
+        },
+        {
+          "filename": "iAWriterQuattroS-Bold.ttf",
+          "url": "https://raw.githubusercontent.com/iaolo/iA-Fonts/master/iA%20Writer%20Quattro/Static/iAWriterQuattroS-Bold.ttf",
+          "style": "Bold",
+          "weight": 700,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "iAWriterQuattroS-BoldItalic.ttf",
+          "url": "https://raw.githubusercontent.com/iaolo/iA-Fonts/master/iA%20Writer%20Quattro/Static/iAWriterQuattroS-BoldItalic.ttf",
+          "style": "BoldItalic",
+          "weight": 700,
+          "italic": true,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "ia-writer-mono",
+      "family": "iA Writer Mono",
+      "foundry": "Information Architects",
+      "source": "indie",
+      "sourceLabel": "Information Architects",
+      "designers": [
+        "Information Architects"
+      ],
+      "category": "Monospace",
+      "license": "SIL OFL 1.1",
+      "description": "iA Writer's monospace, a refinement of IBM Plex Mono for distraction-free writing.",
+      "homepage": "https://github.com/iaolo/iA-Fonts",
+      "repoUrl": "https://github.com/iaolo/iA-Fonts",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": true,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 400,
+          "max": 700,
+          "defaultValue": 400
+        },
+        {
+          "tag": "SPCG",
+          "min": 0,
+          "max": 150,
+          "defaultValue": 0
+        }
+      ],
+      "styles": [
+        "Regular",
+        "Italic"
+      ],
+      "previewUrl": "https://raw.githubusercontent.com/iaolo/iA-Fonts/master/iA%20Writer%20Mono/Variable/iAWriterMonoV.ttf",
+      "files": [
+        {
+          "filename": "iAWriterMonoV.ttf",
+          "url": "https://raw.githubusercontent.com/iaolo/iA-Fonts/master/iA%20Writer%20Mono/Variable/iAWriterMonoV.ttf",
+          "style": "Variable",
+          "weight": 400,
+          "italic": false,
+          "variable": true
+        },
+        {
+          "filename": "iAWriterMonoV-Italic.ttf",
+          "url": "https://raw.githubusercontent.com/iaolo/iA-Fonts/master/iA%20Writer%20Mono/Variable/iAWriterMonoV-Italic.ttf",
+          "style": "Variable Italic",
+          "weight": 400,
+          "italic": true,
+          "variable": true
+        },
+        {
+          "filename": "iAWriterMonoS-Regular.ttf",
+          "url": "https://raw.githubusercontent.com/iaolo/iA-Fonts/master/iA%20Writer%20Mono/Static/iAWriterMonoS-Regular.ttf",
+          "style": "Regular",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "iAWriterMonoS-Italic.ttf",
+          "url": "https://raw.githubusercontent.com/iaolo/iA-Fonts/master/iA%20Writer%20Mono/Static/iAWriterMonoS-Italic.ttf",
+          "style": "Italic",
+          "weight": 400,
+          "italic": true,
+          "variable": false
+        },
+        {
+          "filename": "iAWriterMonoS-Bold.ttf",
+          "url": "https://raw.githubusercontent.com/iaolo/iA-Fonts/master/iA%20Writer%20Mono/Static/iAWriterMonoS-Bold.ttf",
+          "style": "Bold",
+          "weight": 700,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "iAWriterMonoS-BoldItalic.ttf",
+          "url": "https://raw.githubusercontent.com/iaolo/iA-Fonts/master/iA%20Writer%20Mono/Static/iAWriterMonoS-BoldItalic.ttf",
+          "style": "BoldItalic",
+          "weight": 700,
+          "italic": true,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "jetbrains-mono-nerd-font",
+      "family": "JetBrainsMono Nerd Font",
+      "foundry": "Nerd Fonts",
+      "source": "indie",
+      "sourceLabel": "Nerd Fonts",
+      "designers": [
+        "JetBrains",
+        "Philipp Nurullin",
+        "Konstantin Bulenkov",
+        "Ryan L McIntyre"
+      ],
+      "category": "Monospace",
+      "license": "SIL OFL 1.1",
+      "description": "JetBrains Mono patched with thousands of Nerd Font glyphs for powerline prompts, icons and terminals.",
+      "homepage": "https://www.nerdfonts.com/",
+      "repoUrl": "https://github.com/ryanoasis/nerd-fonts",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": false,
+      "axes": [],
+      "styles": [
+        "Regular",
+        "Italic",
+        "Bold",
+        "BoldItalic"
+      ],
+      "previewUrl": "https://raw.githubusercontent.com/ryanoasis/nerd-fonts/master/patched-fonts/JetBrainsMono/Ligatures/JetBrainsMonoNerdFont-Regular.ttf",
+      "files": [
+        {
+          "filename": "JetBrainsMonoNerdFont-Regular.ttf",
+          "url": "https://raw.githubusercontent.com/ryanoasis/nerd-fonts/master/patched-fonts/JetBrainsMono/Ligatures/JetBrainsMonoNerdFont-Regular.ttf",
+          "style": "Regular",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "JetBrainsMonoNerdFont-Italic.ttf",
+          "url": "https://raw.githubusercontent.com/ryanoasis/nerd-fonts/master/patched-fonts/JetBrainsMono/Ligatures/JetBrainsMonoNerdFont-Italic.ttf",
+          "style": "Italic",
+          "weight": 400,
+          "italic": true,
+          "variable": false
+        },
+        {
+          "filename": "JetBrainsMonoNerdFont-Bold.ttf",
+          "url": "https://raw.githubusercontent.com/ryanoasis/nerd-fonts/master/patched-fonts/JetBrainsMono/Ligatures/JetBrainsMonoNerdFont-Bold.ttf",
+          "style": "Bold",
+          "weight": 700,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "JetBrainsMonoNerdFont-BoldItalic.ttf",
+          "url": "https://raw.githubusercontent.com/ryanoasis/nerd-fonts/master/patched-fonts/JetBrainsMono/Ligatures/JetBrainsMonoNerdFont-BoldItalic.ttf",
+          "style": "BoldItalic",
+          "weight": 700,
+          "italic": true,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "fira-code-nerd-font",
+      "family": "FiraCode Nerd Font",
+      "foundry": "Nerd Fonts",
+      "source": "indie",
+      "sourceLabel": "Nerd Fonts",
+      "designers": [
+        "Nikita Prokopov",
+        "Ryan L McIntyre"
+      ],
+      "category": "Monospace",
+      "license": "SIL OFL 1.1",
+      "description": "Fira Code's programming ligatures combined with the full Nerd Fonts icon set for terminal setups.",
+      "homepage": "https://www.nerdfonts.com/",
+      "repoUrl": "https://github.com/ryanoasis/nerd-fonts",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": false,
+      "axes": [],
+      "styles": [
+        "Regular",
+        "Light",
+        "Medium",
+        "Bold"
+      ],
+      "previewUrl": "https://raw.githubusercontent.com/ryanoasis/nerd-fonts/master/patched-fonts/FiraCode/FiraCodeNerdFont-Regular.ttf",
+      "files": [
+        {
+          "filename": "FiraCodeNerdFont-Regular.ttf",
+          "url": "https://raw.githubusercontent.com/ryanoasis/nerd-fonts/master/patched-fonts/FiraCode/FiraCodeNerdFont-Regular.ttf",
+          "style": "Regular",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "FiraCodeNerdFont-Light.ttf",
+          "url": "https://raw.githubusercontent.com/ryanoasis/nerd-fonts/master/patched-fonts/FiraCode/FiraCodeNerdFont-Light.ttf",
+          "style": "Light",
+          "weight": 300,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "FiraCodeNerdFont-Medium.ttf",
+          "url": "https://raw.githubusercontent.com/ryanoasis/nerd-fonts/master/patched-fonts/FiraCode/FiraCodeNerdFont-Medium.ttf",
+          "style": "Medium",
+          "weight": 500,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "FiraCodeNerdFont-Bold.ttf",
+          "url": "https://raw.githubusercontent.com/ryanoasis/nerd-fonts/master/patched-fonts/FiraCode/FiraCodeNerdFont-Bold.ttf",
+          "style": "Bold",
+          "weight": 700,
+          "italic": false,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "uncut-sans",
+      "family": "Uncut Sans",
+      "foundry": "Kasper Nordkvist",
+      "source": "indie",
+      "sourceLabel": "Kasper Nordkvist",
+      "designers": [
+        "Kasper Nordkvist"
+      ],
+      "category": "Sans Serif",
+      "license": "SIL OFL 1.1",
+      "description": "A clean contemporary grotesque with subtle quirks, made free for everyone by Uncut.wtf.",
+      "homepage": "https://uncut.wtf/sans-serif/uncut-sans/",
+      "repoUrl": "https://github.com/kaspernordkvist/uncut_sans",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": true,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 300,
+          "max": 700,
+          "defaultValue": 400
+        },
+        {
+          "tag": "ital",
+          "min": 0,
+          "max": 11,
+          "defaultValue": 0
+        }
+      ],
+      "styles": [
+        "Regular",
+        "Italic"
+      ],
+      "previewUrl": "https://raw.githubusercontent.com/kaspernordkvist/uncut_sans/main/Variable/UncutSans-Variable.ttf",
+      "files": [
+        {
+          "filename": "UncutSans-Variable.ttf",
+          "url": "https://raw.githubusercontent.com/kaspernordkvist/uncut_sans/main/Variable/UncutSans-Variable.ttf",
+          "style": "Variable",
+          "weight": 400,
+          "italic": false,
+          "variable": true
+        },
+        {
+          "filename": "UncutSans-Regular.otf",
+          "url": "https://raw.githubusercontent.com/kaspernordkvist/uncut_sans/main/Static/UncutSans-Regular.otf",
+          "style": "Regular",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "UncutSans-RegularItalic.otf",
+          "url": "https://raw.githubusercontent.com/kaspernordkvist/uncut_sans/main/Static/UncutSans-RegularItalic.otf",
+          "style": "RegularItalic",
+          "weight": 400,
+          "italic": true,
+          "variable": false
+        },
+        {
+          "filename": "UncutSans-Bold.otf",
+          "url": "https://raw.githubusercontent.com/kaspernordkvist/uncut_sans/main/Static/UncutSans-Bold.otf",
+          "style": "Bold",
+          "weight": 700,
+          "italic": false,
+          "variable": false
+        },
+        {
+          "filename": "UncutSans-BoldItalic.otf",
+          "url": "https://raw.githubusercontent.com/kaspernordkvist/uncut_sans/main/Static/UncutSans-BoldItalic.otf",
+          "style": "BoldItalic",
+          "weight": 700,
+          "italic": true,
+          "variable": false
+        }
+      ]
+    },
+    {
+      "id": "atkinson-hyperlegible-next",
+      "family": "Atkinson Hyperlegible Next",
+      "foundry": "Braille Institute",
+      "source": "indie",
+      "sourceLabel": "Braille Institute",
+      "designers": [
+        "Braille Institute",
+        "Applied Design Works",
+        "Elliott Scott",
+        "Megan Eiswerth"
+      ],
+      "category": "Sans Serif",
+      "license": "SIL OFL 1.1",
+      "description": "The expanded successor to Atkinson Hyperlegible, maximising character distinction for low-vision readers.",
+      "homepage": "https://www.brailleinstitute.org/freefont/",
+      "repoUrl": "https://github.com/googlefonts/atkinson-hyperlegible-next",
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "variable": true,
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 200,
+          "max": 800,
+          "defaultValue": 400
+        }
+      ],
+      "styles": [
+        "Regular",
+        "Italic"
+      ],
+      "previewUrl": "https://raw.githubusercontent.com/googlefonts/atkinson-hyperlegible-next/main/fonts/variable/AtkinsonHyperlegibleNext%5Bwght%5D.ttf",
+      "files": [
+        {
+          "filename": "AtkinsonHyperlegibleNext[wght].ttf",
+          "url": "https://raw.githubusercontent.com/googlefonts/atkinson-hyperlegible-next/main/fonts/variable/AtkinsonHyperlegibleNext%5Bwght%5D.ttf",
+          "style": "Variable",
+          "weight": 400,
+          "italic": false,
+          "variable": true
+        },
+        {
+          "filename": "AtkinsonHyperlegibleNext-Italic[wght].ttf",
+          "url": "https://raw.githubusercontent.com/googlefonts/atkinson-hyperlegible-next/main/fonts/variable/AtkinsonHyperlegibleNext-Italic%5Bwght%5D.ttf",
+          "style": "Variable Italic",
+          "weight": 400,
+          "italic": true,
+          "variable": true
+        },
+        {
+          "filename": "AtkinsonHyperlegibleNext-Regular.ttf",
+          "url": "https://raw.githubusercontent.com/googlefonts/atkinson-hyperlegible-next/main/fonts/ttf/AtkinsonHyperlegibleNext-Regular.ttf",
+          "style": "Regular",
+          "weight": 400,
+          "italic": false,
+          "variable": false
+        }
+      ]
+    }
+  ]
+}

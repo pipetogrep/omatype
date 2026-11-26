@@ -317,13 +317,34 @@ Rectangle {
                     Fact { label: qsTr("Embedding"); value: inspector.hasInfo ? (inspector.info.embedding ?? "") : "" }
                     Label { visible: !inspector.hasInfo && backend.readingMetadata; text: qsTr("Reading the file's own details…"); color: Theme.textMuted; font.pixelSize: Theme.fsLabel }
 
-                    SectionLabel { visible: inspector.hasInfo && ((inspector.info.designer ?? "") !== "" || (inspector.info.manufacturer ?? "") !== "" || (inspector.sel.foundry ?? "") !== ""); text: qsTr("DESIGN") }
+                    SectionLabel { visible: inspector.hasInfo && ((inspector.info.designer ?? "") !== "" || (inspector.info.manufacturer ?? "") !== "" || (inspector.sel.foundry ?? "") !== ""); text: qsTr("DESIGN & ATTRIBUTION") }
                     Fact { label: qsTr("Designer"); value: inspector.hasInfo ? (inspector.info.designer ?? "") : "" }
                     Fact { label: qsTr("Manufacturer"); value: inspector.hasInfo ? (inspector.info.manufacturer ?? "") : "" }
                     Fact { label: qsTr("Foundry"); value: (inspector.sel.foundry ?? "") !== "unknown" ? (inspector.sel.foundry ?? "") : "" }
                     Fact { label: qsTr("Trademark"); value: inspector.hasInfo ? (inspector.info.trademark ?? "") : "" }
-                    Fact { label: qsTr("Designer URL"); value: inspector.hasInfo ? (inspector.info.designerUrl ?? "") : ""; mono: true }
-                    Fact { label: qsTr("Vendor URL"); value: inspector.hasInfo ? (inspector.info.vendorUrl ?? "") : ""; mono: true }
+                    RowLayout {
+                        visible: inspector.hasInfo && ((inspector.info.designerUrl ?? "") !== "" || (inspector.info.vendorUrl ?? "") !== "")
+                        Layout.fillWidth: true
+                        spacing: Theme.s1
+                        Button {
+                            visible: inspector.hasInfo && (inspector.info.designerUrl ?? "") !== ""
+                            Layout.fillWidth: true
+                            flat: true
+                            icon.name: "external-link"
+                            text: qsTr("Designer")
+                            onClicked: catalog.openUrl(inspector.info.designerUrl)
+                            ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay; ToolTip.text: inspector.info.designerUrl ?? ""
+                        }
+                        Button {
+                            visible: inspector.hasInfo && (inspector.info.vendorUrl ?? "") !== ""
+                            Layout.fillWidth: true
+                            flat: true
+                            icon.name: "external-link"
+                            text: qsTr("Foundry")
+                            onClicked: catalog.openUrl(inspector.info.vendorUrl)
+                            ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay; ToolTip.text: inspector.info.vendorUrl ?? ""
+                        }
+                    }
 
                     SectionLabel { visible: inspector.hasInfo && ((inspector.info.copyright ?? "") !== "" || (inspector.info.license ?? "") !== ""); text: qsTr("LEGAL") }
                     Prose { label: qsTr("Copyright"); value: inspector.hasInfo ? (inspector.info.copyright ?? "") : "" }

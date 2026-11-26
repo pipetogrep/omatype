@@ -10,6 +10,9 @@ Rectangle {
     id: sidebar
     color: Theme.panelBg
 
+    property string mode: "discover"
+    signal discoverSelected(string sourceFilter)
+    signal librarySelected()
     signal newCollectionRequested()
     signal newSmartRequested()
     signal editSmartRequested(string id)
@@ -18,6 +21,49 @@ Rectangle {
     // Deleting library data cannot be undone, so Main asks first.
     signal deleteRequested(string id, string name, bool smart)
     signal deleteTagRequested(string tag)
+
+    component DiscoverRow: ItemDelegate {
+        id: drow
+        property string sourceFilter: "all"
+        property string label: ""
+        property string iconName: ""
+        property int count: -1
+        Layout.fillWidth: true
+        width: ListView.view ? ListView.view.width : parent.width
+        height: Theme.hRow
+        highlighted: sidebar.mode === "discover" && catalog.sourceFilter === sourceFilter
+        leftPadding: Theme.s4
+        rightPadding: Theme.s3
+        onClicked: sidebar.discoverSelected(sourceFilter)
+        Accessible.name: label
+        contentItem: RowLayout {
+            spacing: Theme.s2
+            Icon { name: drow.iconName; size: Theme.szIcon; color: drow.highlighted ? Theme.accent : Theme.textMuted; visible: drow.iconName !== "" }
+            Text {
+                Layout.fillWidth: true
+                text: drow.label
+                textFormat: Text.PlainText
+                elide: Text.ElideRight
+                verticalAlignment: Text.AlignVCenter
+                color: drow.highlighted ? Theme.textPrimary : Theme.textSecondary
+                font.family: Theme.fontFamily
+                font.pixelSize: Theme.fsControl
+            }
+            Label {
+                visible: drow.count >= 0
+                text: drow.count
+                color: Theme.textMuted
+                font.pixelSize: Theme.fsCaption
+                font.family: Theme.monoFamily
+            }
+        }
+        background: Rectangle {
+            radius: Theme.rControl
+            color: drow.down ? Theme.pressedOn(Theme.controlHover)
+                 : drow.highlighted ? Theme.withAlpha(Theme.accent, 0.10)
+                 : drow.hovered ? Theme.controlHover : "transparent"
+        }
+    }
 
     component SourceRow: ItemDelegate {
         id: row
@@ -30,10 +76,10 @@ Rectangle {
         Layout.fillWidth: true
         width: ListView.view ? ListView.view.width : parent.width
         height: Theme.hRow
-        highlighted: backend.source === source
+        highlighted: sidebar.mode === "library" && backend.source === source
         leftPadding: Theme.s4
         rightPadding: Theme.s3
-        onClicked: backend.source = source
+        onClicked: { sidebar.librarySelected(); backend.source = source }
         Accessible.name: label
         contentItem: RowLayout {
             spacing: Theme.s2
@@ -103,6 +149,13 @@ Rectangle {
             spacing: 0
 
             Item { implicitHeight: Theme.s2 }
+            Heading { text: qsTr("Discover") }
+            DiscoverRow { sourceFilter: "all"; label: qsTr("Browse Catalog"); iconName: "globe"; count: catalog.totalCount }
+            DiscoverRow { sourceFilter: "google"; label: qsTr("Google Fonts"); iconName: "type"; count: catalog.googleCount }
+            DiscoverRow { sourceFilter: "indie"; label: qsTr("Indie Foundries"); iconName: "sparkles"; count: catalog.indieCount }
+            DiscoverRow { sourceFilter: "shortlist"; label: qsTr("Shortlist"); iconName: "bookmark"; count: catalog.shortlistCount; visible: catalog.shortlistCount > 0 || (sidebar.mode === "discover" && catalog.sourceFilter === "shortlist") }
+            DiscoverRow { sourceFilter: "installed"; label: qsTr("Installed"); iconName: "check"; count: catalog.installedCatalogCount; visible: catalog.installedCatalogCount > 0 || (sidebar.mode === "discover" && catalog.sourceFilter === "installed") }
+
             Heading { text: qsTr("Library") }
             SourceRow { source: "all"; label: qsTr("All Fonts"); iconName: "type"; count: backend.totalCount }
             SourceRow { source: "yours"; label: qsTr("Yours"); iconName: "download"; count: backend.userCount }

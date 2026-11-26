@@ -20,9 +20,11 @@ ApplicationWindow {
                                              && (activeFocusItem instanceof TextInput || activeFocusItem instanceof TextEdit)
     readonly property bool compactToolbar: width < 1280
     property bool sidebarOpen: true
+    property string mode: "discover" // "discover" | "library"
+    readonly property bool inDiscover: mode === "discover" && !backend.staged && !backend.staging
     readonly property bool canRemove: (backend.selected.user ?? false) && !backend.busy && !backend.staged
     readonly property bool canTerminal: backend.canSetTerminalFont && (backend.selected.mono ?? false) && !backend.busy && !backend.staged
-    readonly property bool hasFamily: backend.hasSelection && !backend.staged
+    readonly property bool hasFamily: backend.hasSelection && !backend.staged && !inDiscover
 
     // ── Chrome pieces ───────────────────────────────────────────────────────
     component ToolAction: Button {
@@ -75,11 +77,13 @@ ApplicationWindow {
                onActivated: { searchField.forceActiveFocus(); searchField.selectAll() } }
     Shortcut { sequence: "Ctrl+L"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: backend.showCoverage = !backend.showCoverage }
     Shortcut { sequence: "Ctrl+B"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: win.sidebarOpen = !win.sidebarOpen }
-    Shortcut { sequence: "Ctrl+1"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: backend.view = "specimen" }
-    Shortcut { sequence: "Ctrl+2"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: backend.view = "grid" }
-    Shortcut { sequence: "Ctrl+3"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: backend.view = "list" }
-    Shortcut { sequence: "Ctrl+4"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: backend.view = "repertoire" }
-    Shortcut { sequence: "Ctrl+5"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: backend.view = "compare" }
+    Shortcut { sequence: "Ctrl+G"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: win.mode = "discover" }
+    Shortcut { sequence: "Ctrl+Shift+L"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: win.mode = "library" }
+    Shortcut { sequence: "Ctrl+1"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: { win.mode = "library"; backend.view = "specimen" } }
+    Shortcut { sequence: "Ctrl+2"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: { win.mode = "library"; backend.view = "grid" } }
+    Shortcut { sequence: "Ctrl+3"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: { win.mode = "library"; backend.view = "list" } }
+    Shortcut { sequence: "Ctrl+4"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: { win.mode = "library"; backend.view = "repertoire" } }
+    Shortcut { sequence: "Ctrl+5"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: { win.mode = "library"; backend.view = "compare" } }
     Shortcut { sequence: "Ctrl+M"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen && !win.textEntryFocused && win.hasFamily; onActivated: { backend.toggleCompare(backend.selectedName); if (backend.compareList.length > 0) backend.view = "compare" } }
     Shortcut { sequence: "Ctrl+Shift+T"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: tidySheet.open() }
     Shortcut { sequences: ["Ctrl++", "Ctrl+="]; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: backend.specimenScale = backend.specimenScale * 1.15 }
@@ -245,29 +249,86 @@ ApplicationWindow {
 
                 ToolButton { icon.name: "panel-left"; checked: win.sidebarOpen; onClicked: win.sidebarOpen = !win.sidebarOpen
                              ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay; ToolTip.text: qsTr("Sidebar  Ctrl+B") }
-                ToolAction { objectName: "toolbarInstall"; icon.name: "folder-plus"; text: qsTr("Install…"); tip: qsTr("Install fonts from a file, folder or archive  Ctrl+O"); onClicked: backend.openPicker() }
-                ToolAction { objectName: "toolbarRescan"; icon.name: "refresh-cw"; text: qsTr("Rescan"); tip: qsTr("Read the font list again  Ctrl+R"); enabled: !backend.scanning; onClicked: backend.refresh() }
+
+                // Mode switcher: Discover open-source fonts vs manage local Library
+                Rectangle {
+                    implicitWidth: modeRow.implicitWidth + Theme.s1 * 2
+                    implicitHeight: Theme.hControl + Theme.s1
+                    radius: Theme.rControl
+                    color: Theme.withAlpha(Theme.controlBg, 0.55)
+                    border.width: Theme.hairline
+                    border.color: Theme.border
+                    RowLayout {
+                        id: modeRow
+                        anchors.centerIn: parent
+                        spacing: 2
+                        Button {
+                            objectName: "modeDiscover"
+                            flat: !win.inDiscover
+                            checked: win.inDiscover
+                            implicitHeight: Theme.hControl
+                            icon.name: "globe"
+                            text: qsTr("Discover")
+                            onClicked: win.mode = "discover"
+                            ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay; ToolTip.text: qsTr("Browse open-source type catalogs  Ctrl+G")
+                        }
+                        Button {
+                            objectName: "modeLibrary"
+                            flat: win.inDiscover
+                            checked: !win.inDiscover
+                            implicitHeight: Theme.hControl
+                            icon.name: "layers"
+                            text: qsTr("Library")
+                            onClicked: win.mode = "library"
+                            ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay; ToolTip.text: qsTr("Manage installed fonts  Ctrl+Shift+L")
+                        }
+                    }
+                }
+                ToolbarRule {}
+                ToolAction { objectName: "toolbarInstall"; icon.name: "folder-plus"; text: qsTr("Import…"); tip: qsTr("Install local font files, folders or archives  Ctrl+O"); onClicked: backend.openPicker() }
+                ToolAction { objectName: "toolbarRescan"; icon.name: "refresh-cw"; text: qsTr("Rescan"); tip: qsTr("Read the font list again  Ctrl+R"); visible: !win.inDiscover; enabled: !backend.scanning; onClicked: backend.refresh() }
                 ToolbarRule {}
                 TextField {
                     id: searchField
                     objectName: "searchField"
                     Layout.preferredWidth: Theme.wSearch
                     Layout.maximumWidth: Theme.wSearch
-                    placeholderText: backend.searchScope === "designer" ? qsTr("Designer or foundry")
+                    placeholderText: win.inDiscover ? qsTr("Search catalog, designer or foundry…")
+                                   : backend.searchScope === "designer" ? qsTr("Designer or foundry")
                                    : backend.searchScope === "characters" ? qsTr("Characters the font must have")
                                    : qsTr("Filter by name")
                     leftPadding: Theme.s2 + Theme.szIcon + Theme.s2
                     rightPadding: Theme.szIconHit + Theme.s1
-                    onTextChanged: backend.filter = text
-                    Keys.onEscapePressed: { if (text !== "") { text = ""; backend.filter = "" } else rail.forceActiveFocus() }
-                    Keys.onDownPressed: rail.forceActiveFocus()
+                    onTextChanged: {
+                        if (win.inDiscover) catalog.query = text
+                        else backend.filter = text
+                    }
+                    Keys.onEscapePressed: {
+                        if (text !== "") {
+                            text = ""
+                            if (win.inDiscover) catalog.query = ""
+                            else backend.filter = ""
+                        } else if (!win.inDiscover) {
+                            rail.forceActiveFocus()
+                        }
+                    }
+                    Keys.onDownPressed: if (!win.inDiscover) rail.forceActiveFocus()
                     Icon { name: "search"; color: Theme.textMuted; x: Theme.s2; anchors.verticalCenter: parent.verticalCenter }
                     ToolButton {
                         objectName: "searchScope"
                         icon.name: searchField.text !== "" ? "x" : "chevron-down"
+                        visible: searchField.text !== "" || !win.inDiscover
                         anchors.right: parent.right; anchors.rightMargin: 2
                         anchors.verticalCenter: parent.verticalCenter
-                        onClicked: { if (searchField.text !== "") { searchField.text = ""; backend.filter = "" } else scopeMenu.popup() }
+                        onClicked: {
+                            if (searchField.text !== "") {
+                                searchField.text = ""
+                                if (win.inDiscover) catalog.query = ""
+                                else backend.filter = ""
+                            } else {
+                                scopeMenu.popup()
+                            }
+                        }
                         ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay
                         ToolTip.text: searchField.text !== "" ? qsTr("Clear") : qsTr("What to search")
                     }
@@ -289,8 +350,9 @@ ApplicationWindow {
                 }
                 Item { Layout.fillWidth: true }
 
-                // The view: specimen, grid, list, repertoire; and how big.
+                // The view: specimen, grid, list, repertoire; and how big. (Library mode)
                 Rectangle {
+                    visible: !win.inDiscover
                     implicitWidth: viewRow.implicitWidth + Theme.s1 * 2
                     implicitHeight: Theme.hControl + Theme.s1
                     radius: Theme.rControl
@@ -311,6 +373,7 @@ ApplicationWindow {
                 Slider {
                     id: sizeSlider
                     objectName: "sizeSlider"
+                    visible: !win.inDiscover
                     Layout.preferredWidth: 110
                     from: 0.5; to: 2.5
                     value: backend.specimenScale
@@ -319,12 +382,12 @@ ApplicationWindow {
                     ToolTip.delay: Theme.tooltipDelay
                     ToolTip.text: qsTr("Text size  %1%  (Ctrl + / −)").arg(Math.round(backend.specimenScale * 100))
                 }
-                ToolbarRule {}
+                ToolbarRule { visible: !win.inDiscover }
                 ToolAction {
                     objectName: "toolbarTerminal"
                     icon.name: "terminal"; text: qsTr("Terminal font")
                     tip: qsTr("Make this monospace family the terminal font  Ctrl+T")
-                    visible: backend.canSetTerminalFont
+                    visible: !win.inDiscover && backend.canSetTerminalFont
                     enabled: win.canTerminal
                     onClicked: backend.setAsTerminalFont()
                 }
@@ -333,6 +396,7 @@ ApplicationWindow {
                     icon.name: (backend.selected.inactive ?? false) ? "eye" : "eye-off"
                     text: (backend.selected.inactive ?? false) ? qsTr("Activate") : qsTr("Deactivate")
                     tip: qsTr("Hide this family from every app without deleting it  Ctrl+D")
+                    visible: !win.inDiscover
                     enabled: win.hasFamily && !backend.busy
                     onClicked: (backend.selected.inactive ?? false) ? backend.activateSelected() : backend.deactivateSelected()
                 }
@@ -340,6 +404,7 @@ ApplicationWindow {
                     objectName: "toolbarRemove"
                     icon.name: "trash-2"; text: qsTr("Remove")
                     tip: qsTr("Remove this family from your fonts  Delete")
+                    visible: !win.inDiscover
                     enabled: win.canRemove
                     onClicked: removeSheet.open()
                 }
@@ -366,10 +431,20 @@ ApplicationWindow {
 
             Sidebar {
                 id: sidebar
+                mode: win.inDiscover ? "discover" : "library"
                 visible: win.sidebarOpen
                 Layout.preferredWidth: Theme.wSidebar
                 Layout.minimumWidth: Theme.wSidebar
                 Layout.fillHeight: true
+                onDiscoverSelected: (src) => {
+                    win.mode = "discover"
+                    catalog.sourceFilter = src
+                    searchField.text = catalog.query
+                }
+                onLibrarySelected: {
+                    win.mode = "library"
+                    searchField.text = backend.filter
+                }
                 onNewCollectionRequested: nameSheet.openNew(qsTr("New collection"))
                 onNewSmartRequested: smartSheet.openNew()
                 onEditSmartRequested: (id) => smartSheet.openEdit(id)
@@ -386,15 +461,40 @@ ApplicationWindow {
             }
             Rectangle { visible: win.sidebarOpen; implicitWidth: Theme.hairline; Layout.fillHeight: true; color: Theme.border }
 
+            // ── Discover mode: Open-source catalog + Attribution inspector ─
+            CatalogView {
+                id: catalogView
+                visible: win.inDiscover
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+            Rectangle { visible: win.inDiscover; implicitWidth: Theme.hairline; Layout.fillHeight: true; color: Theme.border }
+            CatalogInspector {
+                id: catalogInspector
+                visible: win.inDiscover
+                Layout.preferredWidth: Theme.wInspector + 28
+                Layout.minimumWidth: Theme.wInspectorMin
+                Layout.fillHeight: true
+                onOpenInLibraryRequested: (familyName) => {
+                    win.mode = "library"
+                    backend.source = "yours"
+                    backend.selectedName = familyName
+                    backend.view = "specimen"
+                }
+            }
+
+            // ── Library mode: Local font rail + views + Inspector ─────────
             FamilyRail {
                 id: rail
+                visible: !win.inDiscover
                 Layout.preferredWidth: Theme.wNavigator
                 Layout.minimumWidth: Theme.wNavigatorMin
                 Layout.fillHeight: true
             }
-            Rectangle { implicitWidth: Theme.hairline; Layout.fillHeight: true; color: Theme.border }
+            Rectangle { visible: !win.inDiscover; implicitWidth: Theme.hairline; Layout.fillHeight: true; color: Theme.border }
 
             StackLayout {
+                visible: !win.inDiscover
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 currentIndex: backend.staged ? 0 : backend.view === "grid" ? 1 : backend.view === "list" ? 2 : backend.view === "repertoire" ? 3 : backend.view === "compare" ? 4 : 0
@@ -404,10 +504,11 @@ ApplicationWindow {
                 Repertoire { id: repertoire }
                 CompareView { id: compareView }
             }
-            Rectangle { implicitWidth: Theme.hairline; Layout.fillHeight: true; color: Theme.border }
+            Rectangle { visible: !win.inDiscover; implicitWidth: Theme.hairline; Layout.fillHeight: true; color: Theme.border }
 
             Inspector {
                 id: inspector
+                visible: !win.inDiscover
                 Layout.preferredWidth: Theme.wInspector
                 Layout.minimumWidth: Theme.wInspectorMin
                 Layout.fillHeight: true
@@ -429,9 +530,13 @@ ApplicationWindow {
                 anchors.leftMargin: Theme.s4
                 anchors.rightMargin: Theme.s3
                 spacing: Theme.s3
-                StatusText { text: backend.sourceTitle; color: Theme.textPrimary; font.weight: Theme.wHeading }
+                StatusText { text: win.inDiscover ? qsTr("Discover") : backend.sourceTitle; color: Theme.textPrimary; font.weight: Theme.wHeading }
                 StatusRule {}
-                StatusText { text: backend.scanning ? qsTr("Reading fonts…") : Theme.plural(backend.visibleCount, qsTr("family"), qsTr("families")) }
+                StatusText {
+                    text: win.inDiscover
+                        ? (catalog.loading ? qsTr("Indexing open-source catalogs…") : Theme.plural(catalog.filteredCount, qsTr("typeface"), qsTr("typefaces")))
+                        : (backend.scanning ? qsTr("Reading fonts…") : Theme.plural(backend.visibleCount, qsTr("family"), qsTr("families")))
+                }
                 StatusRule {}
                 StatusText { text: qsTr("Yours %1").arg(backend.userCount) }
                 StatusRule {}
@@ -439,7 +544,7 @@ ApplicationWindow {
                 StatusRule { visible: backend.readingMetadata }
                 StatusText { visible: backend.readingMetadata; text: qsTr("Reading font details…"); color: Theme.textMuted }
                 Item { Layout.fillWidth: true }
-                BusyIndicator { visible: backend.busy || backend.staging; running: visible; implicitWidth: Theme.szIcon; implicitHeight: Theme.szIcon }
+                BusyIndicator { visible: backend.busy || backend.staging || catalog.installingAny; running: visible; implicitWidth: Theme.szIcon; implicitHeight: Theme.szIcon }
                 StatusText {
                     objectName: "statusMessage"
                     text: backend.status

@@ -460,6 +460,44 @@ void Backend::runFontCache(const QString &dir) {
     startBounded(m_cacheProcess, QStringLiteral("fc-cache"), {QStringLiteral("-f"), QStringLiteral("--"), m_fontRoot}, 120000);
 }
 
+void Backend::recordCatalogInstall(const QString &family, const QString &source, const QString &dir) {
+    const QDateTime now = QDateTime::currentDateTime();
+    m_library.added.insert(family, now);
+    if (!source.isEmpty()) m_library.sources.insert(family, source);
+    saveLibrary();
+    setBusy(true);
+    runFontCache(dir);
+}
+
+QStringList Backend::runningDesignApps() const {
+    static const QList<QPair<QString, QString>> known = {
+        {QStringLiteral("figcraft"), QStringLiteral("FigCraft")},
+        {QStringLiteral("artcraft"), QStringLiteral("ArtCraft")},
+        {QStringLiteral("inkscape"), QStringLiteral("Inkscape")},
+        {QStringLiteral("gimp"), QStringLiteral("GIMP")},
+        {QStringLiteral("krita"), QStringLiteral("Krita")},
+        {QStringLiteral("blender"), QStringLiteral("Blender")},
+        {QStringLiteral("resolve"), QStringLiteral("DaVinci Resolve")},
+        {QStringLiteral("figma-linux"), QStringLiteral("Figma")},
+        {QStringLiteral("scribus"), QStringLiteral("Scribus")},
+        {QStringLiteral("soffice.bin"), QStringLiteral("LibreOffice")},
+    };
+    QStringList found;
+    QDir proc(QStringLiteral("/proc"));
+    const QStringList pids = proc.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+    for (const QString &pid : pids) {
+        if (pid.isEmpty() || !pid.at(0).isDigit()) continue;
+        QFile comm(QStringLiteral("/proc/%1/comm").arg(pid));
+        if (!comm.open(QIODevice::ReadOnly)) continue;
+        const QString name = QString::fromUtf8(comm.readAll()).trimmed().toLower();
+        for (const auto &k : known) {
+            if (name.startsWith(k.first) && !found.contains(k.second))
+                found.append(k.second);
+        }
+    }
+    return found;
+}
+
 // ── Remove ──────────────────────────────────────────────────────────────────
 
 // A family's files that are yours and that no other family also lists: a .ttc
