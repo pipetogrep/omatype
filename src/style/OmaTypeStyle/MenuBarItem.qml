@@ -11,6 +11,8 @@ T.MenuBarItem {
     padding: Theme.s1
     leftPadding: Theme.s2 + 2
     rightPadding: Theme.s2 + 2
+    topInset: Theme.s1
+    bottomInset: Theme.s1
     hoverEnabled: true
     font.family: Theme.fontFamily
     font.pixelSize: Theme.fsControl
