@@ -1,8 +1,11 @@
 #include "backend.h"
 #include "catalog.h"
+#include "fontfile.h"
 #include "theme.h"
 
 #include <QFile>
+#include <QFontDatabase>
+#include <QProcess>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickItem>
@@ -114,6 +117,38 @@ private slots:
         QVERIFY(Catalog::looksLikeFontFile(QByteArray("\x00\x01\x00\x00\x00\x0f\x00\x80\x00\x03\x00\x70", 12)));
         QVERIFY(Catalog::looksLikeFontFile(QByteArray("OTTO0123456789", 14)));
         QVERIFY(!Catalog::looksLikeFontFile(QByteArray("<html>404 Not Found</html>")));
+    }
+
+    void previewFaceIsRenamed() {
+        // Any single-face font on the machine will do.
+        QProcess fc;
+        fc.start(QStringLiteral("fc-match"), {QStringLiteral("-f"), QStringLiteral("%{file}"), QStringLiteral("sans-serif:fontformat=TrueType")});
+        fc.waitForFinished(5000);
+        const QString path = QString::fromLocal8Bit(fc.readAllStandardOutput());
+        QFile f(path);
+        if (!path.endsWith(QStringLiteral(".ttf"), Qt::CaseInsensitive) || !f.open(QIODevice::ReadOnly))
+            QSKIP("no TrueType font found to rename");
+        const QByteArray original = f.readAll();
+        const FontFileInfo before = FontFile::parse(original);
+
+        const QString unique = QStringLiteral("Omatype Preview 0123abcd");
+        const QByteArray renamed = FontFile::withFamily(original, unique);
+        QVERIFY(!renamed.isEmpty());
+        const FontFileInfo after = FontFile::parse(renamed);
+        QVERIFY(after.ok);
+        QCOMPARE(after.family, unique);
+        QCOMPARE(after.fullName, unique);
+        QCOMPARE(after.postscriptName, QStringLiteral("OmatypePreview0123abcd"));
+        QCOMPARE(after.glyphCount, before.glyphCount);
+        QCOMPARE(after.designer, before.designer);
+
+        const int id = QFontDatabase::addApplicationFontFromData(renamed);
+        QVERIFY(id >= 0);
+        QCOMPARE(QFontDatabase::applicationFontFamilies(id), QStringList{unique});
+        QFontDatabase::removeApplicationFont(id);
+
+        QVERIFY(FontFile::withFamily(QByteArray("ttcf0123456789", 14), unique).isEmpty());
+        QVERIFY(FontFile::withFamily(QByteArray("<html>404</html>"), unique).isEmpty());
     }
 
     void registeredAppsAndExecParsing() {

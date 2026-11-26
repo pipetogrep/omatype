@@ -64,6 +64,11 @@ namespace FontFile {
 FontFileInfo read(const QString &path, int faceIndex = 0);
 // The same, from bytes already in memory (tests, and collections).
 FontFileInfo parse(const QByteArray &bytes, int faceIndex = 0);
+// The same single-face sfnt (TrueType or CFF) with its family renamed to
+// `family` in the `name` table (IDs 1, 4, 6, 16, 18, 21), so it can be loaded
+// as an application font without sharing a family name with an installed copy.
+// Empty when the bytes are not a font this can rewrite (a collection, WOFF).
+QByteArray withFamily(const QByteArray &bytes, const QString &family);
 // OpenType script tag → name, e.g. "latn" → "Latin"; the tag itself when unknown.
 QString scriptName(const QString &tag);
 // fontconfig language code → name, e.g. "ta" → "Tamil"; the code when unknown.

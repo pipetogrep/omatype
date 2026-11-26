@@ -393,3 +393,102 @@ QString FontFile::widthName(int w) {
     }
     return {};
 }
+
+QByteArray FontFile::withFamily(const QByteArray &b, const QString &family) {
+    const quint32 version = u32(b, 0);
+    if (version != 0x00010000 && version != 0x4F54544F /* OTTO */ && version != 0x74727565 /* true */) return {};
+    const int numTables = u16(b, 4);
+    if (numTables == 0 || 12 + qsizetype(numTables) * 16 > b.size()) return {};
+
+    int nameRecord = -1, headRecord = -1;
+    for (int i = 0; i < numTables; ++i) {
+        const QString tag = tagAt(b, 12 + i * 16);
+        if (tag == QLatin1String("name")) nameRecord = i;
+        else if (tag == QLatin1String("head")) headRecord = i;
+    }
+    if (nameRecord < 0) return {};
+    const qsizetype nameAt = 12 + nameRecord * 16;
+    const quint32 nameOffset = u32(b, nameAt + 8);
+    const quint32 nameLength = u32(b, nameAt + 12);
+    if (qsizetype(nameOffset) + nameLength > b.size() || nameLength < 6) return {};
+
+    const QByteArray name = b.mid(nameOffset, nameLength);
+    const int count = u16(name, 2);
+    const int storage = u16(name, 4);
+    if (6 + qsizetype(count) * 12 > name.size()) return {};
+
+    // PostScript names are printable ASCII without spaces.
+    QString psName;
+    for (const QChar c : family)
+        if (c.unicode() > 32 && c.unicode() < 127 && !QStringLiteral("[](){}<>/%").contains(c)) psName.append(c);
+    const auto encode = [](const QString &s, quint16 platform) {
+        if (platform == 1) return s.toLatin1();   // Macintosh Roman; the name is ASCII
+        QByteArray out;
+        for (const QChar c : s) { out.append(char(c.unicode() >> 8)); out.append(char(c.unicode() & 0xff)); }
+        return out;
+    };
+
+    // Rebuilt as format 0. Records whose language points into a format 1
+    // language-tag list are dropped along with the list.
+    struct Rec { quint16 platform, encoding, language, nameId; QByteArray text; };
+    QList<Rec> recs;
+    for (int i = 0; i < count; ++i) {
+        const qsizetype at = 6 + qsizetype(i) * 12;
+        Rec r{u16(name, at), u16(name, at + 2), u16(name, at + 4), u16(name, at + 6), {}};
+        if (r.language >= 0x8000) continue;
+        const qsizetype from = qsizetype(storage) + u16(name, at + 10);
+        const int len = u16(name, at + 8);
+        if (from + len > name.size()) return {};
+        switch (r.nameId) {
+        case 1: case 4: case 16: case 18: case 21: r.text = encode(family, r.platform); break;
+        case 6: r.text = encode(psName, r.platform); break;
+        default: r.text = name.mid(from, len);
+        }
+        recs.append(r);
+    }
+
+    QByteArray table, strings;
+    const auto put16 = [](QByteArray &out, quint16 v) { out.append(char(v >> 8)); out.append(char(v & 0xff)); };
+    put16(table, 0);
+    put16(table, quint16(recs.size()));
+    put16(table, quint16(6 + recs.size() * 12));
+    for (const Rec &r : recs) {
+        if (strings.size() + r.text.size() > 0xffff) return {};
+        put16(table, r.platform); put16(table, r.encoding); put16(table, r.language); put16(table, r.nameId);
+        put16(table, quint16(r.text.size())); put16(table, quint16(strings.size()));
+        strings.append(r.text);
+    }
+    table.append(strings);
+
+    // The new table goes on the end, 4-byte aligned; the old one is left in
+    // place, unreferenced.
+    QByteArray out = b;
+    while (out.size() % 4) out.append('\0');
+    const quint32 newOffset = quint32(out.size());
+    out.append(table);
+    while (out.size() % 4) out.append('\0');
+
+    const auto set32 = [&out](qsizetype at, quint32 v) {
+        qToBigEndian<quint32>(v, reinterpret_cast<uchar *>(out.data() + at));
+    };
+    const auto checksum = [&out](qsizetype from, qsizetype len) {
+        quint32 sum = 0;
+        for (qsizetype i = from; i < from + len; i += 4) {
+            quint32 word = 0;
+            for (int k = 0; k < 4; ++k) word = (word << 8) | (i + k < out.size() ? uchar(out[i + k]) : 0);
+            sum += word;
+        }
+        return sum;
+    };
+    set32(nameAt + 4, checksum(newOffset, table.size()));
+    set32(nameAt + 8, newOffset);
+    set32(nameAt + 12, quint32(table.size()));
+    if (headRecord >= 0) {
+        const quint32 headOffset = u32(out, 12 + headRecord * 16 + 8);
+        if (qsizetype(headOffset) + 12 <= out.size()) {
+            set32(headOffset + 8, 0);
+            set32(headOffset + 8, 0xB1B0AFBA - checksum(0, out.size()));
+        }
+    }
+    return out;
+}

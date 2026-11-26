@@ -236,6 +236,9 @@ private:
     void fetchGoogleManifest(const QString &id, std::function<void(bool)> callback = nullptr);
     void startInstallDownload(const QString &id, bool preferVariable, const QStringList &selectedFilenames);
     QString previewCachePath(const CatalogFamily &entry, const QString &text) const;
+    // Points an entry that is not installed back at its downloaded preview,
+    // or at nothing so the view asks for one.
+    void usePreviewCache(CatalogFamily &e) const;
     QString previewTextKey() const;
     void saveShortlist();
     void loadShortlist();

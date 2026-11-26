@@ -1,5 +1,6 @@
 #include "catalog.h"
 #include "backend.h"
+#include "fontfile.h"
 
 #include <QCryptographicHash>
 #include <QDateTime>
@@ -495,7 +496,12 @@ QString Catalog::cacheDir() {
 }
 
 QString Catalog::previewCacheDir() {
-    const QString d = cacheDir() + QStringLiteral("/previews");
+    // "faces" holds previews renamed to a family of their own (see
+    // fetchDirectPreview). The older "previews" folder kept the fonts' real
+    // names, which collide with installed copies, so it is dropped once.
+    static const bool dropped = QDir(cacheDir() + QStringLiteral("/previews")).removeRecursively();
+    Q_UNUSED(dropped);
+    const QString d = cacheDir() + QStringLiteral("/faces");
     QDir().mkpath(d);
     return d;
 }
@@ -683,9 +689,8 @@ void Catalog::syncInstalled() {
         if (e.installed) {
             ++m_installedCatalogCount;
             if (!it.value().isEmpty()) e.previewFile = it.value();
-        } else if (wasInstalled && e.source == QLatin1String("google")) {
-            const QString cp = previewCachePath(e, previewTextKey());
-            e.previewFile = QFileInfo::exists(cp) ? cp : QString();
+        } else if (wasInstalled) {
+            usePreviewCache(e);
         }
         if (wasInstalled != e.installed) {
             m_model.updateEntry(e.id, e, {CatalogModel::InstalledRole, CatalogModel::PreviewFileRole});
@@ -830,6 +835,11 @@ QString Catalog::previewCachePath(const CatalogFamily &entry, const QString &tex
     return previewCacheDir() + QLatin1Char('/') + entry.id + QLatin1Char('-') + QString::fromLatin1(hash) + QStringLiteral(".ttf");
 }
 
+void Catalog::usePreviewCache(CatalogFamily &e) const {
+    const QString cp = previewCachePath(e, previewTextKey());
+    e.previewFile = QFileInfo::exists(cp) ? cp : QString();
+}
+
 void Catalog::requestPreview(const QString &id) {
     const auto it = m_indexById.constFind(id);
     if (it == m_indexById.cend()) return;
@@ -932,9 +942,19 @@ void Catalog::fetchDirectPreview(const QString &id, const QString &url, const QS
         if (reply->error() == QNetworkReply::NoError) {
             const QByteArray bytes = reply->readAll();
             if (looksLikeFontFile(bytes)) {
+                // A preview keeps its real family name only if it cannot be
+                // renamed. Under its real name it shares a family with any
+                // installed copy, and Qt picks between them by name: after an
+                // uninstall that can be the deleted file, which draws in the
+                // fallback font or, with layouts already cached, as the wrong
+                // glyphs. Different sample-text subsets of one family number
+                // their glyphs differently too, so the name follows the bytes.
+                const QString unique = QStringLiteral("Omatype Preview ")
+                    + QString::fromLatin1(QCryptographicHash::hash(bytes, QCryptographicHash::Sha1).toHex().left(12));
+                const QByteArray renamed = FontFile::withFamily(bytes, unique);
                 QSaveFile sf(cachePath);
                 if (sf.open(QIODevice::WriteOnly)) {
-                    sf.write(bytes);
+                    sf.write(renamed.isEmpty() ? bytes : renamed);
                     if (sf.commit()) {
                         const auto it = m_indexById.constFind(id);
                         if (it != m_indexById.cend()) {
@@ -1273,8 +1293,10 @@ void Catalog::uninstallFamily(const QString &id) {
         m_backend->setStatus(tr("Remove failed: %1").arg(err), true);
         return;
     }
+    // The installed file was the preview; it is gone now.
     m_all[it.value()].installed = false;
-    m_model.updateEntry(id, m_all.at(it.value()), {CatalogModel::InstalledRole});
+    usePreviewCache(m_all[it.value()]);
+    m_model.updateEntry(id, m_all.at(it.value()), {CatalogModel::InstalledRole, CatalogModel::PreviewFileRole});
     if (m_selectedId == id) emit selectionChanged();
     m_backend->setStatus(tr("Removed %1.").arg(familyName));
     m_backend->refresh();
