@@ -143,7 +143,7 @@ ApplicationWindow {
                     Layout.fillHeight: true
                     Menu {
                         title: qsTr("File")
-                        MenuItem { text: qsTr("Install fonts…"); icon.name: "folder-plus"; onTriggered: backend.openPicker() }
+                        MenuItem { text: qsTr("Install from Disk"); icon.name: "folder-plus"; onTriggered: backend.openPicker() }
                         MenuItem { text: qsTr("Rescan"); icon.name: "refresh-cw"; enabled: !backend.scanning; onTriggered: backend.refresh() }
                         MenuSeparator {}
                         MenuItem { text: qsTr("Export family…"); icon.name: "folder-output"; enabled: win.hasFamily; onTriggered: backend.exportSelected() }
