@@ -60,6 +60,27 @@ DisabledFace DisabledFace::fromJson(const QJsonObject &o) {
     return d;
 }
 
+QJsonObject RegisteredApp::toJson() const {
+    return {
+        {QStringLiteral("id"), id},
+        {QStringLiteral("name"), name},
+        {QStringLiteral("processName"), processName},
+        {QStringLiteral("launchCommand"), launchCommand},
+        {QStringLiteral("reloadCommand"), reloadCommand},
+        {QStringLiteral("autoReload"), autoReload},
+    };
+}
+RegisteredApp RegisteredApp::fromJson(const QJsonObject &o) {
+    RegisteredApp a;
+    a.id = o.value(QStringLiteral("id")).toString();
+    a.name = o.value(QStringLiteral("name")).toString();
+    a.processName = o.value(QStringLiteral("processName")).toString();
+    a.launchCommand = o.value(QStringLiteral("launchCommand")).toString();
+    a.reloadCommand = o.value(QStringLiteral("reloadCommand")).toString();
+    a.autoReload = o.value(QStringLiteral("autoReload")).toBool(true);
+    return a;
+}
+
 // ── Paths ───────────────────────────────────────────────────────────────────
 
 static QString configHome() {
@@ -94,27 +115,32 @@ bool Library::save(const QString &path, QString *error) const {
 }
 
 QJsonObject Library::toJson() const {
-    QJsonArray c, s, d;
+    QJsonArray c, s, d, ap;
     for (const Collection &x : collections) c.append(x.toJson());
     for (const SmartCollection &x : smart) s.append(x.toJson());
     for (const DisabledFace &x : disabled) d.append(x.toJson());
+    for (const RegisteredApp &x : apps) ap.append(x.toJson());
     QJsonObject a, src, tg, nt;
     for (auto it = added.cbegin(); it != added.cend(); ++it) a.insert(it.key(), it.value().toString(Qt::ISODate));
     for (auto it = sources.cbegin(); it != sources.cend(); ++it) src.insert(it.key(), it.value());
     for (auto it = tags.cbegin(); it != tags.cend(); ++it) if (!it.value().isEmpty()) tg.insert(it.key(), QJsonArray::fromStringList(it.value()));
     for (auto it = notes.cbegin(); it != notes.cend(); ++it) if (!it.value().trimmed().isEmpty()) nt.insert(it.key(), it.value());
     return {{QStringLiteral("version"), 2}, {QStringLiteral("collections"), c}, {QStringLiteral("smart"), s},
-            {QStringLiteral("disabled"), d}, {QStringLiteral("added"), a}, {QStringLiteral("sources"), src},
-            {QStringLiteral("tags"), tg}, {QStringLiteral("starred"), QJsonArray::fromStringList(starred)},
-            {QStringLiteral("notes"), nt}};
+            {QStringLiteral("disabled"), d}, {QStringLiteral("apps"), ap}, {QStringLiteral("added"), a},
+            {QStringLiteral("sources"), src}, {QStringLiteral("tags"), tg},
+            {QStringLiteral("starred"), QJsonArray::fromStringList(starred)}, {QStringLiteral("notes"), nt}};
 }
 
 void Library::fromJson(const QJsonObject &o) {
-    collections.clear(); smart.clear(); disabled.clear(); added.clear();
+    collections.clear(); smart.clear(); disabled.clear(); apps.clear(); added.clear();
     sources.clear(); tags.clear(); starred.clear(); notes.clear();
     for (const QJsonValue &v : o.value(QStringLiteral("collections")).toArray()) collections.append(Collection::fromJson(v.toObject()));
     for (const QJsonValue &v : o.value(QStringLiteral("smart")).toArray()) smart.append(SmartCollection::fromJson(v.toObject()));
     for (const QJsonValue &v : o.value(QStringLiteral("disabled")).toArray()) disabled.append(DisabledFace::fromJson(v.toObject()));
+    for (const QJsonValue &v : o.value(QStringLiteral("apps")).toArray()) {
+        const RegisteredApp a = RegisteredApp::fromJson(v.toObject());
+        if (!a.id.isEmpty() && !a.name.isEmpty()) apps.append(a);
+    }
     const QJsonObject a = o.value(QStringLiteral("added")).toObject();
     for (auto it = a.constBegin(); it != a.constEnd(); ++it) {
         const QDateTime when = QDateTime::fromString(it.value().toString(), Qt::ISODate);
@@ -184,6 +210,10 @@ Collection *Library::collection(const QString &id) {
 }
 SmartCollection *Library::smartCollection(const QString &id) {
     for (SmartCollection &s : smart) if (s.id == id) return &s;
+    return nullptr;
+}
+RegisteredApp *Library::registeredApp(const QString &id) {
+    for (RegisteredApp &a : apps) if (a.id == id) return &a;
     return nullptr;
 }
 QString Library::newId() { return QUuid::createUuid().toString(QUuid::WithoutBraces).left(8); }

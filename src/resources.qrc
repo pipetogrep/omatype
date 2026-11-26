@@ -3,6 +3,7 @@
         <file>Main.qml</file>
         <file>Theme.qml</file>
         <file>Sheet.qml</file>
+        <file>SheetFooter.qml</file>
         <file>SectionLabel.qml</file>
         <file>FamilyRail.qml</file>
         <file>Specimen.qml</file>
@@ -16,6 +17,7 @@
         <file>ValidationSheet.qml</file>
         <file>NameSheet.qml</file>
         <file>TidySheet.qml</file>
+        <file>RegisteredAppsSheet.qml</file>
         <file>CompareView.qml</file>
         <file>CatalogView.qml</file>
         <file>CatalogInspector.qml</file>

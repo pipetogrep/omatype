@@ -46,14 +46,27 @@ struct DisabledFace {
     static DisabledFace fromJson(const QJsonObject &o);
 };
 
+// A design/desktop app registered to reload after font changes.
+struct RegisteredApp {
+    QString id;
+    QString name;
+    QString processName;
+    QString launchCommand;
+    QString reloadCommand;
+    bool autoReload = true;
+    QJsonObject toJson() const;
+    static RegisteredApp fromJson(const QJsonObject &o);
+};
+
 // Everything Omatype remembers between runs that is not a font file:
-// collections, smart collections, which faces are deactivated, and when each
-// family was installed. One JSON file; pure data, no Qt GUI.
+// collections, smart collections, which faces are deactivated, registered apps,
+// and when each family was installed. One JSON file; pure data, no Qt GUI.
 class Library {
 public:
     QList<Collection> collections;
     QList<SmartCollection> smart;
     QList<DisabledFace> disabled;
+    QList<RegisteredApp> apps;
     QHash<QString, QDateTime> added;   // family → when Omatype installed it
     QHash<QString, QString> sources;   // family → what it was installed from
     QHash<QString, QStringList> tags;  // family → tags, lower-case, unique
@@ -74,6 +87,7 @@ public:
 
     Collection *collection(const QString &id);
     SmartCollection *smartCollection(const QString &id);
+    RegisteredApp *registeredApp(const QString &id);
     static QString newId();
     static QString normaliseTag(const QString &tag);
     QStringList allTags() const;       // every tag in use, sorted

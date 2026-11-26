@@ -229,6 +229,7 @@ Backend::Backend(QObject *parent) : QObject(parent) {
     m_sample = settings.value(QStringLiteral("sample"), defaultSample()).toString();
     m_showCoverage = settings.value(QStringLiteral("showCoverage"), false).toBool();
     m_view = settings.value(QStringLiteral("view"), QStringLiteral("specimen")).toString();
+    if (m_view == QLatin1String("compare")) m_view = QStringLiteral("specimen");
     m_groupWeights = settings.value(QStringLiteral("groupWeights"), true).toBool();
     m_sortOrder = settings.value(QStringLiteral("sortOrder"), QStringLiteral("name")).toString();
     m_compare = settings.value(QStringLiteral("compare")).toStringList();
@@ -791,7 +792,7 @@ void Backend::setView(const QString &view) {
     const QString v = (view == QLatin1String("grid") || view == QLatin1String("list") || view == QLatin1String("repertoire") || view == QLatin1String("compare")) ? view : QStringLiteral("specimen");
     if (m_view == v) return;
     m_view = v;
-    QSettings().setValue(QStringLiteral("view"), v);
+    if (v != QLatin1String("compare")) QSettings().setValue(QStringLiteral("view"), v);
     emit viewChanged();
 }
 

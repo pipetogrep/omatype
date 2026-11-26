@@ -5,9 +5,15 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QRegularExpression>
+#include <QStandardPaths>
+#include <QTimer>
 #include <algorithm>
+#include <cerrno>
+#include <csignal>
 #include <filesystem>
+#include <sys/stat.h>
 #include <system_error>
+#include <unistd.h>
 
 // Staging, installing, removing and the terminal font: everything that
 // changes what is on disk.
@@ -451,7 +457,12 @@ void Backend::runFontCache(const QString &dir) {
     Q_UNUSED(dir);
     if (m_cacheProcess) m_cacheProcess->deleteLater();
     m_cacheProcess = new QProcess(this);
-    auto done = [this] { setBusy(false); refresh(); };
+    auto done = [this] {
+        setBusy(false);
+        refresh();
+        reloadRunningApps(true);
+        emit appsChanged();
+    };
     connect(m_cacheProcess, &QProcess::finished, this, done);
     connect(m_cacheProcess, &QProcess::errorOccurred, this, [done](QProcess::ProcessError error) {
         if (error == QProcess::FailedToStart) done();
@@ -469,33 +480,482 @@ void Backend::recordCatalogInstall(const QString &family, const QString &source,
     runFontCache(dir);
 }
 
-QStringList Backend::runningDesignApps() const {
-    static const QList<QPair<QString, QString>> known = {
-        {QStringLiteral("figcraft"), QStringLiteral("FigCraft")},
-        {QStringLiteral("artcraft"), QStringLiteral("ArtCraft")},
-        {QStringLiteral("inkscape"), QStringLiteral("Inkscape")},
-        {QStringLiteral("gimp"), QStringLiteral("GIMP")},
-        {QStringLiteral("krita"), QStringLiteral("Krita")},
-        {QStringLiteral("blender"), QStringLiteral("Blender")},
-        {QStringLiteral("resolve"), QStringLiteral("DaVinci Resolve")},
-        {QStringLiteral("figma-linux"), QStringLiteral("Figma")},
-        {QStringLiteral("scribus"), QStringLiteral("Scribus")},
-        {QStringLiteral("soffice.bin"), QStringLiteral("LibreOffice")},
-    };
-    QStringList found;
+// ── Registered design apps & safe reload ────────────────────────────────────
+
+namespace {
+
+struct RunningProc {
+    qint64 pid = 0;
+    QString comm;
+    QStringList cmdline;
+    QString cwd;
+};
+
+QList<RunningProc> listUserProcesses() {
+    QList<RunningProc> out;
+    const uid_t myUid = ::getuid();
+    const qint64 myPid = static_cast<qint64>(::getpid());
     QDir proc(QStringLiteral("/proc"));
-    const QStringList pids = proc.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-    for (const QString &pid : pids) {
-        if (pid.isEmpty() || !pid.at(0).isDigit()) continue;
-        QFile comm(QStringLiteral("/proc/%1/comm").arg(pid));
-        if (!comm.open(QIODevice::ReadOnly)) continue;
-        const QString name = QString::fromUtf8(comm.readAll()).trimmed().toLower();
-        for (const auto &k : known) {
-            if (name.startsWith(k.first) && !found.contains(k.second))
-                found.append(k.second);
+    const QStringList entries = proc.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+    for (const QString &entry : entries) {
+        bool ok = false;
+        const qint64 pid = entry.toLongLong(&ok);
+        if (!ok || pid <= 1 || pid == myPid) continue;
+        const QString pdir = QStringLiteral("/proc/%1").arg(entry);
+        struct stat st {};
+        if (::stat(pdir.toLocal8Bit().constData(), &st) != 0 || st.st_uid != myUid) continue;
+
+        QFile commFile(pdir + QStringLiteral("/comm"));
+        if (!commFile.open(QIODevice::ReadOnly)) continue;
+        RunningProc rp;
+        rp.pid = pid;
+        rp.comm = QString::fromUtf8(commFile.readAll()).trimmed();
+
+        QFile cmdFile(pdir + QStringLiteral("/cmdline"));
+        if (cmdFile.open(QIODevice::ReadOnly)) {
+            const QByteArray raw = cmdFile.readAll();
+            for (const QByteArray &part : raw.split('\0')) {
+                if (!part.isEmpty()) rp.cmdline.append(QString::fromUtf8(part));
+            }
+        }
+        rp.cwd = QFileInfo(pdir + QStringLiteral("/cwd")).symLinkTarget();
+        out.append(std::move(rp));
+    }
+    return out;
+}
+
+bool procMatchesTarget(const RunningProc &rp, const QString &target) {
+    const QString needle = target.trimmed().toLower();
+    if (needle.isEmpty()) return false;
+    const QString commLower = rp.comm.toLower();
+    if (commLower == needle) return true;
+    // Linux /proc/<pid>/comm is truncated at 15 chars
+    if (needle.size() > 15 && commLower == needle.left(15)) return true;
+    if (!rp.cmdline.isEmpty()) {
+        const QString base = QFileInfo(rp.cmdline.first()).fileName().toLower();
+        if (base == needle) return true;
+    }
+    return false;
+}
+
+bool isSubprocessCmdline(const QStringList &cmdline) {
+    for (const QString &arg : cmdline) {
+        if (arg.startsWith(QLatin1String("--type="))) return true;
+    }
+    return false;
+}
+
+bool isAppRunningIn(const QList<RunningProc> &procs, const QString &processName) {
+    for (const RunningProc &rp : procs) {
+        if (procMatchesTarget(rp, processName)) return true;
+    }
+    return false;
+}
+
+} // namespace
+
+QString Backend::cleanDesktopExec(const QString &execLine, QString *processNameOut) {
+    const QStringList tokens = QProcess::splitCommand(execLine.trimmed());
+    QStringList cleaned;
+    for (const QString &tok : tokens) {
+        // Strip XDG Desktop Entry field codes (%f, %F, %u, %U, %i, %c, %k, etc.)
+        if (tok.size() == 2 && tok.at(0) == QLatin1Char('%') && tok.at(1).isLetter()) continue;
+        cleaned.append(tok);
+    }
+    if (processNameOut) {
+        QString bin;
+        int i = 0;
+        if (i < cleaned.size() && QFileInfo(cleaned.at(i)).fileName() == QLatin1String("env")) {
+            ++i;
+            while (i < cleaned.size() && cleaned.at(i).contains(QLatin1Char('='))) ++i;
+        }
+        // Handle wrappers like flatpak run <app-id> or uwsm app -- <bin>
+        if (i < cleaned.size()) {
+            const QString first = QFileInfo(cleaned.at(i)).fileName();
+            if (first == QLatin1String("uwsm") && i + 2 < cleaned.size()) {
+                for (int j = i + 1; j < cleaned.size(); ++j) {
+                    if (cleaned.at(j) == QLatin1String("--") && j + 1 < cleaned.size()) {
+                        bin = QFileInfo(cleaned.at(j + 1)).fileName();
+                        break;
+                    }
+                }
+            }
+            if (bin.isEmpty()) bin = first;
+        }
+        *processNameOut = bin;
+    }
+    QStringList quoted;
+    for (const QString &tok : cleaned) {
+        if (tok.contains(QLatin1Char(' ')) || tok.contains(QLatin1Char('\t'))) {
+            QString q = tok;
+            q.replace(QLatin1Char('"'), QStringLiteral("\\\""));
+            quoted.append(QLatin1Char('"') + q + QLatin1Char('"'));
+        } else {
+            quoted.append(tok);
         }
     }
+    return quoted.join(QLatin1Char(' '));
+}
+
+QStringList Backend::runningDesignApps() const {
+    const QList<RunningProc> procs = listUserProcesses();
+    QStringList found;
+    for (const RegisteredApp &app : m_library.apps) {
+        if (isAppRunningIn(procs, app.processName) && !found.contains(app.name))
+            found.append(app.name);
+    }
     return found;
+}
+
+QVariantList Backend::registeredApps() const {
+    const QList<RunningProc> procs = listUserProcesses();
+    QVariantList out;
+    for (const RegisteredApp &app : m_library.apps) {
+        out.append(QVariantMap{
+            {QStringLiteral("id"), app.id},
+            {QStringLiteral("name"), app.name},
+            {QStringLiteral("processName"), app.processName},
+            {QStringLiteral("launchCommand"), app.launchCommand},
+            {QStringLiteral("reloadCommand"), app.reloadCommand},
+            {QStringLiteral("autoReload"), app.autoReload},
+            {QStringLiteral("running"), isAppRunningIn(procs, app.processName)},
+        });
+    }
+    return out;
+}
+
+QVariantList Backend::runningManualApps() const {
+    const QList<RunningProc> procs = listUserProcesses();
+    QVariantList out;
+    for (const RegisteredApp &app : m_library.apps) {
+        if (app.autoReload) continue;
+        if (!isAppRunningIn(procs, app.processName)) continue;
+        out.append(QVariantMap{
+            {QStringLiteral("id"), app.id},
+            {QStringLiteral("name"), app.name},
+            {QStringLiteral("processName"), app.processName},
+        });
+    }
+    return out;
+}
+
+QVariantList Backend::discoverApps() const {
+    const QList<RunningProc> procs = listUserProcesses();
+    QSet<QString> registeredProcs;
+    for (const RegisteredApp &a : m_library.apps) registeredProcs.insert(a.processName.toLower());
+
+    static const QStringList fontUserKeywords = {
+        QStringLiteral("graphics"), QStringLiteral("2dgraphics"), QStringLiteral("3dgraphics"),
+        QStringLiteral("vectorgraphics"), QStringLiteral("rastergraphics"), QStringLiteral("publishing"),
+        QStringLiteral("photography"), QStringLiteral("office"), QStringLiteral("wordprocessor"),
+        QStringLiteral("presentation"), QStringLiteral("texteditor"), QStringLiteral("audiovideo"),
+        QStringLiteral("terminalemulator"), QStringLiteral("webbrowser"),
+    };
+    static const QStringList knownDesignBins = {
+        QStringLiteral("inkscape"), QStringLiteral("gimp"), QStringLiteral("krita"),
+        QStringLiteral("blender"), QStringLiteral("scribus"), QStringLiteral("figcraft"),
+        QStringLiteral("artcraft"), QStringLiteral("figma-linux"), QStringLiteral("figma"),
+        QStringLiteral("fontforge"), QStringLiteral("darktable"), QStringLiteral("rawtherapee"),
+        QStringLiteral("soffice.bin"), QStringLiteral("libreoffice"), QStringLiteral("resolve"),
+        QStringLiteral("kdenlive"), QStringLiteral("obs"), QStringLiteral("penpot"),
+    };
+
+    struct Entry {
+        QString name;
+        QString processName;
+        QString launchCommand;
+        QString category;
+        bool running = false;
+        bool design = false;
+        bool registered = false;
+    };
+    QHash<QString, Entry> byProc;
+
+    const QStringList dirs = {
+        QDir::homePath() + QStringLiteral("/.local/share/applications"),
+        QStringLiteral("/usr/local/share/applications"),
+        QStringLiteral("/usr/share/applications"),
+    };
+    for (const QString &dirPath : dirs) {
+        QDir dir(dirPath);
+        if (!dir.exists()) continue;
+        const QStringList files = dir.entryList({QStringLiteral("*.desktop")}, QDir::Files);
+        for (const QString &fn : files) {
+            QFile f(dir.filePath(fn));
+            if (!f.open(QIODevice::ReadOnly)) continue;
+            bool inMain = false;
+            bool noDisplay = false;
+            bool hidden = false;
+            QString type, name, execLine, cats;
+            while (!f.atEnd()) {
+                const QString line = QString::fromUtf8(f.readLine()).trimmed();
+                if (line.isEmpty() || line.startsWith(QLatin1Char('#'))) continue;
+                if (line.startsWith(QLatin1Char('['))) {
+                    inMain = (line == QLatin1String("[Desktop Entry]"));
+                    continue;
+                }
+                if (!inMain) continue;
+                const int eq = line.indexOf(QLatin1Char('='));
+                if (eq <= 0) continue;
+                const QString key = line.left(eq).trimmed();
+                const QString val = line.mid(eq + 1).trimmed();
+                if (key == QLatin1String("Type")) type = val;
+                else if (key == QLatin1String("Name") && name.isEmpty()) name = val;
+                else if (key == QLatin1String("Exec") && execLine.isEmpty()) execLine = val;
+                else if (key == QLatin1String("Categories")) cats = val;
+                else if (key == QLatin1String("NoDisplay")) noDisplay = (val.compare(QLatin1String("true"), Qt::CaseInsensitive) == 0);
+                else if (key == QLatin1String("Hidden")) hidden = (val.compare(QLatin1String("true"), Qt::CaseInsensitive) == 0);
+            }
+            if (type != QLatin1String("Application") || noDisplay || hidden || name.isEmpty() || execLine.isEmpty())
+                continue;
+            QString procName;
+            const QString cleanCmd = cleanDesktopExec(execLine, &procName);
+            if (procName.isEmpty() || procName.compare(QLatin1String("omatype"), Qt::CaseInsensitive) == 0)
+                continue;
+            const QString key = procName.toLower();
+            if (byProc.contains(key)) continue;
+
+            const QString catsLower = cats.toLower();
+            bool isDesign = knownDesignBins.contains(key);
+            QString catLabel;
+            for (const QString &kw : fontUserKeywords) {
+                if (catsLower.contains(kw)) {
+                    isDesign = true;
+                    if (catLabel.isEmpty()) {
+                        if (kw.contains(QLatin1String("graphics")) || kw == QLatin1String("photography")) catLabel = tr("Graphics");
+                        else if (kw == QLatin1String("publishing") || kw == QLatin1String("office") || kw == QLatin1String("wordprocessor") || kw == QLatin1String("presentation")) catLabel = tr("Office");
+                        else if (kw == QLatin1String("texteditor")) catLabel = tr("Editor");
+                        else if (kw == QLatin1String("webbrowser")) catLabel = tr("Browser");
+                        else if (kw == QLatin1String("audiovideo")) catLabel = tr("Media");
+                        else if (kw == QLatin1String("terminalemulator")) catLabel = tr("Terminal");
+                    }
+                }
+            }
+            if (catLabel.isEmpty() && isDesign) catLabel = tr("Design");
+
+            Entry e;
+            e.name = name;
+            e.processName = procName;
+            e.launchCommand = cleanCmd;
+            e.category = catLabel;
+            e.running = isAppRunningIn(procs, procName);
+            e.design = isDesign;
+            e.registered = registeredProcs.contains(key);
+            byProc.insert(key, std::move(e));
+        }
+    }
+
+    QList<Entry> list = byProc.values();
+    std::sort(list.begin(), list.end(), [](const Entry &a, const Entry &b) {
+        if (a.running != b.running) return a.running > b.running;
+        if (a.design != b.design) return a.design > b.design;
+        return a.name.compare(b.name, Qt::CaseInsensitive) < 0;
+    });
+
+    QVariantList out;
+    for (const Entry &e : list) {
+        out.append(QVariantMap{
+            {QStringLiteral("name"), e.name},
+            {QStringLiteral("processName"), e.processName},
+            {QStringLiteral("launchCommand"), e.launchCommand},
+            {QStringLiteral("category"), e.category},
+            {QStringLiteral("running"), e.running},
+            {QStringLiteral("design"), e.design},
+            {QStringLiteral("registered"), e.registered},
+        });
+    }
+    return out;
+}
+
+void Backend::registerApp(const QString &name, const QString &processName, const QString &launchCommand, const QString &reloadCommand, bool autoReload) {
+    const QString cleanName = name.trimmed();
+    QString cleanProc = processName.trimmed();
+    const QString cleanLaunch = launchCommand.trimmed();
+    const QString cleanReload = reloadCommand.trimmed();
+    if (cleanProc.isEmpty() && !cleanLaunch.isEmpty()) {
+        cleanDesktopExec(cleanLaunch, &cleanProc);
+    }
+    if (cleanName.isEmpty() || (cleanProc.isEmpty() && cleanReload.isEmpty())) return;
+
+    // Avoid duplicate process registrations: update existing entry if processName matches.
+    for (RegisteredApp &existing : m_library.apps) {
+        if (!cleanProc.isEmpty() && existing.processName.compare(cleanProc, Qt::CaseInsensitive) == 0) {
+            existing.name = cleanName;
+            existing.launchCommand = cleanLaunch;
+            existing.reloadCommand = cleanReload;
+            existing.autoReload = autoReload;
+            saveLibrary();
+            emit appsChanged();
+            setStatus(tr("Updated %1 in registered apps").arg(cleanName));
+            return;
+        }
+    }
+
+    RegisteredApp app;
+    app.id = Library::newId();
+    app.name = cleanName;
+    app.processName = cleanProc;
+    app.launchCommand = cleanLaunch;
+    app.reloadCommand = cleanReload;
+    app.autoReload = autoReload;
+    m_library.apps.append(app);
+    saveLibrary();
+    emit appsChanged();
+    setStatus(tr("Registered %1").arg(cleanName));
+}
+
+void Backend::updateRegisteredApp(const QString &id, const QString &name, const QString &processName, const QString &launchCommand, const QString &reloadCommand, bool autoReload) {
+    RegisteredApp *app = m_library.registeredApp(id);
+    if (!app) return;
+    if (!name.trimmed().isEmpty()) app->name = name.trimmed();
+    app->processName = processName.trimmed();
+    app->launchCommand = launchCommand.trimmed();
+    app->reloadCommand = reloadCommand.trimmed();
+    app->autoReload = autoReload;
+    saveLibrary();
+    emit appsChanged();
+}
+
+void Backend::removeRegisteredApp(const QString &id) {
+    for (int i = 0; i < m_library.apps.size(); ++i) {
+        if (m_library.apps.at(i).id == id) {
+            const QString removedName = m_library.apps.at(i).name;
+            m_library.apps.removeAt(i);
+            saveLibrary();
+            emit appsChanged();
+            setStatus(tr("Removed %1 from registered apps").arg(removedName));
+            return;
+        }
+    }
+}
+
+void Backend::setAppAutoReload(const QString &id, bool autoReload) {
+    RegisteredApp *app = m_library.registeredApp(id);
+    if (!app || app->autoReload == autoReload) return;
+    app->autoReload = autoReload;
+    saveLibrary();
+    emit appsChanged();
+}
+
+void Backend::refreshRunningApps() {
+    emit appsChanged();
+}
+
+void Backend::reloadRegisteredApp(const QString &id) {
+    const RegisteredApp *found = m_library.registeredApp(id);
+    if (!found) return;
+    const RegisteredApp app = *found;
+
+    // 1. Optional custom reload command (e.g. "pkill -USR1 kitty")
+    if (!app.reloadCommand.isEmpty()) {
+        const bool ok = QProcess::startDetached(QStringLiteral("/bin/sh"), {QStringLiteral("-c"), app.reloadCommand});
+        const QString msg = ok ? tr("Reloaded %1").arg(app.name) : tr("Could not run reload command for %1").arg(app.name);
+        setStatus(msg, !ok);
+        emit appReloaded(app.name, ok, msg);
+        emit appsChanged();
+        return;
+    }
+
+    // 2. Graceful restart: find user-owned matching processes
+    const QList<RunningProc> procs = listUserProcesses();
+    QList<qint64> pids;
+    QStringList fallbackCmdline;
+    QString fallbackCwd;
+    for (const RunningProc &rp : procs) {
+        if (!procMatchesTarget(rp, app.processName)) continue;
+        pids.append(rp.pid);
+        if (fallbackCmdline.isEmpty() || (isSubprocessCmdline(fallbackCmdline) && !isSubprocessCmdline(rp.cmdline))) {
+            fallbackCmdline = rp.cmdline;
+            fallbackCwd = rp.cwd;
+        }
+    }
+    if (pids.isEmpty()) {
+        const QString msg = tr("%1 is not running").arg(app.name);
+        setStatus(msg);
+        emit appReloaded(app.name, false, msg);
+        return;
+    }
+
+    QStringList launchArgs;
+    if (!app.launchCommand.isEmpty()) {
+        launchArgs = QProcess::splitCommand(app.launchCommand);
+    } else {
+        launchArgs = fallbackCmdline;
+    }
+    if (launchArgs.isEmpty()) {
+        const QString msg = tr("No launch command configured for %1").arg(app.name);
+        setStatus(msg, true);
+        emit appReloaded(app.name, false, msg);
+        return;
+    }
+
+    const QString program = launchArgs.takeFirst();
+    const QString cwd = !fallbackCwd.isEmpty() ? fallbackCwd : QDir::homePath();
+
+    // Send graceful SIGTERM — never SIGKILL, so unsaved work dialogs stay respected.
+    for (qint64 pid : pids) {
+        ::kill(static_cast<pid_t>(pid), SIGTERM);
+    }
+    setStatus(tr("Reloading %1…").arg(app.name));
+
+    struct WaitState {
+        QList<qint64> pids;
+        QString appName;
+        QString program;
+        QStringList args;
+        QString cwd;
+        int ticks = 0;
+    };
+    auto state = std::make_shared<WaitState>(WaitState{pids, app.name, program, launchArgs, cwd, 0});
+    auto *timer = new QTimer(this);
+    timer->setInterval(150);
+    connect(timer, &QTimer::timeout, this, [this, timer, state]() {
+        bool anyAlive = false;
+        for (qint64 pid : state->pids) {
+            if (::kill(static_cast<pid_t>(pid), 0) == 0 || errno != ESRCH) {
+                anyAlive = true;
+                break;
+            }
+        }
+        ++state->ticks;
+        if (!anyAlive) {
+            timer->stop();
+            timer->deleteLater();
+            const bool launched = QProcess::startDetached(state->program, state->args, state->cwd);
+            const QString msg = launched
+                ? tr("Reloaded %1").arg(state->appName)
+                : tr("Closed %1, but could not relaunch “%2”").arg(state->appName, state->program);
+            setStatus(msg, !launched);
+            emit appReloaded(state->appName, launched, msg);
+            QTimer::singleShot(400, this, &Backend::appsChanged);
+            return;
+        }
+        if (state->ticks >= 25) { // ~3.75s graceful wait
+            timer->stop();
+            timer->deleteLater();
+            const QString msg = tr("%1 stayed open (unsaved work?) — restart it when ready").arg(state->appName);
+            setStatus(msg);
+            emit appReloaded(state->appName, false, msg);
+            emit appsChanged();
+        }
+    });
+    timer->start();
+}
+
+void Backend::reloadRunningApps(bool autoOnly) {
+    if (m_library.apps.isEmpty()) return;
+    const QList<RunningProc> procs = listUserProcesses();
+    QStringList ids;
+    for (const RegisteredApp &app : m_library.apps) {
+        if (autoOnly && !app.autoReload) continue;
+        const bool running = !app.processName.isEmpty() && isAppRunningIn(procs, app.processName);
+        if (running || (app.processName.isEmpty() && !app.reloadCommand.isEmpty())) {
+            ids.append(app.id);
+        }
+    }
+    for (const QString &id : ids) {
+        reloadRegisteredApp(id);
+    }
 }
 
 // ── Remove ──────────────────────────────────────────────────────────────────

@@ -173,6 +173,9 @@ class Backend : public QObject {
     Q_PROPERTY(QVariantList tidyReport READ tidyReport NOTIFY tidyChanged)
     Q_PROPERTY(QVariantList validationReport READ validationReport NOTIFY validationChanged)
     Q_PROPERTY(QString validationTitle READ validationTitle NOTIFY validationChanged)
+    Q_PROPERTY(QVariantList registeredApps READ registeredApps NOTIFY appsChanged)
+    Q_PROPERTY(QVariantList runningManualApps READ runningManualApps NOTIFY appsChanged)
+    Q_PROPERTY(int registeredAppCount READ registeredAppCount NOTIFY appsChanged)
 
     Q_PROPERTY(bool reducedMotion READ reducedMotion WRITE setReducedMotion NOTIFY reducedMotionChanged)
     Q_PROPERTY(bool highContrast READ highContrast WRITE setHighContrast NOTIFY highContrastChanged)
@@ -269,6 +272,9 @@ public:
     QVariantList tidyReport() const { return m_tidy; }
     QVariantList validationReport() const { return m_validationReport; }
     QString validationTitle() const { return m_validationTitle; }
+    QVariantList registeredApps() const;
+    QVariantList runningManualApps() const;
+    int registeredAppCount() const { return m_library.apps.size(); }
 
     bool reducedMotion() const { return m_reducedMotion; }
     void setReducedMotion(bool on);
@@ -296,6 +302,7 @@ public:
     static QStringList scriptsFor(const QStringList &langs);
     static bool isStyleWord(const QString &word);
     static QString keepBothName(const QString &dir, const QString &fileName);
+    static QString cleanDesktopExec(const QString &execLine, QString *processNameOut = nullptr);
 
     // The file operations, synchronous and reusable by the command line.
     // Each returns an empty string on success or a message to show.
@@ -322,6 +329,7 @@ public:
     Q_INVOKABLE QStringList allTags() const { return m_library.allTags(); }
     Q_INVOKABLE QStringList tagsOf(const QString &familyName) const { return m_library.tags.value(familyName); }
     Q_INVOKABLE QString designClassOf(const QString &familyName) const;
+    Q_INVOKABLE QVariantList discoverApps() const;
 
 public slots:
     void refresh();
@@ -364,6 +372,14 @@ public slots:
     void tidyKeepVariable(const QString &familyName);
     void tidyDeactivateFiles(const QStringList &files);
     void tidyRemoveFiles(const QStringList &files);
+    // Registered design apps
+    void registerApp(const QString &name, const QString &processName, const QString &launchCommand, const QString &reloadCommand = QString(), bool autoReload = true);
+    void updateRegisteredApp(const QString &id, const QString &name, const QString &processName, const QString &launchCommand, const QString &reloadCommand, bool autoReload);
+    void removeRegisteredApp(const QString &id);
+    void setAppAutoReload(const QString &id, bool autoReload);
+    void reloadRegisteredApp(const QString &id);
+    void reloadRunningApps(bool autoOnly = false);
+    void refreshRunningApps();
     // Views and reports
     void loadRepertoire(const QString &file);
     void validateSelected();
@@ -395,6 +411,8 @@ signals:
     void validationChanged();
     void compareChanged();
     void tidyChanged();
+    void appsChanged();
+    void appReloaded(const QString &name, bool ok, const QString &message);
     void reducedMotionChanged();
     void highContrastChanged();
     void installed(const QString &group);

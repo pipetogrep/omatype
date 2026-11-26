@@ -13,6 +13,14 @@
 class OmatypeTests : public QObject {
     Q_OBJECT
 private slots:
+    void initTestCase()
+    {
+        // Main.qml keeps layout state in QtCore Settings, which needs an
+        // application identity; a separate one keeps tests off real settings.
+        QStandardPaths::setTestModeEnabled(true);
+        QCoreApplication::setOrganizationName(QStringLiteral("omatype-tests"));
+        QCoreApplication::setApplicationName(QStringLiteral("omatype-tests"));
+    }
     void stripXssiPrefix() {
         QCOMPARE(Catalog::stripXssiPrefix(")]}'\n{\"ok\":true}"), QByteArray("{\"ok\":true}"));
         QCOMPARE(Catalog::stripXssiPrefix("{\"ok\":true}"), QByteArray("{\"ok\":true}"));
@@ -106,6 +114,37 @@ private slots:
         QVERIFY(Catalog::looksLikeFontFile(QByteArray("\x00\x01\x00\x00\x00\x0f\x00\x80\x00\x03\x00\x70", 12)));
         QVERIFY(Catalog::looksLikeFontFile(QByteArray("OTTO0123456789", 14)));
         QVERIFY(!Catalog::looksLikeFontFile(QByteArray("<html>404 Not Found</html>")));
+    }
+
+    void registeredAppsAndExecParsing() {
+        QString proc;
+        QCOMPARE(Backend::cleanDesktopExec(QStringLiteral("/usr/bin/inkscape %F"), &proc), QStringLiteral("/usr/bin/inkscape"));
+        QCOMPARE(proc, QStringLiteral("inkscape"));
+
+        QCOMPARE(Backend::cleanDesktopExec(QStringLiteral("env GDK_BACKEND=wayland gimp-2.99 %U"), &proc), QStringLiteral("env GDK_BACKEND=wayland gimp-2.99"));
+        QCOMPARE(proc, QStringLiteral("gimp-2.99"));
+
+        QCOMPARE(Backend::cleanDesktopExec(QStringLiteral("uwsm app -- figcraft %u"), &proc), QStringLiteral("uwsm app -- figcraft"));
+        QCOMPARE(proc, QStringLiteral("figcraft"));
+
+        Library lib;
+        RegisteredApp a;
+        a.id = QStringLiteral("app12345");
+        a.name = QStringLiteral("Inkscape");
+        a.processName = QStringLiteral("inkscape");
+        a.launchCommand = QStringLiteral("inkscape");
+        a.reloadCommand = QString();
+        a.autoReload = true;
+        lib.apps.append(a);
+
+        Library roundTrip;
+        roundTrip.fromJson(lib.toJson());
+        QCOMPARE(roundTrip.apps.size(), 1);
+        QCOMPARE(roundTrip.apps.first().id, QStringLiteral("app12345"));
+        QCOMPARE(roundTrip.apps.first().name, QStringLiteral("Inkscape"));
+        QCOMPARE(roundTrip.apps.first().processName, QStringLiteral("inkscape"));
+        QCOMPARE(roundTrip.apps.first().launchCommand, QStringLiteral("inkscape"));
+        QVERIFY(roundTrip.apps.first().autoReload);
     }
 
     void qmlLoadsCleanly() {
