@@ -108,10 +108,11 @@ Rectangle {
         Text {
             id: linkLabel
             anchors.verticalCenter: parent.verticalCenter
-            text: linkItem.text + " ↗"
+            text: linkItem.text
             color: linkHover.hovered ? Theme.textPrimary : Theme.textSecondary
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fsLabel
+            font.underline: linkHover.hovered
         }
     }
 
