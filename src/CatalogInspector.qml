@@ -74,9 +74,8 @@ Rectangle {
         property string value: ""
         visible: value !== ""
         Layout.fillWidth: true
-        spacing: Theme.s3
+        spacing: Theme.s4
         Label {
-            Layout.preferredWidth: 64
             Layout.alignment: Qt.AlignTop
             text: label
             color: Theme.textMuted
@@ -87,8 +86,15 @@ Rectangle {
             text: value
             color: Theme.textSecondary
             font.pixelSize: Theme.fsLabel
+            horizontalAlignment: Text.AlignRight
             wrapMode: Text.Wrap
         }
+    }
+
+    component CellRule: Rectangle {
+        Layout.fillWidth: true
+        implicitHeight: Theme.hairline
+        color: Theme.withAlpha(Theme.border, 0.5)
     }
 
     component TextLink: Item {
@@ -114,126 +120,132 @@ Rectangle {
         anchors.fill: parent
         clip: true
         contentWidth: width
-        contentHeight: content.implicitHeight + Theme.s5 * 2
+        contentHeight: content.implicitHeight + Theme.s5
         boundsBehavior: Flickable.StopAtBounds
         ScrollBar.vertical: ScrollBar {}
 
         ColumnLayout {
             id: content
-            x: Theme.s5
-            y: Theme.s5
-            width: flick.width - Theme.s5 * 2
-            spacing: Theme.s4
+            x: 0
+            y: 0
+            width: flick.width
+            spacing: 0
             visible: panel.hasSelection
 
-            // ── Identity & Designer Attribution ─────────────────────────────
+            // ── Cell 1: Identity, Attribution & Primary Action ──────────────
             ColumnLayout {
                 Layout.fillWidth: true
-                spacing: Theme.s1
+                Layout.margins: Theme.s5
+                spacing: Theme.s4
 
-                RowLayout {
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: Theme.s1
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: Theme.s2
+                        Text {
+                            Layout.fillWidth: true
+                            text: panel.fam.family ?? ""
+                            textFormat: Text.PlainText
+                            font.family: panel.faceReady ? faceLoader.item.name : Theme.fontFamily
+                            font.pixelSize: 34
+                            color: Theme.specimenInk
+                            wrapMode: Text.Wrap
+                            lineHeightMode: Text.FixedHeight
+                            lineHeight: 38
+                        }
+                        ToolButton {
+                            Layout.alignment: Qt.AlignTop
+                            flat: true
+                            icon.name: "bookmark"
+                            checked: panel.fam.shortlisted ?? false
+                            onClicked: catalog.toggleShortlist(panel.fam.id)
+                            ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay
+                            ToolTip.text: (panel.fam.shortlisted ?? false) ? qsTr("Remove from Shortlist") : qsTr("Shortlist")
+                        }
+                    }
+
+                    Label {
+                        Layout.fillWidth: true
+                        visible: (panel.fam.designersText ?? "") !== ""
+                        text: panel.fam.designersText ?? ""
+                        color: Theme.textPrimary
+                        font.pixelSize: Theme.fsControl
+                        wrapMode: Text.Wrap
+                    }
+
+                    Label {
+                        Layout.fillWidth: true
+                        text: [
+                            panel.fam.sourceLabel ?? "",
+                            panel.fam.category ?? "",
+                            panel.fam.license ?? ""
+                        ].filter(s => s !== "").join("  ·  ")
+                        color: Theme.textMuted
+                        font.pixelSize: Theme.fsLabel
+                        wrapMode: Text.Wrap
+                    }
+                }
+
+                ColumnLayout {
                     Layout.fillWidth: true
                     spacing: Theme.s2
-                    Text {
+
+                    Rectangle {
+                        id: installBtn
+                        objectName: "inspectorCatalogInstall"
                         Layout.fillWidth: true
-                        text: panel.fam.family ?? ""
-                        textFormat: Text.PlainText
-                        font.family: panel.faceReady ? faceLoader.item.name : Theme.fontFamily
-                        font.pixelSize: 34
-                        color: Theme.specimenInk
-                        wrapMode: Text.Wrap
-                        lineHeightMode: Text.FixedHeight
-                        lineHeight: 38
-                    }
-                    ToolButton {
-                        Layout.alignment: Qt.AlignTop
-                        flat: true
-                        icon.name: "bookmark"
-                        checked: panel.fam.shortlisted ?? false
-                        onClicked: catalog.toggleShortlist(panel.fam.id)
-                        ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay
-                        ToolTip.text: (panel.fam.shortlisted ?? false) ? qsTr("Remove from Shortlist") : qsTr("Shortlist")
-                    }
-                }
+                        implicitHeight: 36
+                        radius: Theme.rControl
+                        readonly property bool isInstalled: panel.fam.installed ?? false
+                        readonly property bool isBusy: panel.fam.installing ?? false
+                        color: isInstalled ? Theme.controlBg
+                             : installHover.hovered ? Qt.lighter(Theme.accent, 1.08) : Theme.accent
+                        opacity: isBusy ? 0.65 : 1.0
 
-                Label {
-                    Layout.fillWidth: true
-                    visible: (panel.fam.designersText ?? "") !== ""
-                    text: panel.fam.designersText ?? ""
-                    color: Theme.textPrimary
-                    font.pixelSize: Theme.fsControl
-                    wrapMode: Text.Wrap
-                }
+                        HoverHandler { id: installHover; cursorShape: Qt.PointingHandCursor }
+                        TapHandler {
+                            enabled: !installBtn.isBusy
+                            onTapped: catalog.installFamily(panel.fam.id, true, panel.selectedFilenames)
+                        }
 
-                Label {
-                    Layout.fillWidth: true
-                    text: [
-                        panel.fam.sourceLabel ?? "",
-                        panel.fam.category ?? "",
-                        panel.fam.license ?? ""
-                    ].filter(s => s !== "").join("  ·  ")
-                    color: Theme.textMuted
-                    font.pixelSize: Theme.fsLabel
-                    wrapMode: Text.Wrap
-                }
-            }
-
-            // ── The one solid primary CTA in the window ─────────────────────
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: Theme.s2
-
-                Rectangle {
-                    id: installBtn
-                    objectName: "inspectorCatalogInstall"
-                    Layout.fillWidth: true
-                    implicitHeight: 36
-                    radius: Theme.rControl
-                    readonly property bool isInstalled: panel.fam.installed ?? false
-                    readonly property bool isBusy: panel.fam.installing ?? false
-                    color: isInstalled ? Theme.controlBg
-                         : installHover.hovered ? Qt.lighter(Theme.accent, 1.08) : Theme.accent
-                    opacity: isBusy ? 0.65 : 1.0
-
-                    HoverHandler { id: installHover; cursorShape: Qt.PointingHandCursor }
-                    TapHandler {
-                        enabled: !installBtn.isBusy
-                        onTapped: catalog.installFamily(panel.fam.id, true, panel.selectedFilenames)
+                        RowLayout {
+                            anchors.centerIn: parent
+                            spacing: Theme.s2
+                            Icon {
+                                name: installBtn.isInstalled ? "check" : "download"
+                                size: 15
+                                color: installBtn.isInstalled ? Theme.success : Theme.accentText
+                            }
+                            Text {
+                                text: panel.installCtaLabel()
+                                color: installBtn.isInstalled ? Theme.textPrimary : Theme.accentText
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fsControl
+                                font.weight: Font.DemiBold
+                            }
+                        }
                     }
 
                     RowLayout {
-                        anchors.centerIn: parent
-                        spacing: Theme.s2
-                        Icon {
-                            name: installBtn.isInstalled ? "check" : "download"
-                            size: 15
-                            color: installBtn.isInstalled ? Theme.success : Theme.accentText
-                        }
-                        Text {
-                            text: panel.installCtaLabel()
-                            color: installBtn.isInstalled ? Theme.textPrimary : Theme.accentText
-                            font.family: Theme.fontFamily
-                            font.pixelSize: Theme.fsControl
-                            font.weight: Font.DemiBold
-                        }
+                        visible: panel.fam.installed ?? false
+                        Layout.fillWidth: true
+                        spacing: Theme.s3
+                        TextLink { text: qsTr("Open in Library"); onClicked: panel.openInLibraryRequested(panel.fam.family) }
+                        Item { Layout.fillWidth: true }
+                        TextLink { text: qsTr("Uninstall"); onClicked: catalog.uninstallFamily(panel.fam.id) }
                     }
-                }
-
-                RowLayout {
-                    visible: panel.fam.installed ?? false
-                    Layout.fillWidth: true
-                    spacing: Theme.s3
-                    TextLink { text: qsTr("Open in Library"); onClicked: panel.openInLibraryRequested(panel.fam.family) }
-                    Item { Layout.fillWidth: true }
-                    TextLink { text: qsTr("Uninstall"); onClicked: catalog.uninstallFamily(panel.fam.id) }
                 }
             }
 
-            Rectangle { Layout.fillWidth: true; implicitHeight: Theme.hairline; color: Theme.withAlpha(Theme.border, 0.45) }
+            CellRule { visible: panel.faceReady }
 
-            // ── Printed-specimen waterfall + glyphs + body paragraph ────────
+            // ── Cell 2: Printed-specimen waterfall + glyphs + paragraph ─────
             ColumnLayout {
                 Layout.fillWidth: true
+                Layout.margins: Theme.s5
                 spacing: Theme.s3
                 visible: panel.faceReady
 
@@ -289,7 +301,7 @@ Rectangle {
                     }
                 }
 
-                // Glyphs & figures study (shows what the grid cannot)
+                // Glyphs & figures study
                 Text {
                     Layout.fillWidth: true
                     Layout.topMargin: Theme.s1
@@ -318,12 +330,13 @@ Rectangle {
                 }
             }
 
-            Rectangle { Layout.fillWidth: true; implicitHeight: Theme.hairline; color: Theme.withAlpha(Theme.border, 0.45) }
+            CellRule {}
 
-            // ── Deduplicated Metadata & Quiet Links ─────────────────────────
+            // ── Cell 3: Metadata & external links (unified left-key / right-value) ─
             ColumnLayout {
                 Layout.fillWidth: true
-                spacing: Theme.s2
+                Layout.margins: Theme.s5
+                spacing: Theme.s2 + 2
                 Fact { label: qsTr("Axes"); value: panel.fam.axesSummary ?? "" }
                 Fact { label: qsTr("Weights"); value: (panel.fam.axesSummary ?? "") === "" ? (panel.fam.weightRange ?? "") : "" }
                 Fact { label: qsTr("Scripts"); value: panel.formatSubsets(panel.fam.subsets ?? []) }
@@ -331,7 +344,7 @@ Rectangle {
 
                 RowLayout {
                     Layout.fillWidth: true
-                    Layout.topMargin: Theme.s1
+                    Layout.topMargin: Theme.s2
                     spacing: Theme.s4
                     visible: (panel.fam.homepage ?? "") !== "" || (panel.fam.repoUrl ?? "") !== ""
                     TextLink {
@@ -347,17 +360,16 @@ Rectangle {
                 }
             }
 
-            Rectangle {
-                visible: panel.files.length > 0 || catalog.loadingManifest
-                Layout.fillWidth: true
-                implicitHeight: Theme.hairline
-                color: Theme.withAlpha(Theme.border, 0.45)
-            }
+            CellRule { visible: panel.files.length > 0 || catalog.loadingManifest }
 
-            // ── Single unified Weight Picker (left accent bar, no checkboxes) ─
+            // ── Cell 4: Weight Picker (same left-key / right-value alignment) ─
             ColumnLayout {
                 visible: panel.files.length > 0 || catalog.loadingManifest
                 Layout.fillWidth: true
+                Layout.leftMargin: Theme.s5
+                Layout.rightMargin: Theme.s5
+                Layout.topMargin: Theme.s4
+                Layout.bottomMargin: Theme.s4
                 spacing: 2
 
                 Label {
@@ -381,6 +393,8 @@ Rectangle {
 
                         Rectangle {
                             anchors.fill: parent
+                            anchors.leftMargin: -Theme.s2
+                            anchors.rightMargin: -Theme.s2
                             radius: Theme.rControl
                             color: wRow.chosen ? Theme.withAlpha(Theme.textPrimary, 0.06)
                                  : wHover.hovered ? Theme.withAlpha(Theme.textPrimary, 0.03) : "transparent"
@@ -388,6 +402,7 @@ Rectangle {
                         Rectangle {
                             visible: wRow.chosen
                             anchors.left: parent.left
+                            anchors.leftMargin: -Theme.s2
                             anchors.top: parent.top
                             anchors.bottom: parent.bottom
                             anchors.topMargin: 5
@@ -397,8 +412,6 @@ Rectangle {
                         }
                         RowLayout {
                             anchors.fill: parent
-                            anchors.leftMargin: Theme.s2
-                            anchors.rightMargin: Theme.s2
                             spacing: Theme.s2
                             Label {
                                 Layout.fillWidth: true
@@ -412,8 +425,8 @@ Rectangle {
                                 visible: !wRow.modelData.variable && wRow.modelData.weight > 0
                                 text: String(wRow.modelData.weight)
                                 color: Theme.textMuted
-                                font.family: Theme.monoFamily
-                                font.pixelSize: Theme.fsCaption
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fsLabel
                             }
                         }
                     }
