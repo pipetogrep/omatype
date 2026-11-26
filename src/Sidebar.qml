@@ -392,8 +392,9 @@ Rectangle {
             width: parent.width
             spacing: 0
 
-            Item { implicitHeight: Theme.s2 }
-            Heading { text: qsTr("Discover") }
+            // Centred on the toolbar's height, so "Discover" sits level with
+            // the sidebar toggle beside it.
+            Heading { text: qsTr("Discover"); Layout.topMargin: Math.round((Theme.hToolbar - implicitHeight) / 2) }
             DiscoverRow { sourceFilter: "all"; label: qsTr("Browse Catalog"); iconName: "globe"; count: catalog.totalCount }
             DiscoverRow { sourceFilter: "google"; label: qsTr("Google Fonts"); iconName: "type"; count: catalog.googleCount }
             DiscoverRow { sourceFilter: "indie"; label: qsTr("Indie Foundries"); iconName: "pen-tool"; count: catalog.indieCount }
