@@ -226,6 +226,12 @@ private slots:
             catalog.selectFamily(QStringLiteral("jost"));
             QTest::qWait(1500);
             win->grabWindow().save(QString(narrowShot).replace(QStringLiteral(".png"), QStringLiteral("-discover.png")));
+            if (QObject *about = win->findChild<QObject *>(QStringLiteral("aboutSheet"))) {
+                QMetaObject::invokeMethod(about, "open");
+                QTest::qWait(800);
+                win->grabWindow().save(QString(narrowShot).replace(QStringLiteral(".png"), QStringLiteral("-about.png")));
+                QMetaObject::invokeMethod(about, "close");
+            }
         }
     }
 };

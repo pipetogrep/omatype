@@ -318,6 +318,8 @@ ApplicationWindow {
                     Menu {
                         title: qsTr("Help")
                         MenuItem { text: qsTr("Keyboard shortcuts"); icon.name: "keyboard"; onTriggered: helpSheet.open() }
+                        MenuSeparator {}
+                        MenuItem { text: qsTr("About Omatype"); icon.name: "info"; onTriggered: aboutSheet.open() }
                     }
                 }
                 Item { Layout.fillWidth: true }
@@ -807,4 +809,5 @@ ApplicationWindow {
     RegisteredAppsSheet { id: appsSheet }
     ValidationSheet { id: validationSheet }
     HelpSheet { id: helpSheet }
+    AboutSheet { id: aboutSheet }
 }

@@ -11,6 +11,7 @@
         <file>Specimen.qml</file>
         <file>Inspector.qml</file>
         <file>HelpSheet.qml</file>
+        <file>AboutSheet.qml</file>
         <file>Sidebar.qml</file>
         <file>FamilyGrid.qml</file>
         <file>FamilyList.qml</file>
