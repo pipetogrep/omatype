@@ -34,7 +34,8 @@ cd ~/omatype
 `./bin/install` builds an Arch package with `makepkg` and installs `omatype`
 to `/usr/bin`, with a desktop entry and icon, so it shows up in the app
 launcher. To try it without installing, run `./bin/build` and then
-`./build/omatype`. `./bin/test` runs the offscreen Qt Test suite.
+`./build/omatype`. `./bin/test` runs the offscreen Qt Test suite, and
+`./bin/screenshots` captures the website screenshots at 2× from your own fonts.
 
 Update later with `git pull && ./bin/install`.
 

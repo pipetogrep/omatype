@@ -1,0 +1,32 @@
+#!/usr/bin/env sh
+# Capture the marketing screenshots from the real interface at 2x (HiDPI).
+#
+#   ./bin/screenshots [output-folder]     (default: ./build-screenshots/out)
+#
+# Uses the fonts installed on this machine. The app runs against a throwaway
+# copy of your Omatype and fontconfig settings, so nothing it writes reaches
+# your real config.
+set -eu
+
+ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+BUILD_DIR="$ROOT/build-screenshots"
+OUT="${1:-$BUILD_DIR/out}"
+case "$OUT" in /*) ;; *) OUT="$PWD/$OUT" ;; esac
+
+if command -v qmake6 >/dev/null 2>&1; then QMAKE=qmake6; else QMAKE=qmake; fi
+JOBS="$(nproc 2>/dev/null || echo 1)"
+
+mkdir -p "$BUILD_DIR"
+cd "$BUILD_DIR"
+"$QMAKE" "$ROOT/tests/screenshots/screenshots.pro" >/dev/null
+make -j"$JOBS" >/dev/null
+
+CONFIG_SRC="${XDG_CONFIG_HOME:-$HOME/.config}"
+SANDBOX="$(mktemp -d)"
+trap 'rm -rf "$SANDBOX"' EXIT
+for d in omatype fontconfig; do
+  [ -d "$CONFIG_SRC/$d" ] && cp -r "$CONFIG_SRC/$d" "$SANDBOX/$d"
+done
+
+XDG_CONFIG_HOME="$SANDBOX" QT_QPA_PLATFORM=offscreen QT_SCALE_FACTOR=2 \
+  ./omatype_screenshots "$OUT"
