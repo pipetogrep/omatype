@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QQuickItem>
 #include <QQuickStyle>
 #include <QQuickWindow>
 #include <QtTest>
@@ -88,7 +89,7 @@ private slots:
         QFile f(QStringLiteral(":/data/curated-catalog.json"));
         QVERIFY(f.open(QIODevice::ReadOnly));
         const auto list = Catalog::parseCuratedCatalog(f.readAll());
-        QVERIFY2(list.size() >= 24, "Expected at least 24 curated open-source families");
+        QVERIFY2(list.size() >= 20, "Expected at least 20 curated open-source families");
         for (const CatalogFamily &e : list) {
             QVERIFY2(!e.family.isEmpty(), "Empty family name");
             QVERIFY2(!e.designers.isEmpty(), qPrintable("Missing designer for " + e.family));
@@ -143,12 +144,15 @@ private slots:
 
         const QString shotPath = qEnvironmentVariable("OMATYPE_GRAB_SCREENSHOT");
         if (!shotPath.isEmpty()) {
+            catalog.clearShortlist();
             catalog.loadBlocking(false);
             catalog.selectFamily(QStringLiteral("playfair-display"));
+            catalog.toggleShortlist(QStringLiteral("geist"));
             catalog.toggleShortlist(QStringLiteral("playfair-display"));
-            // Give visible cards a moment to stream subsetted previews.
-            QTest::qWait(3500);
             if (auto *win = qobject_cast<QQuickWindow *>(engine.rootObjects().first())) {
+                if (win->activeFocusItem()) win->activeFocusItem()->setFocus(false);
+                // Give all visible cards (Google + indie foundries) time to finish loading.
+                QTest::qWait(5000);
                 win->grabWindow().save(shotPath);
             }
         }

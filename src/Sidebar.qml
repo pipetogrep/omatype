@@ -50,7 +50,7 @@ Rectangle {
                 font.pixelSize: Theme.fsControl
             }
             Label {
-                visible: drow.count >= 0
+                visible: drow.count > 0
                 text: drow.count
                 color: Theme.textMuted
                 font.pixelSize: Theme.fsCaption
@@ -95,7 +95,7 @@ Rectangle {
                 font.pixelSize: Theme.fsControl
             }
             Label {
-                visible: row.count >= 0
+                visible: row.count > 0
                 text: row.count
                 color: Theme.textMuted
                 font.pixelSize: Theme.fsCaption
@@ -121,10 +121,8 @@ Rectangle {
         Label {
             text: parent.text
             color: Theme.textMuted
-            font.pixelSize: Theme.fsCaption
-            font.weight: Theme.wHeading
-            font.letterSpacing: Theme.capsTracking
-            font.capitalization: Font.AllUppercase
+            font.pixelSize: Theme.fsLabel
+            font.weight: Font.Medium
         }
         Item { Layout.fillWidth: true }
         ToolButton {
@@ -166,153 +164,124 @@ Rectangle {
             SourceRow { source: "inactive"; label: qsTr("Deactivated"); iconName: "eye-off"; count: backend.inactiveCount; visible: backend.inactiveCount > 0 || backend.source === "inactive" }
             SourceRow { source: "duplicates"; label: qsTr("Duplicates"); iconName: "copy"; count: backend.duplicateCount; visible: backend.duplicateCount > 0 || backend.source === "duplicates" }
 
-            Heading { text: qsTr("By design") }
-            Repeater {
-                model: backend.designFacets
-                SourceRow {
-                    required property var modelData
-                    source: modelData.key
-                    label: modelData.name
-                    iconName: modelData.key === "mono" ? "terminal" : modelData.key.indexOf("trait:") === 0 ? "sliders-horizontal" : "type"
-                    count: modelData.count
-                    Layout.fillWidth: true
-                }
-            }
-            Label {
-                visible: backend.designFacets.length === 0
-                Layout.leftMargin: Theme.s4; Layout.rightMargin: Theme.s3; Layout.fillWidth: true
-                wrapMode: Text.Wrap
-                text: backend.readingMetadata ? qsTr("Reading the files…") : qsTr("Nothing classified yet.")
-                color: Theme.textMuted
-                font.pixelSize: Theme.fsCaption
-            }
-
-            Heading { text: qsTr("Writing systems") }
-            ComboBox {
-                id: scriptBox
+            ColumnLayout {
+                visible: sidebar.mode === "library"
                 Layout.fillWidth: true
-                Layout.leftMargin: Theme.s4
-                Layout.rightMargin: Theme.s3
-                model: [{ key: "", name: qsTr("Any script"), count: -1 }].concat(backend.scriptFacets)
-                textRole: "name"
-                valueRole: "key"
-                displayText: backend.source.indexOf("script:") === 0 ? backend.sourceTitle : qsTr("Any script")
-                onActivated: (index) => backend.source = model[index].key === "" ? "all" : model[index].key
-                delegate: ItemDelegate {
-                    required property var modelData
-                    required property int index
-                    width: scriptBox.width
-                    text: modelData.name + (modelData.count >= 0 ? "  ·  " + modelData.count : "")
-                    highlighted: scriptBox.highlightedIndex === index
-                }
-            }
+                spacing: 0
 
-            Heading { text: qsTr("Language") }
-            ComboBox {
-                id: languageBox
-                Layout.fillWidth: true
-                Layout.leftMargin: Theme.s4
-                Layout.rightMargin: Theme.s3
-                model: [{ code: "", name: qsTr("Any language"), count: -1 }].concat(backend.languages)
-                textRole: "name"
-                valueRole: "code"
-                displayText: backend.source.indexOf("lang:") === 0 ? backend.sourceTitle : qsTr("Any language")
-                onActivated: (index) => {
-                    const code = model[index].code
-                    backend.source = code === "" ? "all" : "lang:" + code
-                }
-                delegate: ItemDelegate {
-                    required property var modelData
-                    required property int index
-                    width: languageBox.width
-                    text: modelData.name + (modelData.count >= 0 ? "  ·  " + modelData.count : "")
-                    highlighted: languageBox.highlightedIndex === index
-                }
-                popup.contentItem.implicitHeight: Math.min(400, languageBox.count * Theme.hRow)
-            }
-
-            Heading { text: qsTr("Tags") }
-            Flow {
-                Layout.fillWidth: true
-                Layout.leftMargin: Theme.s4
-                Layout.rightMargin: Theme.s3
-                spacing: Theme.s1
+                Heading { text: qsTr("By design") }
                 Repeater {
-                    model: backend.tagFacets
-                    Button {
+                    model: backend.designFacets
+                    SourceRow {
                         required property var modelData
-                        text: "#" + modelData.name + "  " + modelData.count
-                        flat: backend.source !== modelData.key
-                        checked: backend.source === modelData.key
-                        font.pixelSize: Theme.fsLabel
-                        onClicked: backend.source = backend.source === modelData.key ? "all" : modelData.key
-                        TapHandler { acceptedButtons: Qt.RightButton; onTapped: tagMenu.openFor(modelData.name) }
+                        source: modelData.key
+                        label: modelData.name
+                        iconName: modelData.key === "mono" ? "terminal" : modelData.key.indexOf("trait:") === 0 ? "sliders-horizontal" : "type"
+                        count: modelData.count
+                        Layout.fillWidth: true
                     }
                 }
-            }
-            Label {
-                visible: backend.tagFacets.length === 0
-                Layout.leftMargin: Theme.s4; Layout.rightMargin: Theme.s3; Layout.fillWidth: true
-                wrapMode: Text.Wrap
-                text: qsTr("Tag a family in the Info pane: display, body, a client, a licence…")
-                color: Theme.textMuted
-                font.pixelSize: Theme.fsCaption
-            }
 
-            Heading { text: qsTr("Collections"); action: qsTr("New collection"); onActionClicked: sidebar.newCollectionRequested() }
-            Repeater {
-                model: backend.collections
-                SourceRow {
-                    required property var modelData
-                    source: "coll:" + modelData.id
-                    label: modelData.name
-                    iconName: "folder-open"
-                    count: modelData.count
-                    editable: true
+                Heading { text: qsTr("Writing systems") }
+                ComboBox {
+                    id: scriptBox
                     Layout.fillWidth: true
-                    TapHandler {
-                        acceptedButtons: Qt.RightButton
-                        onTapped: collectionMenu.openFor(modelData.id, modelData.name, false)
+                    Layout.leftMargin: Theme.s4
+                    Layout.rightMargin: Theme.s3
+                    model: [{ key: "", name: qsTr("Any script"), count: -1 }].concat(backend.scriptFacets)
+                    textRole: "name"
+                    valueRole: "key"
+                    displayText: backend.source.indexOf("script:") === 0 ? backend.sourceTitle : qsTr("Any script")
+                    onActivated: (index) => backend.source = model[index].key === "" ? "all" : model[index].key
+                    delegate: ItemDelegate {
+                        required property var modelData
+                        required property int index
+                        width: scriptBox.width
+                        text: modelData.name + (modelData.count >= 0 ? "  ·  " + modelData.count : "")
+                        highlighted: scriptBox.highlightedIndex === index
                     }
                 }
-            }
-            Label {
-                visible: backend.collections.length === 0
-                Layout.leftMargin: Theme.s4
-                Layout.rightMargin: Theme.s3
-                Layout.fillWidth: true
-                wrapMode: Text.Wrap
-                text: qsTr("Group families by hand. Pick a family, then Font ▸ Add to collection.")
-                color: Theme.textMuted
-                font.pixelSize: Theme.fsCaption
-            }
 
-            Heading { text: qsTr("Smart Collections"); action: qsTr("New smart collection"); onActionClicked: sidebar.newSmartRequested() }
-            Repeater {
-                model: backend.smartCollections
-                SourceRow {
-                    required property var modelData
-                    source: "smart:" + modelData.id
-                    label: modelData.name
-                    iconName: "search"
-                    count: modelData.count
+                Heading { text: qsTr("Language") }
+                ComboBox {
+                    id: languageBox
                     Layout.fillWidth: true
-                    onDoubleClicked: sidebar.editSmartRequested(modelData.id)
-                    TapHandler {
-                        acceptedButtons: Qt.RightButton
-                        onTapped: collectionMenu.openFor(modelData.id, modelData.name, true)
+                    Layout.leftMargin: Theme.s4
+                    Layout.rightMargin: Theme.s3
+                    model: [{ code: "", name: qsTr("Any language"), count: -1 }].concat(backend.languages)
+                    textRole: "name"
+                    valueRole: "code"
+                    displayText: backend.source.indexOf("lang:") === 0 ? backend.sourceTitle : qsTr("Any language")
+                    onActivated: (index) => {
+                        const code = model[index].code
+                        backend.source = code === "" ? "all" : "lang:" + code
+                    }
+                    delegate: ItemDelegate {
+                        required property var modelData
+                        required property int index
+                        width: languageBox.width
+                        text: modelData.name + (modelData.count >= 0 ? "  ·  " + modelData.count : "")
+                        highlighted: languageBox.highlightedIndex === index
+                    }
+                    popup.contentItem.implicitHeight: Math.min(400, languageBox.count * Theme.hRow)
+                }
+
+                Heading { visible: backend.tagFacets.length > 0; text: qsTr("Tags") }
+                Flow {
+                    visible: backend.tagFacets.length > 0
+                    Layout.fillWidth: true
+                    Layout.leftMargin: Theme.s4
+                    Layout.rightMargin: Theme.s3
+                    spacing: Theme.s1
+                    Repeater {
+                        model: backend.tagFacets
+                        Button {
+                            required property var modelData
+                            text: "#" + modelData.name + "  " + modelData.count
+                            flat: backend.source !== modelData.key
+                            checked: backend.source === modelData.key
+                            font.pixelSize: Theme.fsLabel
+                            onClicked: backend.source = backend.source === modelData.key ? "all" : modelData.key
+                            TapHandler { acceptedButtons: Qt.RightButton; onTapped: tagMenu.openFor(modelData.name) }
+                        }
                     }
                 }
-            }
-            Label {
-                visible: backend.smartCollections.length === 0
-                Layout.leftMargin: Theme.s4
-                Layout.rightMargin: Theme.s3
-                Layout.fillWidth: true
-                wrapMode: Text.Wrap
-                text: qsTr("Rules that pick families for you: by designer, kind, language, weight…")
-                color: Theme.textMuted
-                font.pixelSize: Theme.fsCaption
+
+                Heading { text: qsTr("Collections"); action: qsTr("New collection"); onActionClicked: sidebar.newCollectionRequested() }
+                Repeater {
+                    model: backend.collections
+                    SourceRow {
+                        required property var modelData
+                        source: "coll:" + modelData.id
+                        label: modelData.name
+                        iconName: "folder-open"
+                        count: modelData.count
+                        editable: true
+                        Layout.fillWidth: true
+                        TapHandler {
+                            acceptedButtons: Qt.RightButton
+                            onTapped: collectionMenu.openFor(modelData.id, modelData.name, false)
+                        }
+                    }
+                }
+
+                Heading { text: qsTr("Smart Collections"); action: qsTr("New smart collection"); onActionClicked: sidebar.newSmartRequested() }
+                Repeater {
+                    model: backend.smartCollections
+                    SourceRow {
+                        required property var modelData
+                        source: "smart:" + modelData.id
+                        label: modelData.name
+                        iconName: "search"
+                        count: modelData.count
+                        Layout.fillWidth: true
+                        onDoubleClicked: sidebar.editSmartRequested(modelData.id)
+                        TapHandler {
+                            acceptedButtons: Qt.RightButton
+                            onTapped: collectionMenu.openFor(modelData.id, modelData.name, true)
+                        }
+                    }
+                }
             }
         }
     }

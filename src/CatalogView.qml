@@ -3,22 +3,26 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Omatype 1.0
 
-// Open-source type discovery: an Adobe Fonts-style browsing surface designed
-// around generous whitespace, live custom specimens, designer attribution,
-// Suitcase-style shortlisting, and one-click installation.
+// Editorial open-source type catalog.
+// Single unified control bar, hairline-ruled specimens on shared baselines,
+// hover-revealed actions, zero ellipses, zero fallback-font ghosts.
 Rectangle {
     id: root
-    color: Theme.pasteboard
+    color: Theme.windowBg
 
-    property int previewSize: 28
+    property bool sidebarOpen: true
+    signal toggleSidebarRequested()
+
+    property int previewSize: 40
     property string layoutMode: "grid" // "grid" | "list"
+    property bool editingSample: false
 
     readonly property var samplePresets: [
-        { label: qsTr("Sentence"), text: "The quick brown fox jumps over the lazy dog" },
         { label: qsTr("Editorial"), text: "Typography is what language looks like." },
-        { label: qsTr("Paragraph"), text: "Good typography is invisible until it is absent. Every letterform carries rhythm, proportion, and quiet intent." },
-        { label: qsTr("Figures"), text: "0123456789 · $4,290.50 · 2026–11–26 · 14:30" },
-        { label: qsTr("Alphabet"), text: "Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp" }
+        { label: qsTr("Pangram"), text: "The quick brown fox jumps over the lazy dog" },
+        { label: qsTr("Figures"), text: "0123456789 · $4,290.50 · 2026–11–26" },
+        { label: qsTr("Alphabet"), text: "Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn" },
+        { label: qsTr("Paragraph"), text: "Good typography is invisible until it is absent. Every letterform carries rhythm, proportion, and quiet intent." }
     ]
 
     readonly property var categories: [
@@ -31,7 +35,7 @@ Rectangle {
     ]
 
     readonly property var scripts: [
-        { key: "", label: qsTr("Any script") },
+        { key: "", label: qsTr("Scripts") },
         { key: "latin", label: qsTr("Latin") },
         { key: "latin-ext", label: qsTr("Latin Extended") },
         { key: "greek", label: qsTr("Greek") },
@@ -46,129 +50,144 @@ Rectangle {
         { key: "popular", label: qsTr("Popular") },
         { key: "trending", label: qsTr("Trending") },
         { key: "newest", label: qsTr("Newest") },
-        { key: "name", label: qsTr("Name A–Z") },
-        { key: "styles", label: qsTr("Most styles") }
+        { key: "name", label: qsTr("A–Z") },
+        { key: "styles", label: qsTr("Styles") }
     ]
 
-    component FilterPill: Button {
+    function focusSearch() {
+        catalogSearchField.forceActiveFocus()
+        catalogSearchField.selectAll()
+    }
+
+    function currentScriptLabel() {
+        for (let i = 0; i < scripts.length; ++i)
+            if (scripts[i].key === catalog.scriptFilter) return scripts[i].label
+        return qsTr("Scripts")
+    }
+
+    function currentSortLabel() {
+        for (let i = 0; i < sortOptions.length; ++i)
+            if (sortOptions[i].key === catalog.sortBy) return sortOptions[i].label
+        return qsTr("Popular")
+    }
+
+    component FilterTab: Item {
+        id: tab
+        property string text: ""
         property bool active: false
-        flat: !active
-        checked: active
-        implicitHeight: Theme.hControl
-        font.pixelSize: Theme.fsLabel
+        signal clicked()
+        implicitWidth: tabLabel.implicitWidth + 10
+        implicitHeight: 30
+
+        HoverHandler { id: tabHover }
+        TapHandler { onTapped: tab.clicked() }
+
+        Text {
+            id: tabLabel
+            anchors.centerIn: parent
+            text: tab.text
+            color: tab.active ? Theme.textPrimary : tabHover.hovered ? Theme.textSecondary : Theme.textMuted
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.fsLabel
+            font.weight: tab.active ? Font.Medium : Font.Normal
+        }
+        Rectangle {
+            visible: tab.active
+            anchors.bottom: parent.bottom
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: tabLabel.implicitWidth
+            height: 2
+            radius: 1
+            color: Theme.textPrimary
+        }
+    }
+
+    component QuietMenuButton: Item {
+        id: qmb
+        property string text: ""
+        signal clicked()
+        implicitWidth: qmbRow.implicitWidth + Theme.s2
+        implicitHeight: 28
+
+        HoverHandler { id: qmbHover }
+        TapHandler { onTapped: qmb.clicked() }
+
+        RowLayout {
+            id: qmbRow
+            anchors.centerIn: parent
+            spacing: 4
+            Text {
+                text: qmb.text
+                color: qmbHover.hovered ? Theme.textPrimary : Theme.textSecondary
+                font.family: Theme.fontFamily
+                font.pixelSize: Theme.fsLabel
+            }
+            Icon {
+                name: "chevron-down"
+                size: 12
+                color: qmbHover.hovered ? Theme.textPrimary : Theme.textMuted
+            }
+        }
     }
 
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
 
-        // ── Specimen bar: editable sample text, presets, size, layout ───────
+        // ── Single unified Discover control bar ─────────────────────────────
         Rectangle {
             Layout.fillWidth: true
-            implicitHeight: 54
-            color: Theme.panelBg
+            implicitHeight: 48
+            color: Theme.windowBg
+
             RowLayout {
                 anchors.fill: parent
-                anchors.leftMargin: Theme.s4
-                anchors.rightMargin: Theme.s4
-                spacing: Theme.s2
+                anchors.leftMargin: Theme.s5 - 6
+                anchors.rightMargin: Theme.s5
+                spacing: Theme.s1 + 2
 
+                ToolButton {
+                    icon.name: "panel-left"
+                    checked: root.sidebarOpen
+                    onClicked: root.toggleSidebarRequested()
+                    ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay; ToolTip.text: qsTr("Sidebar  Ctrl+B")
+                }
+
+                // Quiet search input
                 TextField {
-                    id: catalogSampleField
-                    objectName: "catalogSampleField"
-                    Layout.fillWidth: true
-                    Layout.minimumWidth: 200
-                    text: catalog.sampleText
-                    placeholderText: qsTr("Type your own words to preview every typeface…")
-                    leftPadding: Theme.s2 + Theme.szIcon + Theme.s2
-                    onTextEdited: catalog.sampleText = text
-                    Icon { name: "type"; size: Theme.szIcon; color: Theme.textMuted; x: Theme.s2; anchors.verticalCenter: parent.verticalCenter }
-                }
-
-                Button {
-                    id: presetBtn
-                    flat: true
-                    text: qsTr("Presets")
-                    icon.name: "chevron-down"
-                    property bool iconTrailing: true
-                    onClicked: presetMenu.popup(presetBtn, 0, presetBtn.height)
-                    Menu {
-                        id: presetMenu
-                        Repeater {
-                            model: root.samplePresets
-                            MenuItem {
-                                required property var modelData
-                                text: modelData.label
-                                onTriggered: {
-                                    catalog.sampleText = modelData.text
-                                    catalogSampleField.text = modelData.text
-                                }
-                            }
-                        }
+                    id: catalogSearchField
+                    objectName: "searchField"
+                    Layout.preferredWidth: 112
+                    Layout.minimumWidth: 88
+                    text: catalog.query
+                    placeholderText: qsTr("Search…")
+                    leftPadding: Theme.s2 + Theme.szIcon + Theme.s1
+                    rightPadding: text !== "" ? 26 : Theme.s2
+                    font.pixelSize: Theme.fsLabel
+                    onTextEdited: catalog.query = text
+                    Keys.onEscapePressed: { text = ""; catalog.query = ""; focus = false }
+                    background: Rectangle {
+                        implicitHeight: 28
+                        radius: Theme.rControl
+                        color: catalogSearchField.activeFocus ? Theme.panelBg : Theme.withAlpha(Theme.panelBg, 0.55)
+                        border.width: Theme.hairline
+                        border.color: catalogSearchField.activeFocus ? Theme.borderStrong : Theme.withAlpha(Theme.border, 0.5)
+                    }
+                    Icon { name: "search"; size: 14; color: Theme.textMuted; x: Theme.s2; anchors.verticalCenter: parent.verticalCenter }
+                    ToolButton {
+                        visible: catalogSearchField.text !== ""
+                        icon.name: "x"
+                        anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
+                        onClicked: { catalogSearchField.text = ""; catalog.query = "" }
                     }
                 }
 
-                Rectangle { implicitWidth: Theme.hairline; implicitHeight: 20; color: Theme.border }
+                Rectangle { implicitWidth: Theme.hairline; implicitHeight: 16; color: Theme.withAlpha(Theme.border, 0.6) }
 
-                Label {
-                    text: root.previewSize + "px"
-                    color: Theme.textMuted
-                    font.family: Theme.monoFamily
-                    font.pixelSize: Theme.fsCaption
-                    Layout.preferredWidth: 32
-                    horizontalAlignment: Text.AlignRight
-                }
-                Slider {
-                    id: catalogSizeSlider
-                    Layout.preferredWidth: 104
-                    from: 20; to: 64; stepSize: 2
-                    value: root.previewSize
-                    onMoved: root.previewSize = Math.round(value)
-                }
-
-                Rectangle {
-                    implicitWidth: layoutRow.implicitWidth + Theme.s1 * 2
-                    implicitHeight: Theme.hControl + 4
-                    radius: Theme.rControl
-                    color: Theme.withAlpha(Theme.controlBg, 0.55)
-                    border.width: Theme.hairline
-                    border.color: Theme.border
-                    RowLayout {
-                        id: layoutRow
-                        anchors.centerIn: parent
-                        spacing: 0
-                        ToolButton {
-                            icon.name: "layout-grid"
-                            checked: root.layoutMode === "grid"
-                            onClicked: root.layoutMode = "grid"
-                            ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay; ToolTip.text: qsTr("Specimen grid")
-                        }
-                        ToolButton {
-                            icon.name: "rows-3"
-                            checked: root.layoutMode === "list"
-                            onClicked: root.layoutMode = "list"
-                            ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay; ToolTip.text: qsTr("Full-width specimen rows")
-                        }
-                    }
-                }
-            }
-            Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: Theme.hairline; color: Theme.border }
-        }
-
-        // ── Faceted filter bar: classification, variable, script, sort ──────
-        Rectangle {
-            Layout.fillWidth: true
-            implicitHeight: 46
-            color: Theme.withAlpha(Theme.panelBg, 0.72)
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: Theme.s4
-                anchors.rightMargin: Theme.s4
-                spacing: Theme.s1
-
+                // Category tabs
                 Repeater {
                     model: root.categories
-                    FilterPill {
+                    FilterTab {
                         required property var modelData
                         text: modelData.label
                         active: catalog.category === modelData.key
@@ -176,94 +195,182 @@ Rectangle {
                     }
                 }
 
-                Rectangle { implicitWidth: Theme.hairline; implicitHeight: 18; Layout.leftMargin: Theme.s1; Layout.rightMargin: Theme.s1; color: Theme.border }
-
-                FilterPill {
+                // Orthogonal Variable toggle (clean text toggle, no dead dark checkbox)
+                Rectangle { implicitWidth: Theme.hairline; implicitHeight: 16; color: Theme.withAlpha(Theme.border, 0.5) }
+                Button {
+                    flat: !catalog.variableOnly
+                    checked: catalog.variableOnly
+                    implicitHeight: 26
                     text: qsTr("Variable")
-                    icon.name: "sliders-horizontal"
-                    active: catalog.variableOnly
+                    font.pixelSize: Theme.fsLabel
                     onClicked: catalog.variableOnly = !catalog.variableOnly
                 }
 
                 Item { Layout.fillWidth: true }
 
-                ComboBox {
-                    id: scriptCombo
-                    Layout.preferredWidth: 112
-                    model: root.scripts
-                    textRole: "label"
-                    currentIndex: {
-                        for (let i = 0; i < root.scripts.length; ++i)
-                            if (root.scripts[i].key === catalog.scriptFilter) return i
-                        return 0
+                QuietMenuButton {
+                    id: scriptMenuBtn
+                    text: root.currentScriptLabel()
+                    onClicked: scriptMenu.popup(scriptMenuBtn, 0, scriptMenuBtn.height)
+                    Menu {
+                        id: scriptMenu
+                        Repeater {
+                            model: root.scripts
+                            MenuItem {
+                                required property var modelData
+                                text: modelData.label
+                                checkable: true
+                                checked: catalog.scriptFilter === modelData.key
+                                onTriggered: catalog.scriptFilter = modelData.key
+                            }
+                        }
                     }
-                    onActivated: (idx) => catalog.scriptFilter = root.scripts[idx].key
                 }
 
-                ComboBox {
-                    id: sortCombo
-                    Layout.preferredWidth: 112
-                    model: root.sortOptions
-                    textRole: "label"
-                    currentIndex: {
-                        for (let i = 0; i < root.sortOptions.length; ++i)
-                            if (root.sortOptions[i].key === catalog.sortBy) return i
-                        return 0
+                QuietMenuButton {
+                    id: sortMenuBtn
+                    text: root.currentSortLabel()
+                    onClicked: sortMenu.popup(sortMenuBtn, 0, sortMenuBtn.height)
+                    Menu {
+                        id: sortMenu
+                        Repeater {
+                            model: root.sortOptions
+                            MenuItem {
+                                required property var modelData
+                                text: modelData.label
+                                checkable: true
+                                checked: catalog.sortBy === modelData.key
+                                onTriggered: catalog.sortBy = modelData.key
+                            }
+                        }
                     }
-                    onActivated: (idx) => catalog.sortBy = root.sortOptions[idx].key
+                }
+
+                Rectangle { implicitWidth: Theme.hairline; implicitHeight: 16; color: Theme.withAlpha(Theme.border, 0.5) }
+
+                // Size slider followed by matching toolbar readout
+                Slider {
+                    id: catalogSizeSlider
+                    Layout.preferredWidth: 50
+                    from: 24; to: 64; stepSize: 2
+                    value: root.previewSize
+                    onMoved: root.previewSize = Math.round(value)
+                }
+                Label {
+                    text: String(root.previewSize)
+                    color: Theme.textSecondary
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fsLabel
+                    Layout.preferredWidth: 18
+                }
+
+                // Clear Sample menu (instead of cryptic bare T icon)
+                QuietMenuButton {
+                    id: sampleBtn
+                    text: qsTr("Sample")
+                    onClicked: sampleMenu.popup(sampleBtn, -80, sampleBtn.height)
+                    Menu {
+                        id: sampleMenu
+                        MenuItem {
+                            text: root.editingSample ? qsTr("Hide custom text bar") : qsTr("Type custom text…")
+                            onTriggered: {
+                                root.editingSample = !root.editingSample
+                                if (root.editingSample) inlineSampleField.forceActiveFocus()
+                            }
+                        }
+                        MenuSeparator {}
+                        Repeater {
+                            model: root.samplePresets
+                            MenuItem {
+                                required property var modelData
+                                text: modelData.label
+                                checkable: true
+                                checked: catalog.sampleText === modelData.text
+                                onTriggered: catalog.sampleText = modelData.text
+                            }
+                        }
+                    }
                 }
 
                 ToolButton {
-                    icon.name: "refresh-cw"
-                    enabled: !catalog.loading
-                    onClicked: catalog.load(true)
-                    ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay; ToolTip.text: qsTr("Refresh open-source catalog")
+                    icon.name: root.layoutMode === "grid" ? "rows-3" : "layout-grid"
+                    onClicked: root.layoutMode = root.layoutMode === "grid" ? "list" : "grid"
+                    ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay
+                    ToolTip.text: root.layoutMode === "grid" ? qsTr("Full-width rows") : qsTr("Grid")
                 }
             }
-            Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: Theme.hairline; color: Theme.border }
+            Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: Theme.hairline; color: Theme.withAlpha(Theme.border, 0.5) }
         }
 
-        // ── Optional non-blocking notice banner (offline/cached) ────────────
+        // ── Optional custom sample input (only shown when user clicks "Type custom text…") ─
+        Rectangle {
+            visible: root.editingSample
+            Layout.fillWidth: true
+            implicitHeight: visible ? 40 : 0
+            color: Theme.panelBg
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: Theme.s5
+                anchors.rightMargin: Theme.s5
+                spacing: Theme.s2
+                TextField {
+                    id: inlineSampleField
+                    objectName: "catalogSampleField"
+                    Layout.fillWidth: true
+                    text: catalog.sampleText
+                    placeholderText: qsTr("Type any text to preview across all typefaces…")
+                    onTextEdited: catalog.sampleText = text
+                    Keys.onEscapePressed: root.editingSample = false
+                    background: null
+                }
+                ToolButton { icon.name: "x"; onClicked: root.editingSample = false }
+            }
+            Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: Theme.hairline; color: Theme.withAlpha(Theme.border, 0.5) }
+        }
+
+        // ── Optional offline notice ─────────────────────────────────────────
         Rectangle {
             visible: catalog.error !== ""
             Layout.fillWidth: true
-            implicitHeight: visible ? 32 : 0
-            color: Theme.withAlpha(Theme.warning, 0.12)
+            implicitHeight: visible ? 28 : 0
+            color: Theme.withAlpha(Theme.warning, 0.10)
             RowLayout {
                 anchors.fill: parent
-                anchors.leftMargin: Theme.s4
-                anchors.rightMargin: Theme.s4
+                anchors.leftMargin: Theme.s5
+                anchors.rightMargin: Theme.s5
                 spacing: Theme.s2
-                Icon { name: "circle-alert"; size: Theme.szIcon - 2; color: Theme.warning }
+                Icon { name: "circle-alert"; size: 13; color: Theme.warning }
                 Label { Layout.fillWidth: true; text: catalog.error; color: Theme.warning; font.pixelSize: Theme.fsLabel; elide: Text.ElideRight }
             }
         }
 
-        // ── Main specimen grid / full-width rows ────────────────────────────
+        // ── Editorial specimen sheet (hairline-ruled, shared baselines) ─────
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
+            readonly property int gutter: 28
+
             GridView {
                 id: grid
                 anchors.fill: parent
-                anchors.leftMargin: Theme.s5
-                anchors.rightMargin: Theme.s5
-                anchors.topMargin: Theme.s4
+                anchors.leftMargin: Theme.s5 - parent.gutter / 2
+                anchors.rightMargin: Theme.s5 - parent.gutter / 2
+                anchors.topMargin: Theme.s2
                 anchors.bottomMargin: Theme.s4
                 clip: true
                 model: catalog.model
-                readonly property int columns: root.layoutMode === "list" ? 1 : Math.max(1, Math.floor(width / 360))
+                readonly property int columns: root.layoutMode === "list" ? 1 : Math.max(1, Math.floor(width / 430))
                 cellWidth: Math.floor(width / columns)
                 cellHeight: root.layoutMode === "list"
-                    ? Math.max(176, Math.round(root.previewSize * 2.8 + 108))
-                    : Math.max(248, Math.round(root.previewSize * 3.1 + 156))
-                cacheBuffer: cellHeight * 3
+                    ? Math.max(144, Math.round(root.previewSize * 1.15 * 2 + 80))
+                    : Math.max(134, Math.round(root.previewSize * 1.15 + 88))
+                cacheBuffer: cellHeight
                 boundsBehavior: Flickable.StopAtBounds
                 ScrollBar.vertical: ScrollBar {}
 
                 delegate: Item {
-                    id: cardWrap
+                    id: cell
                     required property int index
                     required property string id
                     required property string family
@@ -283,205 +390,214 @@ Rectangle {
                     width: grid.cellWidth
                     height: grid.cellHeight
 
-                    Component.onCompleted: catalog.requestPreview(cardWrap.id)
-                    onIdChanged: catalog.requestPreview(cardWrap.id)
-                    onPreviewFileChanged: if (previewFile === "") catalog.requestPreview(cardWrap.id)
+                    Component.onCompleted: catalog.requestPreview(cell.id)
+                    onIdChanged: catalog.requestPreview(cell.id)
+                    onPreviewFileChanged: if (previewFile === "") catalog.requestPreview(cell.id)
 
                     Loader {
                         id: faceLoader
-                        active: cardWrap.previewFile !== ""
-                        sourceComponent: FontLoader { source: catalog.fileUrl(cardWrap.previewFile) }
+                        active: cell.previewFile !== ""
+                        sourceComponent: FontLoader { source: catalog.fileUrl(cell.previewFile) }
                     }
                     readonly property bool faceReady: faceLoader.item !== null && faceLoader.item.status === FontLoader.Ready
-                    readonly property bool selected: catalog.selectedId === cardWrap.id
+                    readonly property bool selected: catalog.selectedId === cell.id
 
+                    // Quiet hairline-ruled editorial cell (no rounded card box)
                     Rectangle {
-                        id: card
+                        id: surface
                         anchors.fill: parent
-                        anchors.margins: Theme.s2
-                        radius: Theme.rCard + 2
-                        color: cardWrap.selected
-                            ? Theme.withAlpha(Theme.accent, 0.08)
-                            : cardHover.hovered ? Theme.panelRaised : Theme.panelBg
-                        border.width: cardWrap.selected ? Theme.selectionRing : Theme.hairline
-                        border.color: cardWrap.selected ? Theme.accent : cardHover.hovered ? Theme.borderStrong : Theme.border
+                        anchors.leftMargin: 14
+                        anchors.rightMargin: 14
+                        color: cell.selected ? Theme.withAlpha(Theme.textPrimary, 0.045)
+                             : cellHover.hovered ? Theme.withAlpha(Theme.textPrimary, 0.025) : "transparent"
 
                         Behavior on color { ColorAnimation { duration: Theme.dFast } }
-                        Behavior on border.color { ColorAnimation { duration: Theme.dFast } }
 
-                        HoverHandler { id: cardHover }
-                        TapHandler {
-                            onTapped: catalog.selectFamily(cardWrap.id)
-                        }
-
-                        ColumnLayout {
-                            anchors.fill: parent
-                            anchors.leftMargin: Theme.s5
-                            anchors.rightMargin: Theme.s5
+                        // Subtle left accent bar only when selected
+                        Rectangle {
+                            visible: cell.selected
+                            anchors.left: parent.left
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
                             anchors.topMargin: Theme.s4
                             anchors.bottomMargin: Theme.s4
-                            spacing: Theme.s3
+                            width: 2
+                            color: Theme.accent
+                        }
 
-                            // Header: Family name + Designer attribution + Source/VF badges
-                            RowLayout {
-                                Layout.fillWidth: true
-                                spacing: Theme.s2
+                        // Hairline rule at bottom
+                        Rectangle {
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            height: Theme.hairline
+                            color: cell.selected ? Theme.withAlpha(Theme.borderStrong, 0.8) : Theme.withAlpha(Theme.border, 0.42)
+                        }
 
-                                ColumnLayout {
-                                    Layout.fillWidth: true
-                                    spacing: 2
-                                    Text {
-                                        Layout.fillWidth: true
-                                        text: cardWrap.family
-                                        textFormat: Text.PlainText
-                                        elide: Text.ElideRight
-                                        color: Theme.textPrimary
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: Theme.fsSection
-                                        font.weight: Font.DemiBold
-                                    }
-                                    Text {
-                                        Layout.fillWidth: true
-                                        visible: cardWrap.designersText !== ""
-                                        text: qsTr("by %1").arg(cardWrap.designersText)
-                                        textFormat: Text.PlainText
-                                        elide: Text.ElideRight
-                                        color: Theme.textMuted
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: Theme.fsLabel
-                                    }
-                                }
+                        HoverHandler { id: cellHover }
+                        TapHandler { onTapped: catalog.selectFamily(cell.id) }
 
-                                // Variable pill
-                                Rectangle {
-                                    visible: cardWrap.variable
-                                    implicitWidth: vfText.implicitWidth + Theme.s2 * 2
-                                    implicitHeight: 20
-                                    radius: Theme.rChip
-                                    color: Theme.withAlpha(Theme.accent, 0.12)
-                                    border.width: Theme.hairline
-                                    border.color: Theme.withAlpha(Theme.accent, 0.45)
-                                    Text {
-                                        id: vfText
-                                        anchors.centerIn: parent
-                                        text: "VF"
-                                        color: Theme.accent
-                                        font.family: Theme.monoFamily
-                                        font.pixelSize: Theme.fsCaption
-                                        font.weight: Theme.wHeading
-                                    }
-                                }
+                        // Header: single baseline with Family — Designer
+                        RowLayout {
+                            id: cellHeader
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.leftMargin: cell.selected ? Theme.s3 : 0
+                            anchors.topMargin: Theme.s4
+                            spacing: Theme.s2
 
-                                // Source badge
-                                Rectangle {
-                                    implicitWidth: srcText.implicitWidth + Theme.s2 * 2
-                                    implicitHeight: 20
-                                    radius: Theme.rChip
-                                    color: Theme.withAlpha(Theme.controlBg, 0.9)
-                                    border.width: Theme.hairline
-                                    border.color: Theme.border
-                                    Text {
-                                        id: srcText
-                                        anchors.centerIn: parent
-                                        text: cardWrap.source === "google" ? "Google" : cardWrap.sourceLabel
-                                        color: Theme.textSecondary
-                                        font.family: Theme.fontFamily
-                                        font.pixelSize: Theme.fsCaption
-                                    }
-                                }
+                            Text {
+                                text: cell.family
+                                textFormat: Text.PlainText
+                                color: Theme.textPrimary
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fsControl
+                                font.weight: Font.Medium
+                                Layout.alignment: Qt.AlignBaseline
                             }
 
-                            // Hero specimen: generous whitespace around live type
-                            Item {
+                            Text {
                                 Layout.fillWidth: true
-                                Layout.fillHeight: true
-                                clip: true
-
-                                Text {
-                                    anchors.fill: parent
-                                    verticalAlignment: Text.AlignVCenter
-                                    text: catalog.sampleText === "" ? "The quick brown fox jumps over the lazy dog" : catalog.sampleText
-                                    textFormat: Text.PlainText
-                                    font.family: cardWrap.faceReady ? faceLoader.item.name : Theme.fontFamily
-                                    font.pixelSize: root.previewSize
-                                    color: Theme.specimenInk
-                                    opacity: cardWrap.faceReady ? 1.0 : 0.22
-                                    wrapMode: Text.Wrap
-                                    maximumLineCount: 2
-                                    lineHeight: 1.28
-                                    elide: Text.ElideRight
-                                    Behavior on opacity { NumberAnimation { duration: 180 } }
-                                }
+                                visible: cell.designersText !== ""
+                                text: "—  " + cell.designersText
+                                textFormat: Text.PlainText
+                                elide: Text.ElideRight
+                                color: Theme.textMuted
+                                font.family: Theme.fontFamily
+                                font.pixelSize: Theme.fsLabel
+                                Layout.alignment: Qt.AlignBaseline
                             }
 
-                            // Footer: metadata + Shortlist + 1-click Install
+                            // Hover/selected actions only — calm gallery at rest
                             RowLayout {
-                                Layout.fillWidth: true
-                                spacing: Theme.s2
-
-                                Label {
-                                    Layout.fillWidth: true
-                                    text: [
-                                        Theme.plural(cardWrap.styleCount, qsTr("style"), qsTr("styles")),
-                                        cardWrap.weightRange !== "" ? cardWrap.weightRange : "",
-                                        cardWrap.category
-                                    ].filter(s => s !== "").join("  ·  ")
-                                    color: Theme.textMuted
-                                    font.pixelSize: Theme.fsCaption
-                                    elide: Text.ElideRight
-                                }
+                                spacing: Theme.s1
+                                visible: cellHover.hovered || cell.selected || cell.installed || cell.shortlisted || cell.installing
 
                                 ToolButton {
+                                    visible: cellHover.hovered || cell.selected || cell.shortlisted
                                     icon.name: "bookmark"
-                                    checked: cardWrap.shortlisted
-                                    onClicked: catalog.toggleShortlist(cardWrap.id)
+                                    checked: cell.shortlisted
+                                    onClicked: catalog.toggleShortlist(cell.id)
                                     ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay
-                                    ToolTip.text: cardWrap.shortlisted ? qsTr("Remove from Shortlist") : qsTr("Add to Shortlist")
+                                    ToolTip.text: cell.shortlisted ? qsTr("Remove from Shortlist") : qsTr("Shortlist")
+                                }
+
+                                Icon {
+                                    visible: cell.installed && !cellHover.hovered && !cell.selected
+                                    name: "check"
+                                    size: 14
+                                    color: Theme.success
                                 }
 
                                 Button {
-                                    objectName: "cardInstall_" + cardWrap.id
-                                    implicitHeight: Theme.hControl
-                                    highlighted: (cardHover.hovered || cardWrap.selected) && !cardWrap.installed && !cardWrap.installing
-                                    enabled: !cardWrap.installing
-                                    icon.name: cardWrap.installed ? "check" : "download"
-                                    text: cardWrap.installing ? qsTr("Installing…")
-                                        : cardWrap.installed ? qsTr("Installed")
-                                        : qsTr("Install")
-                                    onClicked: {
-                                        if (cardWrap.installed) {
-                                            catalog.selectFamily(cardWrap.id)
-                                        } else {
-                                            catalog.installFamily(cardWrap.id, true, [])
-                                        }
-                                    }
-                                    ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay
-                                    ToolTip.text: cardWrap.installed
-                                        ? qsTr("Installed in ~/.local/share/fonts — click to manage weights")
-                                        : qsTr("One-click install %1 to your system fonts").arg(cardWrap.family)
+                                    objectName: "cardInstall_" + cell.id
+                                    visible: (cellHover.hovered || cell.selected || cell.installing) && !cell.installed
+                                    flat: true
+                                    implicitHeight: 24
+                                    enabled: !cell.installing
+                                    text: cell.installing ? qsTr("Installing…") : qsTr("Install")
+                                    font.pixelSize: Theme.fsLabel
+                                    onClicked: catalog.installFamily(cell.id, true, [])
                                 }
                             }
+                        }
+
+                        // Specimen: true typographic baseline alignment across every row;
+                        // never ellipsized; never drawn in a fallback font while loading.
+                        Item {
+                            id: specimenBox
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: cellHeader.bottom
+                            anchors.bottom: cellFooter.top
+                            anchors.leftMargin: cell.selected ? Theme.s3 : 0
+                            anchors.topMargin: Theme.s2
+                            anchors.bottomMargin: Theme.s2
+                            clip: true
+
+                            // Exact shared baseline coordinate for every card in a row
+                            Item {
+                                id: sharedBaseline
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                y: Math.min(parent.height - 6, Math.round(root.previewSize * 1.0))
+                                height: 1
+                            }
+
+                            // Quiet baseline rule while the subsetted TTF streams in
+                            Rectangle {
+                                visible: !cell.faceReady
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.top: sharedBaseline.top
+                                height: Theme.hairline
+                                color: Theme.withAlpha(Theme.border, 0.55)
+                            }
+
+                            Text {
+                                id: specimenText
+                                visible: cell.faceReady
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.baseline: root.layoutMode === "grid" ? sharedBaseline.top : undefined
+                                anchors.top: root.layoutMode === "list" ? parent.top : undefined
+                                text: catalog.sampleText === "" ? "Typography is what language looks like." : catalog.sampleText
+                                textFormat: Text.PlainText
+                                font.family: cell.faceReady ? faceLoader.item.name : Theme.fontFamily
+                                font.pixelSize: root.previewSize
+                                color: Theme.specimenInk
+                                wrapMode: root.layoutMode === "list" ? Text.Wrap : Text.NoWrap
+                                maximumLineCount: root.layoutMode === "list" ? 2 : 1
+                                lineHeightMode: Text.FixedHeight
+                                lineHeight: Math.round(root.previewSize * 1.15)
+                                elide: Text.ElideNone
+                            }
+
+                            // Subtle right-edge fade when single-line specimen extends past cell
+                            Rectangle {
+                                visible: cell.faceReady && root.layoutMode === "grid" && specimenText.implicitWidth > specimenBox.width
+                                anchors.right: parent.right
+                                anchors.top: parent.top
+                                anchors.bottom: parent.bottom
+                                width: 36
+                                gradient: Gradient {
+                                    orientation: Gradient.Horizontal
+                                    GradientStop { position: 0.0; color: "transparent" }
+                                    GradientStop { position: 1.0; color: Theme.windowBg }
+                                }
+                            }
+                        }
+
+                        // Quiet single-line provenance footer (legible 11px)
+                        Text {
+                            id: cellFooter
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            anchors.leftMargin: cell.selected ? Theme.s3 : 0
+                            anchors.bottomMargin: Theme.s3
+                            text: (cell.source === "google" ? "Google Fonts" : cell.sourceLabel)
+                                  + "  ·  "
+                                  + (cell.variable ? qsTr("Variable") : Theme.plural(cell.styleCount, qsTr("style"), qsTr("styles")))
+                            color: Theme.withAlpha(Theme.textSecondary, 0.72)
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 11
+                            elide: Text.ElideRight
                         }
                     }
                 }
             }
 
-            // Empty / loading state
+            // Quiet empty / loading state
             Column {
                 anchors.centerIn: parent
                 visible: grid.count === 0
-                spacing: Theme.s3
-                width: Math.min(parent.width - Theme.s6 * 2, 420)
+                spacing: Theme.s2
+                width: Math.min(parent.width - Theme.s6 * 2, 340)
                 BusyIndicator {
                     visible: catalog.loading
                     running: visible
-                    anchors.horizontalCenter: parent.horizontalCenter
-                }
-                Icon {
-                    visible: !catalog.loading
-                    name: catalog.sourceFilter === "shortlist" ? "bookmark" : "globe"
-                    size: Theme.szIconHero
-                    color: Theme.textMuted
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
                 Label {
@@ -491,87 +607,16 @@ Rectangle {
                     color: Theme.textPrimary
                     font.pixelSize: Theme.fsTitle
                     font.weight: Theme.wHeading
-                    text: catalog.loading ? qsTr("Loading open-source type catalogs…")
-                        : catalog.sourceFilter === "shortlist" ? qsTr("Your shortlist is empty")
-                        : qsTr("No matching typefaces")
-                }
-                Label {
-                    width: parent.width
-                    horizontalAlignment: Text.AlignHCenter
-                    wrapMode: Text.Wrap
-                    color: Theme.textMuted
-                    text: catalog.loading ? qsTr("Fetching Google Fonts and curated indie foundries.")
-                        : catalog.sourceFilter === "shortlist" ? qsTr("Bookmark candidates while browsing, compare them, then install the whole shortlist in one click.")
-                        : qsTr("Try clearing a filter or broadening your search.")
+                    text: catalog.loading ? qsTr("Loading catalog…")
+                        : catalog.sourceFilter === "shortlist" ? qsTr("No shortlisted typefaces")
+                        : qsTr("No matches")
                 }
                 Button {
                     visible: !catalog.loading && catalog.sourceFilter !== "shortlist"
                     anchors.horizontalCenter: parent.horizontalCenter
+                    flat: true
                     text: qsTr("Reset filters")
                     onClicked: catalog.resetFilters()
-                }
-            }
-        }
-
-        // ── Suitcase-style Shortlist tray ───────────────────────────────────
-        Rectangle {
-            visible: catalog.shortlistCount > 0
-            Layout.fillWidth: true
-            implicitHeight: visible ? 50 : 0
-            color: Theme.panelBg
-            Rectangle { anchors.top: parent.top; width: parent.width; height: Theme.hairline; color: Theme.border }
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: Theme.s4
-                anchors.rightMargin: Theme.s4
-                spacing: Theme.s2
-
-                Icon { name: "bookmark"; size: Theme.szIcon; color: Theme.accent }
-                Label {
-                    text: qsTr("Shortlist · %1").arg(catalog.shortlistCount)
-                    color: Theme.textPrimary
-                    font.weight: Theme.wHeading
-                }
-
-                // First few shortlisted names as clickable chips
-                Repeater {
-                    model: catalog.shortlistItems.slice(0, 5)
-                    Button {
-                        required property var modelData
-                        flat: true
-                        implicitHeight: 26
-                        text: modelData.family + (modelData.installed ? " ✓" : "")
-                        font.pixelSize: Theme.fsLabel
-                        onClicked: catalog.selectFamily(modelData.id)
-                    }
-                }
-                Label {
-                    visible: catalog.shortlistCount > 5
-                    text: qsTr("+%1 more").arg(catalog.shortlistCount - 5)
-                    color: Theme.textMuted
-                    font.pixelSize: Theme.fsLabel
-                }
-
-                Item { Layout.fillWidth: true }
-
-                Button {
-                    flat: true
-                    text: qsTr("View shortlist")
-                    visible: catalog.sourceFilter !== "shortlist"
-                    onClicked: catalog.sourceFilter = "shortlist"
-                }
-                Button {
-                    flat: true
-                    icon.name: "x"
-                    text: qsTr("Clear")
-                    onClicked: catalog.clearShortlist()
-                }
-                Button {
-                    highlighted: true
-                    icon.name: "download"
-                    text: qsTr("Install Shortlist")
-                    enabled: !catalog.installingAny
-                    onClicked: catalog.installShortlist()
                 }
             }
         }

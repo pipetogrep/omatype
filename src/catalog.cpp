@@ -625,7 +625,7 @@ void Catalog::mergeCatalogs(const QList<CatalogFamily> &googleFamilies) {
         if (QFileInfo::exists(cp)) e.previewFile = cp;
         m_indexById.insert(e.id, m_all.size());
         m_all.append(std::move(e));
-        ++m_googleCount;
+        if (!m_hideNoto || !m_all.last().isNoto) ++m_googleCount;
     }
 
     syncInstalled();
@@ -836,7 +836,7 @@ void Catalog::requestPreview(const QString &id) {
 
 void Catalog::pumpPreviewQueue() {
     while (m_activePreviews < kMaxConcurrentPreviews && !m_previewQueue.isEmpty()) {
-        const QString id = m_previewQueue.takeLast();
+        const QString id = m_previewQueue.takeFirst();
         const auto it = m_indexById.constFind(id);
         if (it == m_indexById.cend()) continue;
         const CatalogFamily &e = m_all.at(it.value());

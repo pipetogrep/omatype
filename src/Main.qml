@@ -74,7 +74,10 @@ ApplicationWindow {
     Shortcut { sequences: [StandardKey.Open]; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: backend.openPicker() }
     Shortcut { sequences: [StandardKey.Refresh, "Ctrl+R"]; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: backend.refresh() }
     Shortcut { sequences: [StandardKey.Find, "/"]; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen && !win.textEntryFocused
-               onActivated: { searchField.forceActiveFocus(); searchField.selectAll() } }
+               onActivated: {
+                   if (win.inDiscover) catalogView.focusSearch()
+                   else { searchField.forceActiveFocus(); searchField.selectAll() }
+               } }
     Shortcut { sequence: "Ctrl+L"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: backend.showCoverage = !backend.showCoverage }
     Shortcut { sequence: "Ctrl+B"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: win.sidebarOpen = !win.sidebarOpen }
     Shortcut { sequence: "Ctrl+G"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: win.mode = "discover" }
@@ -121,10 +124,9 @@ ApplicationWindow {
             color: Theme.windowBg
             RowLayout {
                 anchors.fill: parent
-                anchors.leftMargin: Theme.s4
+                anchors.leftMargin: Theme.s2
                 anchors.rightMargin: Theme.s3
-                spacing: Theme.s3
-                Label { text: Theme.appName; color: Theme.textPrimary; font.pixelSize: Theme.fsTitle; font.weight: Font.Bold }
+                spacing: Theme.s2
                 MenuBar {
                     Layout.fillHeight: true
                     Menu {
@@ -235,10 +237,11 @@ ApplicationWindow {
             }
         }
 
-        // Toolbar
+        // Library Toolbar (hidden in Discover mode, which has its own single unified bar)
         Rectangle {
+            visible: !win.inDiscover
             Layout.fillWidth: true
-            implicitHeight: Theme.hToolbar
+            implicitHeight: visible ? Theme.hToolbar : 0
             color: Theme.panelBg
             Hairline { anchors.top: parent.top; width: parent.width }
             RowLayout {
@@ -249,86 +252,29 @@ ApplicationWindow {
 
                 ToolButton { icon.name: "panel-left"; checked: win.sidebarOpen; onClicked: win.sidebarOpen = !win.sidebarOpen
                              ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay; ToolTip.text: qsTr("Sidebar  Ctrl+B") }
-
-                // Mode switcher: Discover open-source fonts vs manage local Library
-                Rectangle {
-                    implicitWidth: modeRow.implicitWidth + Theme.s1 * 2
-                    implicitHeight: Theme.hControl + Theme.s1
-                    radius: Theme.rControl
-                    color: Theme.withAlpha(Theme.controlBg, 0.55)
-                    border.width: Theme.hairline
-                    border.color: Theme.border
-                    RowLayout {
-                        id: modeRow
-                        anchors.centerIn: parent
-                        spacing: 2
-                        Button {
-                            objectName: "modeDiscover"
-                            flat: !win.inDiscover
-                            checked: win.inDiscover
-                            implicitHeight: Theme.hControl
-                            icon.name: "globe"
-                            text: qsTr("Discover")
-                            onClicked: win.mode = "discover"
-                            ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay; ToolTip.text: qsTr("Browse open-source type catalogs  Ctrl+G")
-                        }
-                        Button {
-                            objectName: "modeLibrary"
-                            flat: win.inDiscover
-                            checked: !win.inDiscover
-                            implicitHeight: Theme.hControl
-                            icon.name: "layers"
-                            text: qsTr("Library")
-                            onClicked: win.mode = "library"
-                            ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay; ToolTip.text: qsTr("Manage installed fonts  Ctrl+Shift+L")
-                        }
-                    }
-                }
-                ToolbarRule {}
                 ToolAction { objectName: "toolbarInstall"; icon.name: "folder-plus"; text: qsTr("Import…"); tip: qsTr("Install local font files, folders or archives  Ctrl+O"); onClicked: backend.openPicker() }
-                ToolAction { objectName: "toolbarRescan"; icon.name: "refresh-cw"; text: qsTr("Rescan"); tip: qsTr("Read the font list again  Ctrl+R"); visible: !win.inDiscover; enabled: !backend.scanning; onClicked: backend.refresh() }
+                ToolAction { objectName: "toolbarRescan"; icon.name: "refresh-cw"; text: qsTr("Rescan"); tip: qsTr("Read the font list again  Ctrl+R"); enabled: !backend.scanning; onClicked: backend.refresh() }
                 ToolbarRule {}
                 TextField {
                     id: searchField
-                    objectName: "searchField"
+                    objectName: "librarySearchField"
                     Layout.preferredWidth: Theme.wSearch
                     Layout.maximumWidth: Theme.wSearch
-                    placeholderText: win.inDiscover ? qsTr("Search catalog, designer or foundry…")
-                                   : backend.searchScope === "designer" ? qsTr("Designer or foundry")
+                    placeholderText: backend.searchScope === "designer" ? qsTr("Designer or foundry")
                                    : backend.searchScope === "characters" ? qsTr("Characters the font must have")
                                    : qsTr("Filter by name")
                     leftPadding: Theme.s2 + Theme.szIcon + Theme.s2
                     rightPadding: Theme.szIconHit + Theme.s1
-                    onTextChanged: {
-                        if (win.inDiscover) catalog.query = text
-                        else backend.filter = text
-                    }
-                    Keys.onEscapePressed: {
-                        if (text !== "") {
-                            text = ""
-                            if (win.inDiscover) catalog.query = ""
-                            else backend.filter = ""
-                        } else if (!win.inDiscover) {
-                            rail.forceActiveFocus()
-                        }
-                    }
-                    Keys.onDownPressed: if (!win.inDiscover) rail.forceActiveFocus()
+                    onTextChanged: backend.filter = text
+                    Keys.onEscapePressed: { if (text !== "") { text = ""; backend.filter = "" } else rail.forceActiveFocus() }
+                    Keys.onDownPressed: rail.forceActiveFocus()
                     Icon { name: "search"; color: Theme.textMuted; x: Theme.s2; anchors.verticalCenter: parent.verticalCenter }
                     ToolButton {
                         objectName: "searchScope"
                         icon.name: searchField.text !== "" ? "x" : "chevron-down"
-                        visible: searchField.text !== "" || !win.inDiscover
                         anchors.right: parent.right; anchors.rightMargin: 2
                         anchors.verticalCenter: parent.verticalCenter
-                        onClicked: {
-                            if (searchField.text !== "") {
-                                searchField.text = ""
-                                if (win.inDiscover) catalog.query = ""
-                                else backend.filter = ""
-                            } else {
-                                scopeMenu.popup()
-                            }
-                        }
+                        onClicked: { if (searchField.text !== "") { searchField.text = ""; backend.filter = "" } else scopeMenu.popup() }
                         ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay
                         ToolTip.text: searchField.text !== "" ? qsTr("Clear") : qsTr("What to search")
                     }
@@ -439,7 +385,6 @@ ApplicationWindow {
                 onDiscoverSelected: (src) => {
                     win.mode = "discover"
                     catalog.sourceFilter = src
-                    searchField.text = catalog.query
                 }
                 onLibrarySelected: {
                     win.mode = "library"
@@ -465,6 +410,8 @@ ApplicationWindow {
             CatalogView {
                 id: catalogView
                 visible: win.inDiscover
+                sidebarOpen: win.sidebarOpen
+                onToggleSidebarRequested: win.sidebarOpen = !win.sidebarOpen
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }
@@ -518,11 +465,11 @@ ApplicationWindow {
             }
         }
 
-        // Footer
+        // Single unified Footer (in Discover mode: merges Shortlist actions when active)
         Rectangle {
             objectName: "statusBar"
             Layout.fillWidth: true
-            implicitHeight: Theme.hStatusBar
+            implicitHeight: win.inDiscover && catalog.shortlistCount > 0 ? 38 : Theme.hStatusBar
             color: Theme.windowBg
             Hairline { anchors.top: parent.top; width: parent.width }
             RowLayout {
@@ -530,19 +477,54 @@ ApplicationWindow {
                 anchors.leftMargin: Theme.s4
                 anchors.rightMargin: Theme.s3
                 spacing: Theme.s3
-                StatusText { text: win.inDiscover ? qsTr("Discover") : backend.sourceTitle; color: Theme.textPrimary; font.weight: Theme.wHeading }
-                StatusRule {}
-                StatusText {
-                    text: win.inDiscover
-                        ? (catalog.loading ? qsTr("Indexing open-source catalogs…") : Theme.plural(catalog.filteredCount, qsTr("typeface"), qsTr("typefaces")))
-                        : (backend.scanning ? qsTr("Reading fonts…") : Theme.plural(backend.visibleCount, qsTr("family"), qsTr("families")))
+
+                // Discover shortlist inline in the single footer (items left, actions right, quiet secondary CTA)
+                RowLayout {
+                    visible: win.inDiscover && catalog.shortlistCount > 0
+                    Layout.fillWidth: true
+                    spacing: Theme.s2
+                    Icon { name: "bookmark"; size: 13; color: Theme.textSecondary }
+                    StatusText { text: qsTr("Shortlist"); color: Theme.textPrimary; font.weight: Font.Medium }
+                    Repeater {
+                        model: catalog.shortlistItems.slice(0, 5)
+                        Button {
+                            required property var modelData
+                            flat: true
+                            implicitHeight: 24
+                            text: modelData.family + (modelData.installed ? " ✓" : "")
+                            font.pixelSize: Theme.fsLabel
+                            onClicked: catalog.selectFamily(modelData.id)
+                        }
+                    }
+                    StatusText { visible: catalog.shortlistCount > 5; text: qsTr("+%1").arg(catalog.shortlistCount - 5) }
+                    Item { Layout.fillWidth: true }
+                    Button { flat: true; implicitHeight: 24; text: qsTr("Clear"); font.pixelSize: Theme.fsLabel; onClicked: catalog.clearShortlist() }
+                    Button {
+                        implicitHeight: 26
+                        text: qsTr("Install %1").arg(catalog.shortlistCount)
+                        font.pixelSize: Theme.fsLabel
+                        enabled: !catalog.installingAny
+                        onClicked: catalog.installShortlist()
+                    }
                 }
-                StatusRule {}
-                StatusText { text: qsTr("Yours %1").arg(backend.userCount) }
-                StatusRule {}
-                StatusText { text: qsTr("System %1").arg(backend.systemCount) }
-                StatusRule { visible: backend.readingMetadata }
-                StatusText { visible: backend.readingMetadata; text: qsTr("Reading font details…"); color: Theme.textMuted }
+
+                // Quiet count when Discover has no shortlist
+                StatusText {
+                    visible: win.inDiscover && catalog.shortlistCount === 0
+                    text: catalog.loading ? qsTr("Loading catalog…") : Theme.plural(catalog.filteredCount, qsTr("typeface"), qsTr("typefaces"))
+                }
+
+                // Library footer cells
+                StatusText { visible: !win.inDiscover; text: backend.sourceTitle; color: Theme.textPrimary; font.weight: Theme.wHeading }
+                StatusRule { visible: !win.inDiscover }
+                StatusText { visible: !win.inDiscover; text: backend.scanning ? qsTr("Reading fonts…") : Theme.plural(backend.visibleCount, qsTr("family"), qsTr("families")) }
+                StatusRule { visible: !win.inDiscover }
+                StatusText { visible: !win.inDiscover; text: qsTr("Yours %1").arg(backend.userCount) }
+                StatusRule { visible: !win.inDiscover }
+                StatusText { visible: !win.inDiscover; text: qsTr("System %1").arg(backend.systemCount) }
+                StatusRule { visible: !win.inDiscover && backend.readingMetadata }
+                StatusText { visible: !win.inDiscover && backend.readingMetadata; text: qsTr("Reading font details…"); color: Theme.textMuted }
+
                 Item { Layout.fillWidth: true }
                 BusyIndicator { visible: backend.busy || backend.staging || catalog.installingAny; running: visible; implicitWidth: Theme.szIcon; implicitHeight: Theme.szIcon }
                 StatusText {
@@ -555,8 +537,8 @@ ApplicationWindow {
                     Accessible.role: Accessible.StaticText
                     Accessible.name: text
                 }
-                StatusRule {}
-                StatusText { text: backend.tildePath(backend.fontRoot); color: Theme.textMuted; elide: Text.ElideMiddle; Layout.maximumWidth: Theme.wInspector }
+                StatusRule { visible: !win.inDiscover }
+                StatusText { visible: !win.inDiscover; text: backend.tildePath(backend.fontRoot); color: Theme.textMuted; elide: Text.ElideMiddle; Layout.maximumWidth: Theme.wInspector }
             }
         }
     }

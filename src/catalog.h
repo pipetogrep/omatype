@@ -154,7 +154,7 @@ public:
     CatalogModel *model() { return &m_model; }
     bool loading() const { return m_loading; }
     QString error() const { return m_error; }
-    int totalCount() const { return m_all.size(); }
+    int totalCount() const { return m_googleCount + m_indieCount; }
     int filteredCount() const { return m_model.rowCount(); }
     int googleCount() const { return m_googleCount; }
     int indieCount() const { return m_indieCount; }
@@ -272,7 +272,7 @@ private:
     QString m_scriptFilter;
     QString m_sortBy = QStringLiteral("popular");
     bool m_hideNoto = true;
-    QString m_sampleText = QStringLiteral("The quick brown fox jumps over the lazy dog");
+    QString m_sampleText = QStringLiteral("Typography is what language looks like.");
 
     QString m_selectedId;
     bool m_loadingManifest = false;
