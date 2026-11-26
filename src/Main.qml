@@ -633,7 +633,15 @@ ApplicationWindow {
         }
     }
     SmartCollectionSheet { id: smartSheet }
-    TidySheet { id: tidySheet; onConfirmRequested: (heading, text, button, run) => confirmSheet.ask(heading, text, button, run) }
+    TidySheet {
+        id: tidySheet
+        onConfirmRequested: (heading, text, button, run) => confirmSheet.ask(heading, text, button, run)
+        onShowCoverageRequested: {
+            win.mode = "library"
+            backend.source = "all"
+            backend.showCoverage = true
+        }
+    }
     ValidationSheet { id: validationSheet }
     HelpSheet { id: helpSheet }
 }

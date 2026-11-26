@@ -24,6 +24,7 @@ Sheet {
     }
 
     signal confirmRequested(string title, string text, string button, var action)
+    signal showCoverageRequested()
 
     function under(file) { return file.indexOf(backend.fontRoot + "/") === 0 }
     function isOtf(file) { return file.toLowerCase().endsWith(".otf") }
@@ -115,6 +116,20 @@ Sheet {
                         // Broken files and stray non-Latin fonts.
                         Button { visible: modelData.kind === "invalid" || modelData.kind === "nolatin"; enabled: !backend.busy; icon.name: "eye-off"; text: qsTr("Deactivate"); onClicked: backend.tidyDeactivateFiles(modelData.files) }
                         Button { visible: (modelData.kind === "invalid" || modelData.kind === "nolatin") && row.mine; enabled: !backend.busy; icon.name: "trash-2"; text: qsTr("Remove…"); onClicked: sheet.removeFiles(modelData.files ?? []) }
+                        // System Noto language-coverage families: deactivate in one click or inspect in Library.
+                        Button {
+                            visible: modelData.kind === "coverage" && (modelData.files ?? []).length > 0
+                            enabled: !backend.busy
+                            icon.name: "eye-off"
+                            text: qsTr("Deactivate all")
+                            onClicked: backend.tidyDeactivateFiles(modelData.files)
+                        }
+                        Button {
+                            visible: modelData.kind === "coverage"
+                            flat: true
+                            text: qsTr("Show in Library")
+                            onClicked: { sheet.showCoverageRequested(); sheet.close() }
+                        }
                         Label {
                             visible: modelData.kind === "twins" || modelData.kind === "variable"
                             text: modelData.kind === "variable" ? qsTr("The static copies are deactivated, not deleted.")

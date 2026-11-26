@@ -481,6 +481,7 @@ void Backend::buildTidy() {
     };
     qint64 coverageBytes = 0;
     int coverageCount = 0;
+    QStringList coverageFiles;
     for (const FontFamily &f : m_families) {
         // OTF and TTF twins of the same style.
         QHash<QString, QSet<QString>> extsByStyle;
@@ -521,16 +522,20 @@ void Backend::buildTidy() {
                                     .arg(f.scripts.isEmpty() ? tr("no known writing system") : f.scripts.join(QStringLiteral(", "))),
                                 f.files, QStringLiteral("info")));
         }
-        if (isCoverage(f.name) && !f.user) {
+        if (isCoverage(f.name) && !f.user && !f.inactive()) {
             ++coverageCount;
-            for (const QString &file : f.files) coverageBytes += QFileInfo(file).size();
+            for (const FontFace &face : f.faces) {
+                if (!face.disabled) {
+                    coverageBytes += QFileInfo(face.file).size();
+                    coverageFiles.append(face.file);
+                }
+            }
         }
     }
     if (coverageCount > 0)
         out.append(item(QStringLiteral("coverage"), QString(), tr("%1 language-coverage families, %2").arg(coverageCount).arg(formatBytes(coverageBytes)),
-                        tr("The per-script Noto families from your packages. They are what lets the browser show every language, so they stay; "
-                           "Omatype folds them out of the way. Most of the size is the noto-fonts-extra package, which nothing requires."),
-                        {}, QStringLiteral("info")));
+                        tr("Per-script Noto families installed by system packages. Deactivating them hides them from design-app font menus without uninstalling packages."),
+                        coverageFiles, QStringLiteral("info")));
     std::stable_sort(out.begin(), out.end(), [](const QVariant &a, const QVariant &b) {
         auto rank = [](const QString &s) { return s == QLatin1String("error") ? 0 : s == QLatin1String("warning") ? 1 : 2; };
         return rank(a.toMap().value(QStringLiteral("severity")).toString()) < rank(b.toMap().value(QStringLiteral("severity")).toString());
