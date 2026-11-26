@@ -123,9 +123,23 @@ ApplicationWindow {
     Shortcut { sequence: "Ctrl+5"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: { win.mode = "library"; backend.view = "compare" } }
     Shortcut { sequence: "Ctrl+M"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen && !win.textEntryFocused && win.hasFamily; onActivated: { backend.toggleCompare(backend.selectedName); if (backend.compareList.length > 0) backend.view = "compare" } }
     Shortcut { sequence: "Ctrl+Shift+T"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: tidySheet.open() }
-    Shortcut { sequences: ["Ctrl++", "Ctrl+="]; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: backend.specimenScale = backend.specimenScale * 1.15 }
-    Shortcut { sequence: "Ctrl+-"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: backend.specimenScale = backend.specimenScale / 1.15 }
-    Shortcut { sequence: "Ctrl+0"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: backend.specimenScale = 1 }
+    // Text size, for whichever mode is showing: the Library specimen scale or
+    // the Discover preview size (24–64, on the slider's steps of 2).
+    function textBigger() {
+        if (win.inDiscover) catalogView.previewSize = Math.min(64, Math.round(catalogView.previewSize * 1.15 / 2) * 2)
+        else backend.specimenScale = backend.specimenScale * 1.15
+    }
+    function textSmaller() {
+        if (win.inDiscover) catalogView.previewSize = Math.max(24, Math.round(catalogView.previewSize / 1.15 / 2) * 2)
+        else backend.specimenScale = backend.specimenScale / 1.15
+    }
+    function textActualSize() {
+        if (win.inDiscover) catalogView.previewSize = 40
+        else backend.specimenScale = 1
+    }
+    Shortcut { sequences: ["Ctrl++", "Ctrl+="]; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: win.textBigger() }
+    Shortcut { sequence: "Ctrl+-"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: win.textSmaller() }
+    Shortcut { sequence: "Ctrl+0"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen; onActivated: win.textActualSize() }
     Shortcut { sequence: "Ctrl+I"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen && backend.staged && !backend.busy; onActivated: backend.installStaged() }
     Shortcut { sequences: ["Return", "Enter"]; context: Qt.ApplicationShortcut
                enabled: !win.dialogOpen && backend.staged && !backend.busy && !win.textEntryFocused; onActivated: backend.installStaged() }
@@ -229,30 +243,51 @@ ApplicationWindow {
                         MenuItem { text: qsTr("Set as terminal font"); icon.name: "terminal"; enabled: win.canTerminal; onTriggered: backend.setAsTerminalFont() }
                         MenuItem { text: qsTr("Remove"); icon.name: "trash-2"; enabled: win.canRemove; onTriggered: removeSheet.open() }
                     }
+                    // The View menu follows the mode: in Discover, layout, size,
+                    // sort and sample drive the catalog; the Library-only views
+                    // and options stand down.
                     Menu {
                         title: qsTr("View")
-                        MenuItem { text: qsTr("Specimen"); checkable: true; checked: backend.view === "specimen"; onTriggered: backend.view = "specimen" }
-                        MenuItem { text: qsTr("Grid"); checkable: true; checked: backend.view === "grid"; onTriggered: backend.view = "grid" }
-                        MenuItem { text: qsTr("List"); checkable: true; checked: backend.view === "list"; onTriggered: backend.view = "list" }
-                        MenuItem { text: qsTr("Repertoire"); checkable: true; checked: backend.view === "repertoire"; onTriggered: backend.view = "repertoire" }
-                        MenuItem { text: qsTr("Compare"); checkable: true; checked: backend.view === "compare"; onTriggered: backend.view = "compare" }
+                        MenuItem { text: qsTr("Specimen"); enabled: !win.inDiscover; checkable: true; checked: !win.inDiscover && backend.view === "specimen"; onTriggered: backend.view = "specimen" }
+                        MenuItem { text: qsTr("Grid"); checkable: true; checked: win.inDiscover ? catalogView.layoutMode === "grid" : backend.view === "grid"
+                                   onTriggered: win.inDiscover ? catalogView.layoutMode = "grid" : backend.view = "grid" }
+                        MenuItem { text: qsTr("List"); checkable: true; checked: win.inDiscover ? catalogView.layoutMode === "list" : backend.view === "list"
+                                   onTriggered: win.inDiscover ? catalogView.layoutMode = "list" : backend.view = "list" }
+                        MenuItem { text: qsTr("Repertoire"); enabled: !win.inDiscover; checkable: true; checked: !win.inDiscover && backend.view === "repertoire"; onTriggered: backend.view = "repertoire" }
+                        MenuItem { text: qsTr("Compare"); enabled: !win.inDiscover; checkable: true; checked: !win.inDiscover && backend.view === "compare"; onTriggered: backend.view = "compare" }
                         MenuSeparator {}
-                        MenuItem { text: qsTr("Bigger"); onTriggered: backend.specimenScale = backend.specimenScale * 1.15 }
-                        MenuItem { text: qsTr("Smaller"); onTriggered: backend.specimenScale = backend.specimenScale / 1.15 }
-                        MenuItem { text: qsTr("Actual size"); onTriggered: backend.specimenScale = 1 }
+                        MenuItem { text: qsTr("Bigger"); onTriggered: win.textBigger() }
+                        MenuItem { text: qsTr("Smaller"); onTriggered: win.textSmaller() }
+                        MenuItem { text: qsTr("Actual size"); onTriggered: win.textActualSize() }
                         MenuSeparator {}
                         Menu {
                             title: qsTr("Sort by")
-                            MenuItem { text: qsTr("Name"); checkable: true; checked: backend.sortOrder === "name"; onTriggered: backend.sortOrder = "name" }
-                            MenuItem { text: qsTr("Recently added"); checkable: true; checked: backend.sortOrder === "added"; onTriggered: backend.sortOrder = "added" }
-                            MenuItem { text: qsTr("Number of styles"); checkable: true; checked: backend.sortOrder === "styles"; onTriggered: backend.sortOrder = "styles" }
-                            MenuItem { text: qsTr("Foundry"); checkable: true; checked: backend.sortOrder === "foundry"; onTriggered: backend.sortOrder = "foundry" }
+                            MenuItem { visible: !win.inDiscover; height: visible ? implicitHeight : 0; text: qsTr("Name"); checkable: true; checked: backend.sortOrder === "name"; onTriggered: backend.sortOrder = "name" }
+                            MenuItem { visible: !win.inDiscover; height: visible ? implicitHeight : 0; text: qsTr("Recently added"); checkable: true; checked: backend.sortOrder === "added"; onTriggered: backend.sortOrder = "added" }
+                            MenuItem { visible: !win.inDiscover; height: visible ? implicitHeight : 0; text: qsTr("Number of styles"); checkable: true; checked: backend.sortOrder === "styles"; onTriggered: backend.sortOrder = "styles" }
+                            MenuItem { visible: !win.inDiscover; height: visible ? implicitHeight : 0; text: qsTr("Foundry"); checkable: true; checked: backend.sortOrder === "foundry"; onTriggered: backend.sortOrder = "foundry" }
+                            Repeater {
+                                model: catalogView.sortOptions
+                                MenuItem {
+                                    required property var modelData
+                                    visible: win.inDiscover
+                                    height: visible ? implicitHeight : 0
+                                    text: modelData.label
+                                    checkable: true
+                                    checked: catalog.sortBy === modelData.key
+                                    onTriggered: catalog.sortBy = modelData.key
+                                }
+                            }
                         }
-                        MenuItem { text: qsTr("Group weights into one family"); checkable: true; checked: backend.groupWeights; onTriggered: backend.groupWeights = !backend.groupWeights }
+                        MenuItem { text: qsTr("Group weights into one family"); enabled: !win.inDiscover; checkable: true; checked: backend.groupWeights; onTriggered: backend.groupWeights = !backend.groupWeights }
                         MenuSeparator {}
                         MenuItem { text: qsTr("Sidebar"); checkable: true; checked: win.sidebarOpen; onTriggered: win.sidebarOpen = !win.sidebarOpen }
-                        MenuItem { text: qsTr("Language fonts"); checkable: true; checked: backend.showCoverage; onTriggered: backend.showCoverage = !backend.showCoverage }
-                        MenuItem { text: qsTr("Reset the sample text"); enabled: backend.sample !== backend.defaultSample; onTriggered: backend.sample = backend.defaultSample }
+                        MenuItem { text: qsTr("Language fonts"); enabled: !win.inDiscover; checkable: true; checked: backend.showCoverage; onTriggered: backend.showCoverage = !backend.showCoverage }
+                        MenuItem {
+                            text: qsTr("Reset the sample text")
+                            enabled: win.inDiscover ? catalog.sampleText !== catalogView.samplePresets[0].text : backend.sample !== backend.defaultSample
+                            onTriggered: win.inDiscover ? catalog.sampleText = catalogView.samplePresets[0].text : backend.sample = backend.defaultSample
+                        }
                         MenuSeparator {}
                         MenuItem { text: qsTr("Less movement"); checkable: true; checked: backend.reducedMotion; onTriggered: backend.reducedMotion = !backend.reducedMotion }
                         MenuItem { text: qsTr("Stronger contrast"); checkable: true; checked: backend.highContrast; onTriggered: backend.highContrast = !backend.highContrast }
