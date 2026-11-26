@@ -19,9 +19,40 @@ Omatype brings an **Adobe Fonts-style discovery experience** to Linux and Omarch
 
 ## Install
 
-Omatype is made for Omarchy.
+Omatype is made for Omarchy and works both as a standalone desktop app/CLI and as an **Omarchy Quattro bar widget** (`pipetogrep.omatype`).
 
-### Building from source
+### Omarchy Plugin Marketplace (Recommended)
+
+1. Add and enable the Omarchy bar plugin from GitHub:
+
+```bash
+omarchy plugin add https://github.com/pipetogrep/omatype.git --enable
+```
+
+2. Build and install the native `omatype` binary from the cloned plugin folder (installs `/usr/bin/omatype`, desktop entry, and icon via `makepkg`):
+
+```bash
+cd ~/.config/omarchy/plugins/pipetogrep.omatype
+./bin/install
+```
+
+Alternatively, compile `./build/omatype` in place without installing a system package (the bar widget automatically detects `build/omatype` inside the plugin directory, `~/.local/bin/omatype`, or `omatype` on `PATH`):
+
+```bash
+cd ~/.config/omarchy/plugins/pipetogrep.omatype
+./bin/build
+```
+
+Click the **Aa** button in your Omarchy bar to search Google Fonts and curated indie foundries, 1-click install fonts, browse installed families, or open the full Omatype window (**middle-click** launches the full app directly). You can also toggle the popup from a keybinding with `omarchy-shell pipetogrep.omatype toggle` or move it with `omarchy bar move pipetogrep.omatype --section right`.
+
+Update later with:
+
+```bash
+omarchy plugin update pipetogrep.omatype
+cd ~/.config/omarchy/plugins/pipetogrep.omatype && ./bin/install
+```
+
+### Building from source (standalone)
 
 ```sh
 sudo pacman -S --needed base-devel git
@@ -31,6 +62,27 @@ cd ~/omatype
 ```
 
 Run `./bin/build` to compile `./build/omatype` without installing a package, and `./bin/test` to run the offscreen Qt Test suite.
+
+### Uninstall
+
+To remove the Omarchy bar plugin:
+
+```bash
+omarchy plugin disable pipetogrep.omatype
+omarchy plugin remove pipetogrep.omatype
+```
+
+To remove the installed `omatype` Arch package (if installed via `./bin/install`):
+
+```bash
+sudo pacman -Rns omatype
+```
+
+Your installed fonts in `~/.local/share/fonts/` are left untouched. To also remove Omatype's settings and preview cache:
+
+```bash
+rm -rf ~/.config/omatype ~/.cache/omatype
+```
 
 ### Command line
 
@@ -132,7 +184,7 @@ names. The chevron picks another scope:
 | How | What happens |
 |---|---|
 | Drop a file, folder or archive on the window | Everything installable inside it is staged |
-| **Install…** in the toolbar, or `Ctrl+O` | Same, through the desktop file chooser |
+| **Install** in the toolbar, or `Ctrl+O` | Same, through the desktop file chooser |
 | Open a font file from your file manager | Opens Omatype with that font staged |
 | `omatype ~/Downloads/Pack.zip` | Same, from a terminal |
 
@@ -140,7 +192,7 @@ Staged fonts are **validated and previewed before anything is written**. The
 Info pane lists every family and face it is about to install, marks the ones
 with problems, and says where they will go. A face with serious problems is
 left out unless you tick "install anyway"; minor findings are reported and
-installed. **Report…** shows the full validation report.
+installed. **Report** shows the full validation report.
 
 If a file is already in place you choose what happens: **Replace** it, **Skip**
 it, or **Keep both** (the new copy gets a `-2` suffix).
@@ -248,8 +300,9 @@ appears on a machine that has that tool.
 
 ## Requirements
 
-Qt 6 (base, declarative, svg), fontconfig, libarchive, and an XDG desktop
-portal for the file choosers. All of these are on every Omarchy install.
+- **Runtime:** Qt 6 (`qt6-base`, `qt6-declarative`, `qt6-svg`), `fontconfig`, `libarchive`, `hicolor-icon-theme`, and an XDG desktop portal (`xdg-desktop-portal`) for the file choosers. All of these are included on every Omarchy install.
+- **Omarchy bar widget:** Omarchy Quattro (`omarchy-shell` / Quickshell).
+- **Build:** `base-devel` (`gcc`, `make`, `pkgconf`) and `git`.
 
 ## What Omatype writes
 

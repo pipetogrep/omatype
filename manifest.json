@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "pipetogrep.omatype",
+  "name": "Omatype",
+  "version": "0.2.0",
+  "author": "pipetogrep",
+  "license": "MIT",
+  "description": "Browse, search, and one-click install open-source fonts from Google Fonts and curated indie foundries, inspect installed typefaces, or launch Omatype from the bar.",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "Omatype",
+    "description": "Search and one-click install open-source fonts, browse installed typefaces, or launch Omatype.",
+    "category": "System",
+    "aliases": [
+      "omatype",
+      "fonts",
+      "typefaces"
+    ],
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": {
+      "openDiscoverByDefault": true
+    },
+    "schema": [
+      {
+        "key": "openDiscoverByDefault",
+        "type": "boolean",
+        "label": "Open Discover tab by default",
+        "defaultValue": true
+      }
+    ]
+  }
+}
