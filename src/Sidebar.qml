@@ -122,6 +122,7 @@ Rectangle {
                     sourceComponent: FontLoader { source: backend.fileUrl(frow.previewFile) }
                 }
                 readonly property bool faceReady: face.item !== null && face.item.status === FontLoader.Ready
+                readonly property real markOpacity: highlighted || hovered ? 0.85 : 0.45
 
                 contentItem: RowLayout {
                     spacing: Theme.s1 + 2
@@ -136,7 +137,9 @@ Rectangle {
                         font.pixelSize: frow.faceReady ? 14 : Theme.fsControl
                         font.strikeout: frow.inactive
                     }
-                    Icon { visible: frow.starred; name: "star"; size: 12; color: Theme.warning }
+                    // Status marks share the nav's quiet icon treatment: one size,
+                    // muted, brighter on the hovered or selected row.
+                    Icon { visible: frow.starred; name: "star"; size: 11; color: Theme.textMuted; opacity: frow.markOpacity }
                     Label {
                         visible: frow.members.length > 0 && !frow.mono && !frow.coverage
                         text: frow.styles.length
@@ -148,34 +151,24 @@ Rectangle {
                         ToolTip.text: qsTr("Includes %1").arg(frow.members.join(", "))
                         HoverHandler { id: membersHover }
                     }
-                    Icon { visible: frow.inactive; name: "eye-off"; size: 12; color: Theme.textMuted }
+                    Icon { visible: frow.inactive; name: "eye-off"; size: 11; color: Theme.textMuted; opacity: frow.markOpacity }
                     Icon {
                         visible: frow.duplicate && !frow.inactive
                         name: "copy"
                         size: 11
                         color: Theme.textMuted
-                        opacity: frow.highlighted || frow.hovered ? 0.85 : 0.45
+                        opacity: frow.markOpacity
                         ToolTip.visible: dupHover.hovered
                         ToolTip.delay: Theme.tooltipDelay
                         ToolTip.text: qsTr("Duplicate font files")
                         HoverHandler { id: dupHover }
                     }
-                    Rectangle {
+                    Icon {
                         visible: frow.mono
-                        implicitWidth: 16
-                        implicitHeight: 16
-                        radius: Theme.rChip
-                        color: Theme.withAlpha(Theme.accent, 0.12)
-                        border.width: Theme.hairline
-                        border.color: Theme.withAlpha(Theme.accent, 0.45)
-                        Text {
-                            anchors.centerIn: parent
-                            text: "M"
-                            font.family: Theme.monoFamily
-                            font.pixelSize: 9
-                            font.weight: Theme.wHeading
-                            color: Theme.accent
-                        }
+                        name: "monospace"
+                        size: 11
+                        color: Theme.textMuted
+                        opacity: frow.markOpacity
                         ToolTip.visible: monoHover.hovered
                         ToolTip.delay: Theme.tooltipDelay
                         ToolTip.text: qsTr("Monospace")
