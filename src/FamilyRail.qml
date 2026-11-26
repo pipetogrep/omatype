@@ -30,7 +30,7 @@ Rectangle {
             ToolButton {
                 icon.name: "square-plus"
                 onClicked: backend.openPicker()
-                ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay; ToolTip.text: qsTr("Install fonts…")
+                ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay; ToolTip.text: qsTr("Install fonts")
             }
         }
         Rectangle { Layout.fillWidth: true; implicitHeight: Theme.hairline; color: Theme.border }
@@ -186,7 +186,13 @@ Rectangle {
                         HoverHandler { id: membersHover }
                     }
                     Icon { visible: row.inactive; name: "eye-off"; size: Theme.szIcon - 2; color: Theme.textMuted }
-                    Icon { visible: row.duplicate && !row.inactive; name: "copy"; size: Theme.szIcon - 2; color: Theme.warning }
+                    Icon {
+                        visible: row.duplicate && !row.inactive
+                        name: "copy"
+                        size: 11
+                        color: Theme.textMuted
+                        opacity: row.highlighted || row.hovered ? 0.85 : 0.45
+                    }
                     Label {
                         visible: row.coverage
                         text: qsTr("script")

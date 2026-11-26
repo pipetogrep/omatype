@@ -165,6 +165,62 @@ Rectangle {
         }
     }
 
+    component ActionRow: ItemDelegate {
+        id: arow
+        property string iconName: ""
+        property string label: ""
+        property bool opensMenu: false
+        property bool destructive: false
+        Layout.fillWidth: true
+        implicitHeight: 40
+        leftPadding: Theme.s4
+        rightPadding: Theme.s4
+        opacity: enabled ? 1.0 : Theme.disabledOpacity
+        Accessible.name: label
+
+        contentItem: RowLayout {
+            spacing: Theme.s2 + 2
+            Icon {
+                name: arow.iconName
+                size: 14
+                color: arow.destructive && arow.hovered && arow.enabled ? Theme.danger
+                     : arow.hovered && arow.enabled ? Theme.textPrimary : Theme.textMuted
+                opacity: arow.hovered && arow.enabled ? 0.9 : 0.65
+                visible: arow.iconName !== ""
+            }
+            Text {
+                Layout.fillWidth: true
+                text: arow.label
+                textFormat: Text.PlainText
+                elide: Text.ElideRight
+                verticalAlignment: Text.AlignVCenter
+                color: arow.destructive && arow.hovered && arow.enabled ? Theme.danger
+                     : arow.hovered && arow.enabled ? Theme.textPrimary : Theme.textSecondary
+                font.family: Theme.fontFamily
+                font.pixelSize: Theme.fsControl
+                font.weight: Font.Normal
+            }
+            Icon {
+                visible: arow.opensMenu
+                name: "chevron-down"
+                size: 12
+                color: Theme.textMuted
+                opacity: arow.hovered && arow.enabled ? 0.9 : 0.65
+            }
+        }
+        background: Rectangle {
+            radius: 0
+            color: arow.down && arow.enabled ? Theme.pressedOn(Theme.controlHover)
+                 : arow.hovered && arow.enabled ? Theme.controlHover : "transparent"
+            Rectangle {
+                anchors.bottom: parent.bottom
+                width: parent.width
+                height: Theme.hairline
+                color: Theme.border
+            }
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
@@ -173,19 +229,10 @@ Rectangle {
             Layout.fillWidth: true
             Layout.leftMargin: Theme.s4
             Layout.rightMargin: Theme.s3
-            implicitHeight: Theme.hNavHeader
+            implicitHeight: Theme.hToolbar
             spacing: Theme.s2
             Label { text: inspector.staged ? qsTr("Ready to install") : qsTr("Info"); font.weight: Theme.wHeading; color: Theme.textPrimary }
             Item { Layout.fillWidth: true }
-            ToolButton {
-                objectName: "compareButton"
-                visible: !inspector.staged && (inspector.sel.name ?? "") !== ""
-                icon.name: "columns-2"
-                checked: backend.compareList.indexOf(inspector.sel.name ?? "") >= 0
-                onClicked: { backend.toggleCompare(inspector.sel.name); if (backend.compareList.length > 0) backend.view = "compare" }
-                ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay
-                ToolTip.text: checked ? qsTr("Take out of Compare  Ctrl+M") : qsTr("Compare with others  Ctrl+M")
-            }
             ToolButton {
                 objectName: "starButton"
                 visible: !inspector.staged && (inspector.sel.name ?? "") !== ""
@@ -459,47 +506,76 @@ Rectangle {
                     }
 
                     SectionLabel { text: qsTr("ACTIONS") }
-                    Button {
+                    ColumnLayout {
                         Layout.fillWidth: true
-                        icon.name: (inspector.sel.inactive ?? false) ? "eye" : "eye-off"
-                        text: (inspector.sel.inactive ?? false) ? qsTr("Activate") : qsTr("Deactivate")
-                        enabled: !backend.busy
-                        onClicked: (inspector.sel.inactive ?? false) ? backend.activateSelected() : backend.deactivateSelected()
-                    }
-                    Button { Layout.fillWidth: true; icon.name: "shield-check"; text: qsTr("Validate"); onClicked: { backend.validateSelected(); inspector.validationRequested() } }
-                    Button { Layout.fillWidth: true; icon.name: "folder-output"; text: qsTr("Export…"); onClicked: backend.exportSelected() }
-                    Button { Layout.fillWidth: true; icon.name: "external-link"; text: qsTr("Show in file manager"); onClicked: backend.revealSelected() }
-                    Button {
-                        id: pdfButton
-                        Layout.fillWidth: true
-                        icon.name: "printer"
-                        text: qsTr("Save specimen as PDF")
-                        property bool opensMenu: true
-                        onClicked: pdfMenu.popup(pdfButton, 0, pdfButton.height)
-                        Menu {
-                            id: pdfMenu
-                            MenuItem { text: qsTr("Specimen"); onTriggered: backend.saveSpecimenPdf("specimen") }
-                            MenuItem { text: qsTr("Waterfall"); onTriggered: backend.saveSpecimenPdf("waterfall") }
-                            MenuItem { text: qsTr("Repertoire"); onTriggered: backend.saveSpecimenPdf("repertoire") }
+                        Layout.leftMargin: -Theme.s4
+                        Layout.rightMargin: -Theme.s4
+                        Layout.topMargin: Theme.s1
+                        spacing: 0
+
+                        Rectangle { Layout.fillWidth: true; implicitHeight: Theme.hairline; color: Theme.border }
+                        ActionRow {
+                            objectName: "compareButton"
+                            iconName: "columns-2"
+                            readonly property bool inCompare: backend.compareList.indexOf(inspector.sel.name ?? "") >= 0
+                            label: inCompare ? qsTr("Remove from Compare") : qsTr("Compare")
+                            onClicked: {
+                                backend.toggleCompare(inspector.sel.name)
+                                if (backend.compareList.length > 0) backend.view = "compare"
+                                else if (backend.view === "compare") backend.view = "specimen"
+                            }
                         }
-                    }
-                    Button {
-                        Layout.fillWidth: true
-                        visible: backend.canSetTerminalFont
-                        icon.name: "terminal"
-                        text: qsTr("Set as terminal font")
-                        enabled: (inspector.sel.mono ?? false) && !backend.busy
-                        onClicked: backend.setAsTerminalFont()
-                        ToolTip.visible: hovered && !enabled
-                        ToolTip.delay: Theme.tooltipDelay
-                        ToolTip.text: qsTr("Only a monospace family can be the terminal font")
-                    }
-                    Button {
-                        Layout.fillWidth: true
-                        icon.name: "trash-2"
-                        text: qsTr("Remove from your fonts")
-                        enabled: (inspector.sel.user ?? false) && !backend.busy
-                        onClicked: inspector.removeRequested()
+                        ActionRow {
+                            iconName: (inspector.sel.inactive ?? false) ? "eye" : "eye-off"
+                            label: (inspector.sel.inactive ?? false) ? qsTr("Activate") : qsTr("Deactivate")
+                            enabled: !backend.busy
+                            onClicked: (inspector.sel.inactive ?? false) ? backend.activateSelected() : backend.deactivateSelected()
+                        }
+                        ActionRow {
+                            iconName: "shield-check"
+                            label: qsTr("Validate")
+                            onClicked: { backend.validateSelected(); inspector.validationRequested() }
+                        }
+                        ActionRow {
+                            iconName: "folder-output"
+                            label: qsTr("Export")
+                            onClicked: backend.exportSelected()
+                        }
+                        ActionRow {
+                            iconName: "external-link"
+                            label: qsTr("Show in File Manager")
+                            onClicked: backend.revealSelected()
+                        }
+                        ActionRow {
+                            id: pdfButton
+                            iconName: "printer"
+                            label: qsTr("Save PDF Specimen")
+                            opensMenu: true
+                            onClicked: pdfMenu.popup(pdfButton, Theme.s4, pdfButton.height)
+                            Menu {
+                                id: pdfMenu
+                                MenuItem { text: qsTr("Specimen"); onTriggered: backend.saveSpecimenPdf("specimen") }
+                                MenuItem { text: qsTr("Waterfall"); onTriggered: backend.saveSpecimenPdf("waterfall") }
+                                MenuItem { text: qsTr("Repertoire"); onTriggered: backend.saveSpecimenPdf("repertoire") }
+                            }
+                        }
+                        ActionRow {
+                            visible: backend.canSetTerminalFont
+                            iconName: "terminal"
+                            label: qsTr("Set as Terminal font")
+                            enabled: (inspector.sel.mono ?? false) && !backend.busy
+                            onClicked: backend.setAsTerminalFont()
+                            ToolTip.visible: hovered && !enabled
+                            ToolTip.delay: Theme.tooltipDelay
+                            ToolTip.text: qsTr("Only a monospace family can be the terminal font")
+                        }
+                        ActionRow {
+                            iconName: "trash-2"
+                            label: qsTr("Delete")
+                            destructive: true
+                            enabled: (inspector.sel.user ?? false) && !backend.busy
+                            onClicked: inspector.removeRequested()
+                        }
                     }
                 }
 
@@ -549,7 +625,7 @@ Rectangle {
                                 : backend.stagedWarnings > 0 ? qsTr("Minor findings in %1; they will install").arg(backend.stagedWarnings)
                                 : qsTr("No problems found")
                         }
-                        Button { flat: true; text: qsTr("Report…"); onClicked: { backend.validateStaged(); inspector.validationRequested() } }
+                        Button { flat: true; text: qsTr("Report"); onClicked: { backend.validateStaged(); inspector.validationRequested() } }
                     }
                     CheckBox {
                         visible: backend.stagedProblems > 0

@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtCore
 import Omatype 1.0
 
 ApplicationWindow {
@@ -20,6 +21,39 @@ ApplicationWindow {
                                              && (activeFocusItem instanceof TextInput || activeFocusItem instanceof TextEdit)
     readonly property bool compactToolbar: width < 1280
     property bool sidebarOpen: true
+    // The right panel's width, shared by Library and Discover, dragged from
+    // its left edge and remembered between launches.
+    property int inspectorWidth: Theme.wInspector
+    Settings { category: "layout"; property alias inspectorWidth: win.inspectorWidth }
+
+    // A hairline that doubles as a drag handle: the grab area is wider than
+    // the line so it is easy to hit, and dragging left widens the panel.
+    component PanelResizer: Rectangle {
+        implicitWidth: Theme.hairline
+        Layout.fillHeight: true
+        color: resizeDrag.active || resizeHover.hovered ? Theme.borderStrong : Theme.border
+        z: 2
+        Item {
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: 9
+            height: parent.height
+            HoverHandler { id: resizeHover; cursorShape: Qt.SplitHCursor }
+            DragHandler {
+                id: resizeDrag
+                target: null
+                xAxis.enabled: true
+                yAxis.enabled: false
+                cursorShape: Qt.SplitHCursor
+                property int startWidth: 0
+                onActiveChanged: if (active) startWidth = win.inspectorWidth
+                onTranslationChanged: {
+                    const maxW = Math.max(Theme.wInspectorMin, win.width - Theme.wSidebar - 420)
+                    win.inspectorWidth = Math.round(Math.min(maxW, Math.max(Theme.wInspectorMin, startWidth - translation.x)))
+                }
+            }
+            TapHandler { onDoubleTapped: win.inspectorWidth = Theme.wInspector }
+        }
+    }
     property string mode: "discover" // "discover" | "library"
     readonly property bool inDiscover: mode === "discover" && !backend.staged && !backend.staging
     readonly property bool canRemove: (backend.selected.user ?? false) && !backend.busy && !backend.staged
@@ -108,7 +142,7 @@ ApplicationWindow {
                    if (backend.staged || backend.staging) { backend.clearStage(); backend.selectFirst(); return }
                    if (win.inDiscover && catalog.selectedId !== "") { catalog.selectFamily(""); return }
                    if (backend.filter !== "") { backend.filter = ""; searchField.text = ""; return }
-                   if (win.textEntryFocused) rail.forceActiveFocus()
+                   if (win.textEntryFocused) sidebar.focusFamilyList()
                } }
     Shortcut { sequences: ["?", "F1"]; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen && !win.textEntryFocused; onActivated: helpSheet.open() }
     Shortcut { sequences: [StandardKey.Quit]; context: Qt.ApplicationShortcut; onActivated: win.close() }
@@ -146,7 +180,7 @@ ApplicationWindow {
                         MenuItem { text: qsTr("Install from Disk"); icon.name: "folder-plus"; onTriggered: backend.openPicker() }
                         MenuItem { text: qsTr("Rescan"); icon.name: "refresh-cw"; enabled: !backend.scanning; onTriggered: backend.refresh() }
                         MenuSeparator {}
-                        MenuItem { text: qsTr("Export family…"); icon.name: "folder-output"; enabled: win.hasFamily; onTriggered: backend.exportSelected() }
+                        MenuItem { text: qsTr("Export family"); icon.name: "folder-output"; enabled: win.hasFamily; onTriggered: backend.exportSelected() }
                         Menu {
                             title: qsTr("Save as PDF")
                             MenuItem { text: qsTr("Specimen"); enabled: win.hasFamily; onTriggered: backend.saveSpecimenPdf("specimen") }
@@ -189,11 +223,11 @@ ApplicationWindow {
                                 onObjectRemoved: (index, object) => addToMenu.removeItem(object)
                             }
                             MenuSeparator { visible: backend.collections.length > 0 }
-                            MenuItem { text: qsTr("New collection…"); icon.name: "plus"; onTriggered: nameSheet.openNew(qsTr("New collection")) }
+                            MenuItem { text: qsTr("New collection"); icon.name: "plus"; onTriggered: nameSheet.openNew(qsTr("New collection")) }
                         }
                         MenuSeparator {}
                         MenuItem { text: qsTr("Set as terminal font"); icon.name: "terminal"; enabled: win.canTerminal; onTriggered: backend.setAsTerminalFont() }
-                        MenuItem { text: qsTr("Remove…"); icon.name: "trash-2"; enabled: win.canRemove; onTriggered: removeSheet.open() }
+                        MenuItem { text: qsTr("Remove"); icon.name: "trash-2"; enabled: win.canRemove; onTriggered: removeSheet.open() }
                     }
                     Menu {
                         title: qsTr("View")
@@ -225,22 +259,23 @@ ApplicationWindow {
                     }
                     Menu {
                         title: qsTr("Collections")
-                        MenuItem { text: qsTr("New collection…"); icon.name: "plus"; onTriggered: nameSheet.openNew(qsTr("New collection")) }
-                        MenuItem { text: qsTr("New smart collection…"); icon.name: "search"; onTriggered: smartSheet.openNew() }
+                        MenuItem { text: qsTr("New collection"); icon.name: "plus"; onTriggered: nameSheet.openNew(qsTr("New collection")) }
+                        MenuItem { text: qsTr("New smart collection"); icon.name: "search"; onTriggered: smartSheet.openNew() }
                         MenuSeparator {}
                         MenuItem { text: qsTr("Activate everything in this collection"); icon.name: "eye"; enabled: backend.source.indexOf("coll:") === 0; onTriggered: backend.activateCollection(backend.source.substring(5)) }
                         MenuItem { text: qsTr("Deactivate everything in this collection"); icon.name: "eye-off"; enabled: backend.source.indexOf("coll:") === 0; onTriggered: backend.deactivateCollection(backend.source.substring(5)) }
-                        MenuItem { text: qsTr("Export this collection…"); icon.name: "folder-output"; enabled: backend.source.indexOf("coll:") === 0; onTriggered: backend.exportCollection(backend.source.substring(5)) }
+                        MenuItem { text: qsTr("Export this collection"); icon.name: "folder-output"; enabled: backend.source.indexOf("coll:") === 0; onTriggered: backend.exportCollection(backend.source.substring(5)) }
                         MenuSeparator {}
-                        MenuItem { text: qsTr("Edit this smart collection…"); enabled: backend.source.indexOf("smart:") === 0; onTriggered: smartSheet.openEdit(backend.source.substring(6)) }
-                        MenuItem { text: qsTr("Rename this collection…"); enabled: backend.source.indexOf("coll:") === 0 || backend.source.indexOf("smart:") === 0
+                        MenuItem { text: qsTr("Edit this smart collection"); enabled: backend.source.indexOf("smart:") === 0; onTriggered: smartSheet.openEdit(backend.source.substring(6)) }
+                        MenuItem { text: qsTr("Rename this collection"); enabled: backend.source.indexOf("coll:") === 0 || backend.source.indexOf("smart:") === 0
                                    onTriggered: nameSheet.openRename(backend.source.substring(backend.source.indexOf(":") + 1), backend.sourceTitle) }
-                        MenuItem { text: qsTr("Delete this collection…"); icon.name: "trash-2"; enabled: backend.source.indexOf("coll:") === 0 || backend.source.indexOf("smart:") === 0
+                        MenuItem { text: qsTr("Delete this collection"); icon.name: "trash-2"; enabled: backend.source.indexOf("coll:") === 0 || backend.source.indexOf("smart:") === 0
                                    onTriggered: win.confirmDeleteCollection(backend.source.substring(backend.source.indexOf(":") + 1), backend.sourceTitle, backend.source.indexOf("smart:") === 0) }
                     }
                     Menu {
                         title: qsTr("Tools")
-                        MenuItem { text: qsTr("Tidy up…"); icon.name: "brush-cleaning"; onTriggered: tidySheet.open() }
+                        MenuItem { text: qsTr("Tidy up"); icon.name: "brush-cleaning"; onTriggered: tidySheet.open() }
+                        MenuItem { text: qsTr("Applications"); icon.name: "refresh-cw"; onTriggered: appsSheet.open() }
                         MenuSeparator {}
                         MenuItem { text: qsTr("Refresh catalog"); icon.name: "refresh-cw"; enabled: !catalog.loading; onTriggered: catalog.load(true) }
                         MenuItem { text: qsTr("Rescan local fonts"); icon.name: "refresh-cw"; enabled: !backend.scanning; onTriggered: backend.refresh() }
@@ -255,139 +290,9 @@ ApplicationWindow {
             Hairline { anchors.bottom: parent.bottom; width: parent.width }
         }
 
-        // Library Toolbar (hidden in Discover mode, which has its own single unified bar)
-        Rectangle {
-            visible: !win.inDiscover
-            Layout.fillWidth: true
-            implicitHeight: visible ? Theme.hToolbar : 0
-            color: Theme.panelBg
-            Hairline { anchors.top: parent.top; width: parent.width }
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: Theme.s3
-                anchors.rightMargin: Theme.s3
-                spacing: Theme.s1
-
-                ToolButton { icon.name: "panel-left"; checked: win.sidebarOpen; onClicked: win.sidebarOpen = !win.sidebarOpen
-                             ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay; ToolTip.text: qsTr("Sidebar  Ctrl+B") }
-                ToolAction { objectName: "toolbarInstall"; icon.name: "folder-plus"; text: qsTr("Import…"); tip: qsTr("Install local font files, folders or archives  Ctrl+O"); onClicked: backend.openPicker() }
-                ToolAction { objectName: "toolbarRescan"; icon.name: "refresh-cw"; text: qsTr("Rescan"); tip: qsTr("Read the font list again  Ctrl+R"); enabled: !backend.scanning; onClicked: backend.refresh() }
-                ToolbarRule {}
-                TextField {
-                    id: searchField
-                    objectName: "librarySearchField"
-                    Layout.preferredWidth: Theme.wSearch
-                    Layout.maximumWidth: Theme.wSearch
-                    placeholderText: backend.searchScope === "designer" ? qsTr("Designer or foundry")
-                                   : backend.searchScope === "characters" ? qsTr("Characters the font must have")
-                                   : qsTr("Filter by name")
-                    leftPadding: Theme.s2 + Theme.szIcon + Theme.s2
-                    rightPadding: Theme.szIconHit + Theme.s1
-                    onTextChanged: backend.filter = text
-                    Keys.onEscapePressed: { if (text !== "") { text = ""; backend.filter = "" } else rail.forceActiveFocus() }
-                    Keys.onDownPressed: rail.forceActiveFocus()
-                    Icon { name: "search"; color: Theme.textMuted; x: Theme.s2; anchors.verticalCenter: parent.verticalCenter }
-                    ToolButton {
-                        objectName: "searchScope"
-                        icon.name: searchField.text !== "" ? "x" : "chevron-down"
-                        anchors.right: parent.right; anchors.rightMargin: 2
-                        anchors.verticalCenter: parent.verticalCenter
-                        onClicked: { if (searchField.text !== "") { searchField.text = ""; backend.filter = "" } else scopeMenu.popup() }
-                        ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay
-                        ToolTip.text: searchField.text !== "" ? qsTr("Clear") : qsTr("What to search")
-                    }
-                    Menu {
-                        id: scopeMenu
-                        MenuItem { text: qsTr("Names"); checkable: true; checked: backend.searchScope === "names"; onTriggered: backend.searchScope = "names" }
-                        MenuItem { text: qsTr("Designer or foundry"); checkable: true; checked: backend.searchScope === "designer"; onTriggered: backend.searchScope = "designer" }
-                        MenuItem { text: qsTr("Supports these characters"); checkable: true; checked: backend.searchScope === "characters"; onTriggered: backend.searchScope = "characters" }
-                    }
-                }
-                ToolAction {
-                    objectName: "toolbarCoverage"
-                    icon.name: backend.showCoverage ? "eye" : "eye-off"
-                    text: backend.showCoverage ? qsTr("Language fonts shown") : qsTr("%1 hidden").arg(Theme.plural(backend.coverageCount, qsTr("language font"), qsTr("language fonts")))
-                    tip: qsTr("Show or fold away the per-script Noto families  Ctrl+L")
-                    checked: backend.showCoverage
-                    visible: backend.coverageCount > 0 && (backend.source === "all" || backend.source === "system")
-                    onClicked: backend.showCoverage = !backend.showCoverage
-                }
-                Item { Layout.fillWidth: true }
-
-                // The view: specimen, grid, list, repertoire; and how big. (Library mode)
-                Rectangle {
-                    visible: !win.inDiscover
-                    implicitWidth: viewRow.implicitWidth + Theme.s1 * 2
-                    implicitHeight: Theme.hControl + Theme.s1
-                    radius: Theme.rControl
-                    color: Theme.withAlpha(Theme.controlBg, 0.55)
-                    border.width: Theme.hairline
-                    border.color: Theme.border
-                    RowLayout {
-                        id: viewRow
-                        anchors.centerIn: parent
-                        spacing: 0
-                        ViewButton { objectName: "viewSpecimen"; view: "specimen"; icon.name: "type"; ToolTip.text: qsTr("Specimen  Ctrl+1") }
-                        ViewButton { objectName: "viewGrid"; view: "grid"; icon.name: "layout-grid"; ToolTip.text: qsTr("Grid  Ctrl+2") }
-                        ViewButton { objectName: "viewList"; view: "list"; icon.name: "list"; ToolTip.text: qsTr("List  Ctrl+3") }
-                        ViewButton { objectName: "viewRepertoire"; view: "repertoire"; icon.name: "grid-3x3"; ToolTip.text: qsTr("Repertoire  Ctrl+4") }
-                        ViewButton { objectName: "viewCompare"; view: "compare"; icon.name: "columns-2"; ToolTip.text: backend.compareList.length > 0 ? qsTr("Compare · %1  Ctrl+5").arg(backend.compareList.length) : qsTr("Compare  Ctrl+5") }
-                    }
-                }
-                Slider {
-                    id: sizeSlider
-                    objectName: "sizeSlider"
-                    visible: !win.inDiscover
-                    Layout.preferredWidth: 110
-                    from: 0.5; to: 2.5
-                    value: backend.specimenScale
-                    onMoved: backend.specimenScale = value
-                    ToolTip.visible: hovered || pressed
-                    ToolTip.delay: Theme.tooltipDelay
-                    ToolTip.text: qsTr("Text size  %1%  (Ctrl + / −)").arg(Math.round(backend.specimenScale * 100))
-                }
-                ToolbarRule { visible: !win.inDiscover }
-                ToolAction {
-                    objectName: "toolbarTerminal"
-                    icon.name: "terminal"; text: qsTr("Terminal font")
-                    tip: qsTr("Make this monospace family the terminal font  Ctrl+T")
-                    visible: !win.inDiscover && backend.canSetTerminalFont
-                    enabled: win.canTerminal
-                    onClicked: backend.setAsTerminalFont()
-                }
-                ToolAction {
-                    objectName: "toolbarDeactivate"
-                    icon.name: (backend.selected.inactive ?? false) ? "eye" : "eye-off"
-                    text: (backend.selected.inactive ?? false) ? qsTr("Activate") : qsTr("Deactivate")
-                    tip: qsTr("Hide this family from every app without deleting it  Ctrl+D")
-                    visible: !win.inDiscover
-                    enabled: win.hasFamily && !backend.busy
-                    onClicked: (backend.selected.inactive ?? false) ? backend.activateSelected() : backend.deactivateSelected()
-                }
-                ToolAction {
-                    objectName: "toolbarRemove"
-                    icon.name: "trash-2"; text: qsTr("Remove")
-                    tip: qsTr("Remove this family from your fonts  Delete")
-                    visible: !win.inDiscover
-                    enabled: win.canRemove
-                    onClicked: removeSheet.open()
-                }
-                ToolbarRule { visible: backend.staged }
-                Button {
-                    objectName: "toolbarInstallStaged"
-                    visible: backend.staged
-                    highlighted: true
-                    icon.name: "download"
-                    text: backend.stagedInstalled ? qsTr("Reinstall") : qsTr("Install")
-                    enabled: !backend.busy && backend.stagedSelected.length > 0
-                    onClicked: backend.installStaged()
-                    ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay
-                    ToolTip.text: qsTr("Copy the staged fonts into your font folder  Enter")
-                }
-            }
-        }
-
-        // Body: sidebar, rail, the view, inspector
+        // Body: unified Sidebar | Mode Workspace | Mode Inspector
+        // Both Discover and Library share the exact same outer geometry so
+        // switching between them never shifts the sidebar, toggle, or inspector.
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -433,11 +338,11 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }
-            Rectangle { visible: win.inDiscover && catalog.selectedId !== ""; implicitWidth: Theme.hairline; Layout.fillHeight: true; color: Theme.border }
+            PanelResizer { visible: win.inDiscover && catalog.selectedId !== "" }
             CatalogInspector {
                 id: catalogInspector
                 visible: win.inDiscover && catalog.selectedId !== ""
-                Layout.preferredWidth: Theme.wInspector + 28
+                Layout.preferredWidth: win.inspectorWidth
                 Layout.minimumWidth: Theme.wInspectorMin
                 Layout.fillHeight: true
                 onOpenInLibraryRequested: (familyName) => {
@@ -446,82 +351,219 @@ ApplicationWindow {
                     backend.selectedName = familyName
                     backend.view = "specimen"
                 }
+                onManageAppsRequested: appsSheet.open()
             }
 
-            // ── Library mode: Local font rail + views + Inspector ─────────
-            FamilyRail {
-                id: rail
-                visible: !win.inDiscover
-                Layout.preferredWidth: Theme.wNavigator
-                Layout.minimumWidth: Theme.wNavigatorMin
-                Layout.fillHeight: true
-            }
-            Rectangle { visible: !win.inDiscover; implicitWidth: Theme.hairline; Layout.fillHeight: true; color: Theme.border }
-
-            StackLayout {
+            // ── Library mode: Control bar + Views + Status | Inspector ────
+            ColumnLayout {
                 visible: !win.inDiscover
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                currentIndex: backend.staged ? 0 : backend.view === "grid" ? 1 : backend.view === "list" ? 2 : backend.view === "repertoire" ? 3 : backend.view === "compare" ? 4 : 0
-                Specimen { id: specimen }
-                FamilyGrid { id: familyGrid }
-                FamilyList { id: familyList }
-                Repertoire { id: repertoire }
-                CompareView { id: compareView }
+                spacing: 0
+
+                // Library control bar (matches Discover's 48px bar geometry & bg)
+                Rectangle {
+                    Layout.fillWidth: true
+                    implicitHeight: Theme.hToolbar
+                    color: Theme.windowBg
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: Theme.s4
+                        anchors.rightMargin: Theme.s4
+                        spacing: Theme.s1 + 2
+
+                        ToolButton {
+                            icon.name: "panel-left"
+                            checked: win.sidebarOpen
+                            onClicked: win.sidebarOpen = !win.sidebarOpen
+                            ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay; ToolTip.text: qsTr("Sidebar  Ctrl+B")
+                        }
+                        TextField {
+                            id: searchField
+                            objectName: "librarySearchField"
+                            Layout.preferredWidth: 200
+                            Layout.maximumWidth: Theme.wSearch
+                            placeholderText: backend.searchScope === "designer" ? qsTr("Designer or foundry")
+                                           : backend.searchScope === "characters" ? qsTr("Characters…")
+                                           : qsTr("Search…")
+                            leftPadding: Theme.s2 + Theme.szIcon + Theme.s1
+                            rightPadding: Theme.szIconHit + Theme.s1
+                            font.pixelSize: Theme.fsLabel
+                            onTextChanged: backend.filter = text
+                            Keys.onEscapePressed: { if (text !== "") { text = ""; backend.filter = "" } else sidebar.focusFamilyList() }
+                            Keys.onDownPressed: sidebar.focusFamilyList()
+                            background: Rectangle {
+                                implicitHeight: 28
+                                radius: Theme.rControl
+                                color: searchField.activeFocus ? Theme.panelBg : Theme.withAlpha(Theme.panelBg, 0.55)
+                                border.width: Theme.hairline
+                                border.color: searchField.activeFocus ? Theme.borderStrong : Theme.withAlpha(Theme.border, 0.5)
+                            }
+                            Icon { name: "search"; size: 14; color: Theme.textMuted; x: Theme.s2; anchors.verticalCenter: parent.verticalCenter }
+                            ToolButton {
+                                objectName: "searchScope"
+                                icon.name: searchField.text !== "" ? "x" : "chevron-down"
+                                anchors.right: parent.right; anchors.rightMargin: 2
+                                anchors.verticalCenter: parent.verticalCenter
+                                onClicked: { if (searchField.text !== "") { searchField.text = ""; backend.filter = "" } else scopeMenu.popup() }
+                                ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay
+                                ToolTip.text: searchField.text !== "" ? qsTr("Clear") : qsTr("What to search")
+                            }
+                            Menu {
+                                id: scopeMenu
+                                MenuItem { text: qsTr("Names"); checkable: true; checked: backend.searchScope === "names"; onTriggered: backend.searchScope = "names" }
+                                MenuItem { text: qsTr("Designer or foundry"); checkable: true; checked: backend.searchScope === "designer"; onTriggered: backend.searchScope = "designer" }
+                                MenuItem { text: qsTr("Supports these characters"); checkable: true; checked: backend.searchScope === "characters"; onTriggered: backend.searchScope = "characters" }
+                            }
+                        }
+                        Rectangle { implicitWidth: Theme.hairline; implicitHeight: 16; color: Theme.withAlpha(Theme.border, 0.6) }
+                        ToolButton {
+                            objectName: "toolbarInstall"
+                            icon.name: "folder-plus"
+                            onClicked: backend.openPicker()
+                            ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay; ToolTip.text: qsTr("Install from Disk  Ctrl+O")
+                        }
+                        ToolButton {
+                            objectName: "toolbarRescan"
+                            icon.name: "refresh-cw"
+                            enabled: !backend.scanning
+                            onClicked: backend.refresh()
+                            ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay; ToolTip.text: qsTr("Rescan local fonts  Ctrl+R")
+                        }
+                        ToolButton {
+                            objectName: "toolbarCoverage"
+                            icon.name: backend.showCoverage ? "eye" : "eye-off"
+                            checked: backend.showCoverage
+                            visible: backend.coverageCount > 0 && (backend.source === "all" || backend.source === "system")
+                            onClicked: backend.showCoverage = !backend.showCoverage
+                            ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay
+                            ToolTip.text: backend.showCoverage ? qsTr("Hide per-script Noto families  Ctrl+L")
+                                        : qsTr("Show %1 hidden language fonts  Ctrl+L").arg(backend.coverageCount)
+                        }
+
+                        Item { Layout.fillWidth: true }
+
+                        // The view: specimen, grid, list, repertoire
+                        Rectangle {
+                            implicitWidth: viewRow.implicitWidth + Theme.s1 * 2
+                            implicitHeight: Theme.hControl + Theme.s1
+                            radius: Theme.rControl
+                            color: Theme.withAlpha(Theme.controlBg, 0.55)
+                            border.width: Theme.hairline
+                            border.color: Theme.border
+                            RowLayout {
+                                id: viewRow
+                                anchors.centerIn: parent
+                                spacing: 0
+                                ViewButton { objectName: "viewSpecimen"; view: "specimen"; icon.name: "type"; ToolTip.text: qsTr("Specimen  Ctrl+1") }
+                                ViewButton { objectName: "viewGrid"; view: "grid"; icon.name: "layout-grid"; ToolTip.text: qsTr("Grid  Ctrl+2") }
+                                ViewButton { objectName: "viewList"; view: "list"; icon.name: "list"; ToolTip.text: qsTr("List  Ctrl+3") }
+                                ViewButton { objectName: "viewRepertoire"; view: "repertoire"; icon.name: "grid-3x3"; ToolTip.text: qsTr("Repertoire  Ctrl+4") }
+                                ViewButton {
+                                    objectName: "viewCompare"
+                                    visible: backend.compareList.length > 0 || backend.view === "compare"
+                                    view: "compare"
+                                    icon.name: "columns-2"
+                                    ToolTip.text: backend.compareList.length > 0 ? qsTr("Compare · %1  Ctrl+5").arg(backend.compareList.length) : qsTr("Compare  Ctrl+5")
+                                }
+                            }
+                        }
+                        Slider {
+                            id: sizeSlider
+                            objectName: "sizeSlider"
+                            Layout.preferredWidth: 96
+                            from: 0.5; to: 2.5
+                            value: backend.specimenScale
+                            onMoved: backend.specimenScale = value
+                            ToolTip.visible: hovered || pressed
+                            ToolTip.delay: Theme.tooltipDelay
+                            ToolTip.text: qsTr("Text size  %1%  (Ctrl + / −)").arg(Math.round(backend.specimenScale * 100))
+                        }
+                        ToolbarRule { visible: backend.staged }
+                        Button {
+                            objectName: "toolbarInstallStaged"
+                            visible: backend.staged
+                            highlighted: true
+                            icon.name: "download"
+                            text: backend.stagedInstalled ? qsTr("Reinstall") : qsTr("Install")
+                            enabled: !backend.busy && backend.stagedSelected.length > 0
+                            onClicked: backend.installStaged()
+                            ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay
+                            ToolTip.text: qsTr("Copy the staged fonts into your font folder  Enter")
+                        }
+                    }
+                    Hairline { anchors.bottom: parent.bottom; width: parent.width }
+                }
+
+                StackLayout {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    currentIndex: backend.staged ? 0 : backend.view === "grid" ? 1 : backend.view === "list" ? 2 : backend.view === "repertoire" ? 3 : backend.view === "compare" ? 4 : 0
+                    Specimen { id: specimen }
+                    FamilyGrid { id: familyGrid }
+                    FamilyList { id: familyList }
+                    Repertoire { id: repertoire }
+                    CompareView { id: compareView }
+                }
+
+                // Footer tucked inside the Library workspace so the Sidebar never shifts height
+                Rectangle {
+                    objectName: "statusBar"
+                    Layout.fillWidth: true
+                    implicitHeight: Theme.hStatusBar
+                    color: Theme.windowBg
+                    Hairline { anchors.top: parent.top; width: parent.width }
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: Theme.s4
+                        anchors.rightMargin: Theme.s4
+                        spacing: Theme.s3
+
+                        StatusText { text: backend.sourceTitle; color: Theme.textPrimary; font.weight: Theme.wHeading }
+                        StatusRule {}
+                        StatusText { text: backend.scanning ? qsTr("Reading fonts…") : Theme.plural(backend.visibleCount, qsTr("family"), qsTr("families")) }
+                        StatusRule { visible: backend.readingMetadata }
+                        StatusText { visible: backend.readingMetadata; text: qsTr("Reading font details…"); color: Theme.textMuted }
+
+                        Item { Layout.fillWidth: true }
+                        BusyIndicator { visible: backend.busy || backend.staging || catalog.installingAny; running: visible; implicitWidth: Theme.szIcon; implicitHeight: Theme.szIcon }
+                        StatusText {
+                            objectName: "statusMessage"
+                            text: backend.status
+                            visible: text !== ""
+                            color: backend.statusIsError ? Theme.danger : Theme.textSecondary
+                            elide: Text.ElideMiddle
+                            Layout.maximumWidth: win.width / 2
+                            Accessible.role: Accessible.StaticText
+                            Accessible.name: text
+                        }
+                        Repeater {
+                            model: backend.runningManualApps
+                            Button {
+                                required property var modelData
+                                flat: true
+                                implicitHeight: 22
+                                icon.name: "refresh-cw"
+                                text: qsTr("Reload %1").arg(modelData.name)
+                                font.pixelSize: Theme.fsCaption
+                                onClicked: backend.reloadRegisteredApp(modelData.id)
+                            }
+                        }
+                    }
+                }
             }
-            Rectangle { visible: !win.inDiscover; implicitWidth: Theme.hairline; Layout.fillHeight: true; color: Theme.border }
+
+            PanelResizer { visible: !win.inDiscover }
 
             Inspector {
                 id: inspector
                 visible: !win.inDiscover
-                Layout.preferredWidth: Theme.wInspector
+                Layout.preferredWidth: win.inspectorWidth
                 Layout.minimumWidth: Theme.wInspectorMin
                 Layout.fillHeight: true
                 onRemoveRequested: removeSheet.open()
                 onValidationRequested: validationSheet.open()
                 onAddToCollectionRequested: nameSheet.openNew(qsTr("New collection"))
-            }
-        }
-
-        // Footer: Library mode only (Discover feedback lives directly under the Install button)
-        Rectangle {
-            objectName: "statusBar"
-            visible: !win.inDiscover
-            Layout.fillWidth: true
-            implicitHeight: visible ? Theme.hStatusBar : 0
-            color: Theme.windowBg
-            Hairline { anchors.top: parent.top; width: parent.width }
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: Theme.s4
-                anchors.rightMargin: Theme.s3
-                spacing: Theme.s3
-
-                // Library footer cells
-                StatusText { visible: !win.inDiscover; text: backend.sourceTitle; color: Theme.textPrimary; font.weight: Theme.wHeading }
-                StatusRule { visible: !win.inDiscover }
-                StatusText { visible: !win.inDiscover; text: backend.scanning ? qsTr("Reading fonts…") : Theme.plural(backend.visibleCount, qsTr("family"), qsTr("families")) }
-                StatusRule { visible: !win.inDiscover }
-                StatusText { visible: !win.inDiscover; text: qsTr("Yours %1").arg(backend.userCount) }
-                StatusRule { visible: !win.inDiscover }
-                StatusText { visible: !win.inDiscover; text: qsTr("System %1").arg(backend.systemCount) }
-                StatusRule { visible: !win.inDiscover && backend.readingMetadata }
-                StatusText { visible: !win.inDiscover && backend.readingMetadata; text: qsTr("Reading font details…"); color: Theme.textMuted }
-
-                Item { Layout.fillWidth: true }
-                BusyIndicator { visible: backend.busy || backend.staging || catalog.installingAny; running: visible; implicitWidth: Theme.szIcon; implicitHeight: Theme.szIcon }
-                StatusText {
-                    objectName: "statusMessage"
-                    text: backend.status
-                    visible: text !== ""
-                    color: backend.statusIsError ? Theme.danger : Theme.textSecondary
-                    elide: Text.ElideMiddle
-                    Layout.maximumWidth: win.width / 2
-                    Accessible.role: Accessible.StaticText
-                    Accessible.name: text
-                }
-                StatusRule { visible: !win.inDiscover }
-                StatusText { visible: !win.inDiscover; text: backend.tildePath(backend.fontRoot); color: Theme.textMuted; elide: Text.ElideMiddle; Layout.maximumWidth: Theme.wInspector }
             }
         }
     }
@@ -642,6 +684,7 @@ ApplicationWindow {
             backend.showCoverage = true
         }
     }
+    RegisteredAppsSheet { id: appsSheet }
     ValidationSheet { id: validationSheet }
     HelpSheet { id: helpSheet }
 }

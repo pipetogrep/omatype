@@ -53,9 +53,10 @@ QtObject {
     readonly property real disabledOpacity: 0.38
 
     // ── The specimen surface ────────────────────────────────────────────────
-    // Darker than the panels so the type reads as the object and the surround
-    // as nothing; the ink is the primary text colour, never the accent.
-    readonly property color pasteboard: "#1A1F26"
+    // The same surface as the window around it — no separate preview tint — so
+    // the type reads as the object; the ink is the primary text colour, never
+    // the accent.
+    readonly property color pasteboard: windowBg
     readonly property color showBg: "#000000"
     readonly property color specimenInk: textPrimary
     readonly property color dropHighlight: withAlpha(accent, 0.10)
@@ -129,11 +130,11 @@ QtObject {
     readonly property int hCardHeader: Math.round(36 * densityScale)
     readonly property int hNavHeader: Math.round(36 * densityScale)
     readonly property int hToolTile: Math.round(58 * densityScale)
-    readonly property int wSidebar: 208
+    readonly property int wSidebar: 236
     readonly property int wFactLabel: 88
     readonly property int wNavigator: 272
     readonly property int wNavigatorMin: 200
-    readonly property int wInspector: 320
+    readonly property int wInspector: 336
     readonly property int wInspectorMin: 280
     readonly property int wSearch: 280
     readonly property int wSpecimenGutter: 44

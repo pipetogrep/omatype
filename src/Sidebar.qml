@@ -3,14 +3,17 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Omatype 1.0
 
-// The library sidebar: where the families come from. Fixed sources first
-// (All, Yours, System, Monospace, Recently Added, Deactivated, Duplicates), a
-// language picker, then the collections and smart collections you make.
+// Unified left sidebar: Discover catalogs on top, Library sections below.
+// When browsing Library, the active section expands inline to show its matching
+// families nested underneath—no separate second left column needed.
 Rectangle {
     id: sidebar
     color: Theme.panelBg
 
     property string mode: "discover"
+    property bool sourceExpanded: true
+    property var activeFamilyList: null
+
     signal discoverSelected(string sourceFilter)
     signal librarySelected()
     signal newCollectionRequested()
@@ -21,6 +24,194 @@ Rectangle {
     // Deleting library data cannot be undone, so Main asks first.
     signal deleteRequested(string id, string name, bool smart)
     signal deleteTagRequested(string tag)
+
+    function focusFamilyList() {
+        if (activeFamilyList) activeFamilyList.forceActiveFocus()
+    }
+
+    Connections {
+        target: backend
+        function onSourceChanged() {
+            sidebar.sourceExpanded = true
+        }
+    }
+
+    component NestedFamilyList: Item {
+        id: nested
+        Layout.fillWidth: true
+        readonly property int maxHeight: Math.max(240, Math.round(sidebar.height * 0.56))
+        implicitHeight: Math.min(Math.max(list.contentHeight, list.count === 0 ? 52 : 0), maxHeight) + Theme.s1
+
+        Component.onCompleted: sidebar.activeFamilyList = list
+        Component.onDestruction: {
+            if (sidebar.activeFamilyList === list) sidebar.activeFamilyList = null
+        }
+
+        ListView {
+            id: list
+            objectName: "familyList"
+            activeFocusOnTab: true
+            anchors.fill: parent
+            anchors.topMargin: 2
+            anchors.bottomMargin: Theme.s1
+            clip: true
+            model: backend.families
+            currentIndex: backend.families.indexOf(backend.selectedName)
+            highlightFollowsCurrentItem: true
+            highlightMoveDuration: Theme.dFast
+            keyNavigationEnabled: false
+            keyNavigationWraps: false
+            boundsBehavior: Flickable.StopAtBounds
+            ScrollBar.vertical: ScrollBar {}
+            cacheBuffer: 30 * 18
+
+            function step(delta) {
+                const i = Math.max(0, Math.min(count - 1, (currentIndex < 0 ? 0 : currentIndex) + delta))
+                const name = backend.families.nameAt(i)
+                if (name === "") return
+                if (backend.staged || backend.staging) backend.clearStage()
+                if (backend.view === "compare") backend.view = "specimen"
+                backend.selectedName = name
+            }
+            Keys.onUpPressed: step(-1)
+            Keys.onDownPressed: step(1)
+            Keys.onPressed: (event) => {
+                if (event.key === Qt.Key_Home) { step(-count); event.accepted = true }
+                else if (event.key === Qt.Key_End) { step(count); event.accepted = true }
+                else if (event.key === Qt.Key_PageDown) { step(12); event.accepted = true }
+                else if (event.key === Qt.Key_PageUp) { step(-12); event.accepted = true }
+            }
+            Connections {
+                target: backend
+                function onSelectionChanged() {
+                    const i = backend.families.indexOf(backend.selectedName)
+                    if (i >= 0) list.positionViewAtIndex(i, ListView.Contain)
+                }
+            }
+
+            delegate: ItemDelegate {
+                id: frow
+                required property int index
+                required property string name
+                required property bool user
+                required property bool mono
+                required property bool latin
+                required property bool coverage
+                required property bool inactive
+                required property bool duplicate
+                required property bool starred
+                required property var members
+                required property string previewFile
+                required property var styles
+                width: ListView.view.width
+                height: 30
+                highlighted: name === backend.selectedName && !backend.staged && backend.view !== "compare"
+                leftPadding: 40
+                rightPadding: Theme.s3
+                onClicked: {
+                    if (backend.staged || backend.staging) backend.clearStage()
+                    if (backend.view === "compare") backend.view = "specimen"
+                    backend.selectedName = name
+                    list.forceActiveFocus()
+                }
+                Accessible.name: name
+
+                Loader {
+                    id: face
+                    active: frow.latin && frow.previewFile !== ""
+                    sourceComponent: FontLoader { source: backend.fileUrl(frow.previewFile) }
+                }
+                readonly property bool faceReady: face.item !== null && face.item.status === FontLoader.Ready
+
+                contentItem: RowLayout {
+                    spacing: Theme.s1 + 2
+                    Text {
+                        Layout.fillWidth: true
+                        text: frow.name
+                        textFormat: Text.PlainText
+                        elide: Text.ElideRight
+                        verticalAlignment: Text.AlignVCenter
+                        color: frow.inactive ? Theme.textMuted : frow.highlighted ? Theme.textPrimary : Theme.textSecondary
+                        font.family: frow.faceReady ? face.item.name : Theme.fontFamily
+                        font.pixelSize: frow.faceReady ? 14 : Theme.fsControl
+                        font.strikeout: frow.inactive
+                    }
+                    Icon { visible: frow.starred; name: "star"; size: 12; color: Theme.warning }
+                    Label {
+                        visible: frow.members.length > 0 && !frow.mono && !frow.coverage
+                        text: frow.styles.length
+                        color: Theme.textMuted
+                        font.pixelSize: Theme.fsCaption
+                        font.family: Theme.monoFamily
+                        ToolTip.visible: membersHover.hovered
+                        ToolTip.delay: Theme.tooltipDelay
+                        ToolTip.text: qsTr("Includes %1").arg(frow.members.join(", "))
+                        HoverHandler { id: membersHover }
+                    }
+                    Icon { visible: frow.inactive; name: "eye-off"; size: 12; color: Theme.textMuted }
+                    Icon {
+                        visible: frow.duplicate && !frow.inactive
+                        name: "copy"
+                        size: 11
+                        color: Theme.textMuted
+                        opacity: frow.highlighted || frow.hovered ? 0.85 : 0.45
+                        ToolTip.visible: dupHover.hovered
+                        ToolTip.delay: Theme.tooltipDelay
+                        ToolTip.text: qsTr("Duplicate font files")
+                        HoverHandler { id: dupHover }
+                    }
+                    Rectangle {
+                        visible: frow.mono
+                        implicitWidth: 16
+                        implicitHeight: 16
+                        radius: Theme.rChip
+                        color: Theme.withAlpha(Theme.accent, 0.12)
+                        border.width: Theme.hairline
+                        border.color: Theme.withAlpha(Theme.accent, 0.45)
+                        Text {
+                            anchors.centerIn: parent
+                            text: "M"
+                            font.family: Theme.monoFamily
+                            font.pixelSize: 9
+                            font.weight: Theme.wHeading
+                            color: Theme.accent
+                        }
+                        ToolTip.visible: monoHover.hovered
+                        ToolTip.delay: Theme.tooltipDelay
+                        ToolTip.text: qsTr("Monospace")
+                        HoverHandler { id: monoHover }
+                    }
+                }
+                background: Rectangle {
+                    x: 32
+                    width: parent.width - 32 - Theme.s2
+                    height: parent.height
+                    radius: Theme.rControl
+                    color: frow.down ? Theme.pressedOn(Theme.controlHover)
+                         : frow.highlighted ? Theme.withAlpha(Theme.accent, 0.12)
+                         : frow.hovered ? Theme.controlHover : "transparent"
+                }
+            }
+
+            Item {
+                anchors.fill: parent
+                visible: list.count === 0
+                Label {
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.leftMargin: 40
+                    anchors.rightMargin: Theme.s3
+                    wrapMode: Text.Wrap
+                    color: Theme.textMuted
+                    font.pixelSize: Theme.fsLabel
+                    text: backend.scanning ? qsTr("Reading the font list…")
+                        : backend.filter !== "" ? qsTr("Nothing matches “%1”").arg(backend.filter)
+                        : qsTr("No fonts found")
+                }
+            }
+        }
+    }
 
     component DiscoverRow: ItemDelegate {
         id: drow
@@ -74,59 +265,102 @@ Rectangle {
         }
     }
 
-    component SourceRow: ItemDelegate {
-        id: row
+    component SourceRow: ColumnLayout {
+        id: srow
         property string source: ""
         property string label: ""
         property string iconName: ""
         property int count: -1
         property bool editable: false
-        // Full width in the sidebar's ColumnLayout, which overrides `width`.
+        readonly property bool isActive: sidebar.mode === "library" && backend.source === source
+        readonly property bool isExpanded: isActive && sidebar.sourceExpanded
+        // Every source opens into its family list; an empty one has nothing to show.
+        readonly property bool expandable: count !== 0
+        signal doubleClicked()
+        signal rightClicked()
+
         Layout.fillWidth: true
-        Layout.leftMargin: Theme.s2
-        Layout.rightMargin: Theme.s2
-        width: ListView.view ? ListView.view.width : parent.width
-        height: Theme.hRow
-        highlighted: sidebar.mode === "library" && backend.source === source
-        leftPadding: Theme.s2
-        rightPadding: Theme.s2
-        onClicked: { sidebar.librarySelected(); backend.source = source }
-        Accessible.name: label
-        contentItem: RowLayout {
-            spacing: Theme.s2 + 2
-            Icon {
-                name: row.iconName
-                size: 14
-                color: row.highlighted ? Theme.accent : Theme.textMuted
-                opacity: row.highlighted ? 0.9 : 0.65
-                visible: row.iconName !== ""
+        spacing: 0
+
+        ItemDelegate {
+            id: row
+            Layout.fillWidth: true
+            Layout.leftMargin: Theme.s2
+            Layout.rightMargin: Theme.s2
+            height: Theme.hRow
+            highlighted: srow.isActive
+            leftPadding: Theme.s2
+            rightPadding: Theme.s2
+            onClicked: {
+                if (backend.view === "compare") backend.view = "specimen"
+                if (srow.isActive) {
+                    sidebar.sourceExpanded = !sidebar.sourceExpanded
+                } else {
+                    sidebar.librarySelected()
+                    backend.source = srow.source
+                    sidebar.sourceExpanded = true
+                }
             }
-            Text {
-                Layout.fillWidth: true
-                text: row.label
-                textFormat: Text.PlainText
-                elide: Text.ElideRight
-                verticalAlignment: Text.AlignVCenter
-                color: row.highlighted ? Theme.textPrimary : Theme.textSecondary
-                font.family: Theme.fontFamily
-                font.pixelSize: Theme.fsControl
-                font.weight: row.highlighted ? Font.Medium : Font.Normal
+            onDoubleClicked: srow.doubleClicked()
+            Accessible.name: srow.label
+
+            TapHandler {
+                acceptedButtons: Qt.RightButton
+                onTapped: srow.rightClicked()
             }
-            Label {
-                visible: row.count > 0
-                text: row.count
-                color: Theme.textMuted
-                font.pixelSize: Theme.fsCaption
-                font.family: Theme.monoFamily
+
+            contentItem: RowLayout {
+                spacing: Theme.s2 + 2
+                // Open: a down chevron. Hovered and closed: a right chevron in
+                // place of the icon, so the row says it can be expanded.
+                Icon {
+                    readonly property bool showChevron: srow.isExpanded || (row.hovered && srow.expandable)
+                    name: srow.isExpanded ? "chevron-down"
+                        : showChevron ? "chevron-right" : srow.iconName
+                    size: 14
+                    color: row.highlighted || showChevron ? (row.highlighted ? Theme.accent : Theme.textSecondary) : Theme.textMuted
+                    opacity: row.highlighted ? 0.9 : showChevron ? 0.85 : 0.65
+                    visible: showChevron || srow.iconName !== ""
+                }
+                Text {
+                    Layout.fillWidth: true
+                    text: srow.label
+                    textFormat: Text.PlainText
+                    elide: Text.ElideRight
+                    verticalAlignment: Text.AlignVCenter
+                    color: row.highlighted ? Theme.textPrimary : Theme.textSecondary
+                    font.family: Theme.fontFamily
+                    font.pixelSize: Theme.fsControl
+                    font.weight: row.highlighted ? Font.Medium : Font.Normal
+                }
+                Label {
+                    readonly property int shownCount: srow.isActive && backend.filter !== "" ? backend.visibleCount : srow.count
+                    visible: shownCount > 0 || (srow.isActive && backend.filter !== "")
+                    text: shownCount
+                    color: Theme.textMuted
+                    font.pixelSize: Theme.fsCaption
+                    font.family: Theme.monoFamily
+                }
+            }
+            background: Rectangle {
+                radius: Theme.rControl
+                color: row.down ? Theme.pressedOn(Theme.controlHover)
+                     : row.highlighted ? Theme.withAlpha(Theme.accent, 0.10)
+                     : row.hovered ? Theme.controlHover : "transparent"
             }
         }
-        background: Rectangle {
-            radius: Theme.rControl
-            color: row.down ? Theme.pressedOn(Theme.controlHover)
-                 : row.highlighted ? Theme.withAlpha(Theme.accent, 0.10)
-                 : row.hovered ? Theme.controlHover : "transparent"
+
+        Loader {
+            active: srow.isExpanded
+            visible: active
+            Layout.fillWidth: true
+            Layout.preferredHeight: item ? item.implicitHeight : 0
+            sourceComponent: Component {
+                NestedFamilyList {}
+            }
         }
     }
+
     component Heading: RowLayout {
         property string text: ""
         property string action: ""
@@ -197,7 +431,6 @@ Rectangle {
                         label: modelData.name
                         iconName: modelData.key === "mono" ? "terminal" : modelData.key.indexOf("trait:") === 0 ? "sliders-horizontal" : "type"
                         count: modelData.count
-                        Layout.fillWidth: true
                     }
                 }
 
@@ -219,6 +452,13 @@ Rectangle {
                         text: modelData.name + (modelData.count >= 0 ? "  ·  " + modelData.count : "")
                         highlighted: scriptBox.highlightedIndex === index
                     }
+                }
+                Loader {
+                    active: sidebar.mode === "library" && sidebar.sourceExpanded && backend.source.indexOf("script:") === 0
+                    visible: active
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: item ? item.implicitHeight : 0
+                    sourceComponent: Component { NestedFamilyList {} }
                 }
 
                 Heading { text: qsTr("Language") }
@@ -244,6 +484,13 @@ Rectangle {
                     }
                     popup.contentItem.implicitHeight: Math.min(400, languageBox.count * Theme.hRow)
                 }
+                Loader {
+                    active: sidebar.mode === "library" && sidebar.sourceExpanded && backend.source.indexOf("lang:") === 0
+                    visible: active
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: item ? item.implicitHeight : 0
+                    sourceComponent: Component { NestedFamilyList {} }
+                }
 
                 Heading { visible: backend.tagFacets.length > 0; text: qsTr("Tags") }
                 Flow {
@@ -265,6 +512,13 @@ Rectangle {
                         }
                     }
                 }
+                Loader {
+                    active: sidebar.mode === "library" && sidebar.sourceExpanded && backend.source.indexOf("tag:") === 0
+                    visible: active
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: item ? item.implicitHeight : 0
+                    sourceComponent: Component { NestedFamilyList {} }
+                }
 
                 Heading { text: qsTr("Collections"); action: qsTr("New collection"); onActionClicked: sidebar.newCollectionRequested() }
                 Repeater {
@@ -276,11 +530,7 @@ Rectangle {
                         iconName: "folder-open"
                         count: modelData.count
                         editable: true
-                        Layout.fillWidth: true
-                        TapHandler {
-                            acceptedButtons: Qt.RightButton
-                            onTapped: collectionMenu.openFor(modelData.id, modelData.name, false)
-                        }
+                        onRightClicked: collectionMenu.openFor(modelData.id, modelData.name, false)
                     }
                 }
 
@@ -293,12 +543,8 @@ Rectangle {
                         label: modelData.name
                         iconName: "search"
                         count: modelData.count
-                        Layout.fillWidth: true
                         onDoubleClicked: sidebar.editSmartRequested(modelData.id)
-                        TapHandler {
-                            acceptedButtons: Qt.RightButton
-                            onTapped: collectionMenu.openFor(modelData.id, modelData.name, true)
-                        }
+                        onRightClicked: collectionMenu.openFor(modelData.id, modelData.name, true)
                     }
                 }
             }
@@ -309,8 +555,8 @@ Rectangle {
         id: tagMenu
         property string tag: ""
         function openFor(t) { tag = t; popup() }
-        MenuItem { text: qsTr("Rename tag…"); onTriggered: sidebar.renameTagRequested(tagMenu.tag) }
-        MenuItem { text: qsTr("Remove tag from every family…"); onTriggered: sidebar.deleteTagRequested(tagMenu.tag) }
+        MenuItem { text: qsTr("Rename tag"); onTriggered: sidebar.renameTagRequested(tagMenu.tag) }
+        MenuItem { text: qsTr("Remove tag from every family"); onTriggered: sidebar.deleteTagRequested(tagMenu.tag) }
     }
     Menu {
         id: collectionMenu
@@ -318,14 +564,14 @@ Rectangle {
         property string targetName: ""
         property bool smart: false
         function openFor(id, name, isSmart) { targetId = id; targetName = name; smart = isSmart; popup() }
-        MenuItem { text: qsTr("Edit rules…"); visible: collectionMenu.smart; height: visible ? implicitHeight : 0; onTriggered: sidebar.editSmartRequested(collectionMenu.targetId) }
+        MenuItem { text: qsTr("Edit rules"); visible: collectionMenu.smart; height: visible ? implicitHeight : 0; onTriggered: sidebar.editSmartRequested(collectionMenu.targetId) }
         MenuItem { text: qsTr("Activate everything in it"); icon.name: "eye"; visible: !collectionMenu.smart; height: visible ? implicitHeight : 0; onTriggered: backend.activateCollection(collectionMenu.targetId) }
         MenuItem { text: qsTr("Deactivate everything in it"); icon.name: "eye-off"; visible: !collectionMenu.smart; height: visible ? implicitHeight : 0; onTriggered: backend.deactivateCollection(collectionMenu.targetId) }
-        MenuItem { text: qsTr("Export…"); icon.name: "folder-output"; visible: !collectionMenu.smart; height: visible ? implicitHeight : 0; onTriggered: backend.exportCollection(collectionMenu.targetId) }
-        MenuItem { text: qsTr("Rename…"); onTriggered: sidebar.renameRequested(collectionMenu.targetId, collectionMenu.targetName) }
+        MenuItem { text: qsTr("Export"); icon.name: "folder-output"; visible: !collectionMenu.smart; height: visible ? implicitHeight : 0; onTriggered: backend.exportCollection(collectionMenu.targetId) }
+        MenuItem { text: qsTr("Rename"); onTriggered: sidebar.renameRequested(collectionMenu.targetId, collectionMenu.targetName) }
         MenuSeparator {}
         MenuItem {
-            text: qsTr("Delete…")
+            text: qsTr("Delete")
             icon.name: "trash-2"
             onTriggered: sidebar.deleteRequested(collectionMenu.targetId, collectionMenu.targetName, collectionMenu.smart)
         }

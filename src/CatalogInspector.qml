@@ -11,6 +11,7 @@ Rectangle {
     color: Theme.panelBg
 
     signal openInLibraryRequested(string familyName)
+    signal manageAppsRequested()
 
     readonly property var fam: catalog.selectedFamily
     readonly property bool hasSelection: (fam.id ?? "") !== ""
@@ -19,12 +20,14 @@ Rectangle {
     property string feedbackId: ""
     property string feedbackText: ""
     property bool feedbackError: false
+    property string reloadNote: ""
 
     onFamChanged: {
         selectedFilenames = []
         if ((fam.id ?? "") !== feedbackId) {
             feedbackText = ""
             feedbackError = false
+            reloadNote = ""
         }
     }
 
@@ -34,6 +37,15 @@ Rectangle {
             panel.feedbackId = id
             panel.feedbackText = message
             panel.feedbackError = !ok
+            panel.reloadNote = ""
+        }
+    }
+    Connections {
+        target: backend
+        function onAppReloaded(name, ok, message) {
+            if (panel.feedbackId === (panel.fam.id ?? "") && panel.feedbackText !== "") {
+                panel.reloadNote = message
+            }
         }
     }
 
@@ -73,7 +85,7 @@ Rectangle {
     }
 
     function installCtaLabel() {
-        if (fam.installing ?? false) return qsTr("Installing…")
+        if (fam.installing ?? false) return qsTr("Installing")
         if (fam.installed ?? false) return qsTr("Installed")
         if (selectedFilenames.length > 0)
             return qsTr("Install %1").arg(Theme.plural(selectedFilenames.length, qsTr("style"), qsTr("styles")))
@@ -269,32 +281,60 @@ Rectangle {
                         visible: panel.feedbackText !== "" && panel.feedbackId === (panel.fam.id ?? "")
                         Layout.fillWidth: true
                         Layout.topMargin: Theme.s1
-                        implicitHeight: fbRow.implicitHeight + Theme.s2 * 2
+                        implicitHeight: fbCol.implicitHeight + Theme.s2 * 2
                         radius: Theme.rControl
                         color: Theme.withAlpha(panel.feedbackError ? Theme.danger : Theme.success, 0.10)
                         border.width: Theme.hairline
                         border.color: Theme.withAlpha(panel.feedbackError ? Theme.danger : Theme.success, 0.30)
 
-                        RowLayout {
-                            id: fbRow
+                        ColumnLayout {
+                            id: fbCol
                             anchors.left: parent.left
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.leftMargin: Theme.s2 + 2
                             anchors.rightMargin: Theme.s2 + 2
-                            spacing: Theme.s2
+                            spacing: Theme.s1 + 2
 
-                            Icon {
-                                name: panel.feedbackError ? "circle-alert" : "circle-check"
-                                size: 14
-                                color: panel.feedbackError ? Theme.danger : Theme.success
-                            }
-                            Label {
+                            RowLayout {
                                 Layout.fillWidth: true
-                                text: panel.feedbackText
-                                color: Theme.textPrimary
-                                font.pixelSize: Theme.fsLabel
-                                wrapMode: Text.Wrap
+                                spacing: Theme.s2
+                                Icon {
+                                    name: panel.feedbackError ? "circle-alert" : "circle-check"
+                                    size: 14
+                                    color: panel.feedbackError ? Theme.danger : Theme.success
+                                }
+                                Label {
+                                    Layout.fillWidth: true
+                                    text: panel.reloadNote !== "" ? (qsTr("Installed. ") + panel.reloadNote) : panel.feedbackText
+                                    color: Theme.textPrimary
+                                    font.pixelSize: Theme.fsLabel
+                                    wrapMode: Text.Wrap
+                                }
+                            }
+
+                            Flow {
+                                visible: !panel.feedbackError && (backend.runningManualApps.length > 0 || backend.registeredAppCount === 0)
+                                Layout.fillWidth: true
+                                Layout.leftMargin: 22
+                                spacing: Theme.s2
+                                Repeater {
+                                    model: backend.runningManualApps
+                                    Button {
+                                        required property var modelData
+                                        flat: true
+                                        implicitHeight: 24
+                                        icon.name: "refresh-cw"
+                                        text: qsTr("Reload %1").arg(modelData.name)
+                                        font.pixelSize: Theme.fsCaption
+                                        onClicked: backend.reloadRegisteredApp(modelData.id)
+                                    }
+                                }
+                                TextLink {
+                                    visible: backend.registeredAppCount === 0
+                                    text: qsTr("Register applications")
+                                    onClicked: panel.manageAppsRequested()
+                                }
                             }
                         }
                     }
@@ -318,23 +358,13 @@ Rectangle {
                         implicitHeight: wfText.implicitHeight
                         clip: true
 
-                        Text {
-                            id: wfLabel
-                            anchors.left: parent.left
-                            anchors.baseline: wfText.baseline
-                            width: 20
-                            text: String(modelData)
-                            color: Theme.textMuted
-                            font.family: Theme.monoFamily
-                            font.pixelSize: Theme.fsCaption
-                            horizontalAlignment: Text.AlignRight
-                        }
-
+                        // Sample flush left, size numerals in a right-aligned
+                        // column, matching the Library specimen.
                         Text {
                             id: wfText
                             anchors.left: parent.left
-                            anchors.leftMargin: 28
-                            anchors.right: parent.right
+                            anchors.right: wfLabel.left
+                            anchors.rightMargin: Theme.s3
                             anchors.top: parent.top
                             text: catalog.sampleText === "" ? "Typography is what language looks like." : catalog.sampleText
                             textFormat: Text.PlainText
@@ -343,13 +373,26 @@ Rectangle {
                             color: Theme.specimenInk
                             wrapMode: Text.NoWrap
                             maximumLineCount: 1
+                            clip: true
                             lineHeightMode: Text.FixedHeight
                             lineHeight: Math.round(modelData * 1.18)
                         }
 
+                        Text {
+                            id: wfLabel
+                            anchors.right: parent.right
+                            anchors.baseline: wfText.baseline
+                            width: 24
+                            text: String(modelData)
+                            color: Theme.textMuted
+                            font.family: Theme.monoFamily
+                            font.pixelSize: Theme.fsCaption
+                            horizontalAlignment: Text.AlignRight
+                        }
+
                         Rectangle {
                             visible: wfText.implicitWidth > wfText.width
-                            anchors.right: parent.right
+                            anchors.right: wfText.right
                             anchors.top: parent.top
                             anchors.bottom: parent.bottom
                             width: 28

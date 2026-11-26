@@ -142,8 +142,8 @@ Rectangle {
 
             RowLayout {
                 anchors.fill: parent
-                anchors.leftMargin: Theme.s5 - 6
-                anchors.rightMargin: Theme.s5
+                anchors.leftMargin: Theme.s4
+                anchors.rightMargin: Theme.s4
                 spacing: Theme.s1 + 2
 
                 ToolButton {
@@ -272,7 +272,7 @@ Rectangle {
                     Menu {
                         id: sampleMenu
                         MenuItem {
-                            text: root.editingSample ? qsTr("Hide custom text bar") : qsTr("Type custom text…")
+                            text: root.editingSample ? qsTr("Hide custom text bar") : qsTr("Type custom text")
                             onTriggered: {
                                 root.editingSample = !root.editingSample
                                 if (root.editingSample) inlineSampleField.forceActiveFocus()
@@ -299,7 +299,7 @@ Rectangle {
                     ToolTip.text: root.layoutMode === "grid" ? qsTr("Full-width rows") : qsTr("Grid")
                 }
             }
-            Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: Theme.hairline; color: Theme.withAlpha(Theme.border, 0.5) }
+            Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: Theme.hairline; color: Theme.border }
         }
 
         // ── Contextual Shortlist actions (only when viewing Shortlist) ──────
@@ -331,7 +331,7 @@ Rectangle {
             Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: Theme.hairline; color: Theme.withAlpha(Theme.border, 0.45) }
         }
 
-        // ── Optional custom sample input (only shown when user clicks "Type custom text…") ─
+        // ── Optional custom sample input (only shown when user clicks "Type custom text") ─
         Rectangle {
             visible: root.editingSample
             Layout.fillWidth: true
@@ -354,7 +354,7 @@ Rectangle {
                 }
                 ToolButton { icon.name: "x"; onClicked: root.editingSample = false }
             }
-            Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: Theme.hairline; color: Theme.withAlpha(Theme.border, 0.5) }
+            Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: Theme.hairline; color: Theme.border }
         }
 
         // ── Optional offline notice ─────────────────────────────────────────
@@ -522,7 +522,7 @@ Rectangle {
                                     enabled: opacity > 0 && !cell.installing
                                     flat: true
                                     implicitHeight: 24
-                                    text: cell.installing ? qsTr("Installing…") : qsTr("Install")
+                                    text: cell.installing ? qsTr("Installing") : qsTr("Install")
                                     font.pixelSize: Theme.fsLabel
                                     onClicked: catalog.installFamily(cell.id, true, [])
                                 }

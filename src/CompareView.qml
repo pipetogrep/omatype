@@ -35,12 +35,21 @@ Rectangle {
         TextField {
             id: sampleField
             Layout.fillWidth: true
-            Layout.margins: Theme.s4
-            Layout.bottomMargin: Theme.s2
+            implicitHeight: 42
+            leftPadding: Theme.s4
+            rightPadding: Theme.s4
             text: backend.sample
             placeholderText: qsTr("Type a sample…")
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.fsControl
             onTextEdited: backend.sample = text
+            background: Rectangle {
+                radius: 0
+                color: sampleField.activeFocus ? Theme.panelBg
+                     : sampleField.hovered ? Theme.withAlpha(Theme.panelBg, 0.5) : "transparent"
+            }
         }
+        Rectangle { Layout.fillWidth: true; Layout.bottomMargin: Theme.s4; implicitHeight: Theme.hairline; color: Theme.border }
 
         ListView {
             id: rows
