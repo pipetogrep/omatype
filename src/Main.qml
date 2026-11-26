@@ -275,9 +275,9 @@ ApplicationWindow {
                     Menu {
                         title: qsTr("Tools")
                         MenuItem { text: qsTr("Tidy up"); icon.name: "brush-cleaning"; onTriggered: tidySheet.open() }
-                        MenuItem { text: qsTr("Applications"); icon.name: "refresh-cw"; onTriggered: appsSheet.open() }
+                        MenuItem { text: qsTr("Applications"); icon.name: "app-window"; onTriggered: appsSheet.open() }
                         MenuSeparator {}
-                        MenuItem { text: qsTr("Refresh catalog"); icon.name: "refresh-cw"; enabled: !catalog.loading; onTriggered: catalog.load(true) }
+                        MenuItem { text: qsTr("Refresh catalog"); icon.name: "globe"; enabled: !catalog.loading; onTriggered: catalog.load(true) }
                         MenuItem { text: qsTr("Rescan local fonts"); icon.name: "refresh-cw"; enabled: !backend.scanning; onTriggered: backend.refresh() }
                     }
                     Menu {
