@@ -412,7 +412,7 @@ Rectangle {
             SourceRow { source: "yours"; label: qsTr("Yours"); iconName: "download"; count: backend.userCount }
             SourceRow { source: "system"; label: qsTr("System"); iconName: "package"; count: backend.systemCount }
             SourceRow { source: "starred"; label: qsTr("Starred"); iconName: "star"; count: backend.starredCount; visible: backend.starredCount > 0 || backend.source === "starred" }
-            SourceRow { source: "mono"; label: qsTr("Monospace"); iconName: "terminal"; count: backend.monoCount }
+            SourceRow { source: "mono"; label: qsTr("Monospace"); iconName: "monospace"; count: backend.monoCount }
             SourceRow { source: "recent"; label: qsTr("Recently Added"); iconName: "clock"; count: backend.recentCount }
             SourceRow { source: "inactive"; label: qsTr("Deactivated"); iconName: "eye-off"; count: backend.inactiveCount; visible: backend.inactiveCount > 0 || backend.source === "inactive" }
             SourceRow { source: "duplicates"; label: qsTr("Duplicates"); iconName: "copy"; count: backend.duplicateCount; visible: backend.duplicateCount > 0 || backend.source === "duplicates" }
