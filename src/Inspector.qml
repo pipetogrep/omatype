@@ -15,6 +15,7 @@ Rectangle {
     signal removeRequested()
     signal validationRequested()
     signal addToCollectionRequested()
+    signal manageAppsRequested()
 
     readonly property var sel: backend.selected
     readonly property var info: backend.selectedInfo
@@ -703,7 +704,7 @@ Rectangle {
                         font.pixelSize: Theme.fsLabel
                     }
 
-                    RestartAppsCheck { Layout.topMargin: Theme.s1 }
+                    RestartAppsCheck { Layout.topMargin: Theme.s1; onManageApps: inspector.manageAppsRequested() }
 
                     Button {
                         objectName: "inspectorInstall"

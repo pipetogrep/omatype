@@ -684,6 +684,7 @@ ApplicationWindow {
                 Layout.minimumWidth: Theme.wInspectorMin
                 Layout.fillHeight: true
                 onRemoveRequested: removeSheet.open()
+                onManageAppsRequested: appsSheet.open()
                 onValidationRequested: validationSheet.open()
                 onAddToCollectionRequested: nameSheet.openNew(qsTr("New collection"))
             }

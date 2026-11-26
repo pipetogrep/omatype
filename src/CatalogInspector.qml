@@ -270,7 +270,8 @@ Rectangle {
                     }
 
                     RestartAppsCheck {
-                        visible: !(panel.fam.installed ?? false) && apps.length > 0
+                        visible: !(panel.fam.installed ?? false) && backend.registeredAppCount > 0
+                        onManageApps: panel.manageAppsRequested()
                     }
 
                     RowLayout {
