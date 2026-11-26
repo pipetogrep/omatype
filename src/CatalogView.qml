@@ -373,27 +373,21 @@ Rectangle {
             }
         }
 
-        // ── Editorial specimen sheet (hairline-ruled, shared baselines) ─────
+        // ── Editorial specimen grid (edge-to-edge Swiss cells, zero hover jump) ─
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            readonly property int gutter: 28
-
             GridView {
                 id: grid
                 anchors.fill: parent
-                anchors.leftMargin: Theme.s5 - parent.gutter / 2
-                anchors.rightMargin: Theme.s5 - parent.gutter / 2
-                anchors.topMargin: Theme.s2
-                anchors.bottomMargin: Theme.s4
                 clip: true
                 model: catalog.model
                 readonly property int columns: root.layoutMode === "list" ? 1 : Math.max(1, Math.floor(width / 430))
                 cellWidth: Math.floor(width / columns)
                 cellHeight: root.layoutMode === "list"
                     ? Math.max(144, Math.round(root.previewSize * 1.15 * 2 + 80))
-                    : Math.max(134, Math.round(root.previewSize * 1.15 + 88))
+                    : Math.max(138, Math.round(root.previewSize * 1.15 + 92))
                 cacheBuffer: cellHeight
                 boundsBehavior: Flickable.StopAtBounds
                 ScrollBar.vertical: ScrollBar {}
@@ -430,50 +424,49 @@ Rectangle {
                     }
                     readonly property bool faceReady: faceLoader.item !== null && faceLoader.item.status === FontLoader.Ready
                     readonly property bool selected: catalog.selectedId === cell.id
+                    readonly property bool hasRightNeighbor: (cell.index % grid.columns) < (grid.columns - 1)
 
-                    // Quiet hairline-ruled editorial cell (no rounded card box)
+                    // Edge-to-edge cell surface: calm tint on hover/selection, no borders shifting layout
                     Rectangle {
                         id: surface
                         anchors.fill: parent
-                        anchors.leftMargin: 14
-                        anchors.rightMargin: 14
-                        color: cell.selected ? Theme.withAlpha(Theme.textPrimary, 0.045)
-                             : cellHover.hovered ? Theme.withAlpha(Theme.textPrimary, 0.025) : "transparent"
+                        color: cell.selected ? Theme.withAlpha(Theme.accent, 0.08)
+                             : cellHover.hovered ? Theme.withAlpha(Theme.textPrimary, 0.028) : "transparent"
 
                         Behavior on color { ColorAnimation { duration: Theme.dFast } }
 
-                        // Subtle left accent bar only when selected
-                        Rectangle {
-                            visible: cell.selected
-                            anchors.left: parent.left
-                            anchors.top: parent.top
-                            anchors.bottom: parent.bottom
-                            anchors.topMargin: Theme.s4
-                            anchors.bottomMargin: Theme.s4
-                            width: 2
-                            color: Theme.accent
-                        }
-
-                        // Hairline rule at bottom
+                        // Edge-to-edge bottom hairline
                         Rectangle {
                             anchors.left: parent.left
                             anchors.right: parent.right
                             anchors.bottom: parent.bottom
                             height: Theme.hairline
-                            color: cell.selected ? Theme.withAlpha(Theme.borderStrong, 0.8) : Theme.withAlpha(Theme.border, 0.42)
+                            color: Theme.withAlpha(Theme.border, 0.45)
+                        }
+
+                        // Edge-to-edge vertical cell divider between columns
+                        Rectangle {
+                            visible: cell.hasRightNeighbor
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            width: Theme.hairline
+                            color: Theme.withAlpha(Theme.border, 0.45)
                         }
 
                         HoverHandler { id: cellHover }
                         TapHandler { onTapped: catalog.selectFamily(cell.id) }
 
-                        // Header: single baseline with Family — Designer
+                        // Fixed-height header so hover actions never cause vertical jump
                         RowLayout {
                             id: cellHeader
                             anchors.left: parent.left
                             anchors.right: parent.right
                             anchors.top: parent.top
-                            anchors.leftMargin: cell.selected ? Theme.s3 : 0
-                            anchors.topMargin: Theme.s4
+                            anchors.leftMargin: Theme.s5
+                            anchors.rightMargin: Theme.s4
+                            anchors.topMargin: Theme.s3
+                            height: 28
                             spacing: Theme.s2
 
                             Text {
@@ -483,7 +476,7 @@ Rectangle {
                                 font.family: Theme.fontFamily
                                 font.pixelSize: Theme.fsControl
                                 font.weight: Font.Medium
-                                Layout.alignment: Qt.AlignBaseline
+                                Layout.alignment: Qt.AlignVCenter
                             }
 
                             Text {
@@ -495,16 +488,19 @@ Rectangle {
                                 color: Theme.textMuted
                                 font.family: Theme.fontFamily
                                 font.pixelSize: Theme.fsLabel
-                                Layout.alignment: Qt.AlignBaseline
+                                Layout.alignment: Qt.AlignVCenter
                             }
 
-                            // Hover/selected actions only — calm gallery at rest
+                            // Opacity-only reveal so text never reflows or jumps on hover
                             RowLayout {
                                 spacing: Theme.s1
-                                visible: cellHover.hovered || cell.selected || cell.installed || cell.shortlisted || cell.installing
+                                opacity: (cellHover.hovered || cell.selected || cell.installed || cell.shortlisted || cell.installing) ? 1.0 : 0.0
+                                enabled: opacity > 0
+                                Behavior on opacity { NumberAnimation { duration: Theme.dFast } }
 
                                 ToolButton {
-                                    visible: cellHover.hovered || cell.selected || cell.shortlisted
+                                    opacity: (cellHover.hovered || cell.selected || cell.shortlisted) ? 1.0 : 0.0
+                                    enabled: opacity > 0
                                     icon.name: "bookmark"
                                     checked: cell.shortlisted
                                     onClicked: catalog.toggleShortlist(cell.id)
@@ -513,7 +509,7 @@ Rectangle {
                                 }
 
                                 Icon {
-                                    visible: cell.installed && !cellHover.hovered && !cell.selected
+                                    visible: cell.installed
                                     name: "check"
                                     size: 14
                                     color: Theme.success
@@ -521,10 +517,11 @@ Rectangle {
 
                                 Button {
                                     objectName: "cardInstall_" + cell.id
-                                    visible: (cellHover.hovered || cell.selected || cell.installing) && !cell.installed
+                                    visible: !cell.installed
+                                    opacity: (cellHover.hovered || cell.selected || cell.installing) ? 1.0 : 0.0
+                                    enabled: opacity > 0 && !cell.installing
                                     flat: true
                                     implicitHeight: 24
-                                    enabled: !cell.installing
                                     text: cell.installing ? qsTr("Installing…") : qsTr("Install")
                                     font.pixelSize: Theme.fsLabel
                                     onClicked: catalog.installFamily(cell.id, true, [])
@@ -540,12 +537,13 @@ Rectangle {
                             anchors.right: parent.right
                             anchors.top: cellHeader.bottom
                             anchors.bottom: cellFooter.top
-                            anchors.leftMargin: cell.selected ? Theme.s3 : 0
-                            anchors.topMargin: Theme.s2
+                            anchors.leftMargin: Theme.s5
+                            anchors.rightMargin: Theme.s5
+                            anchors.topMargin: Theme.s1
                             anchors.bottomMargin: Theme.s2
                             clip: true
 
-                            // Exact shared baseline coordinate for every card in a row
+                            // Exact shared baseline coordinate for every cell in a row
                             Item {
                                 id: sharedBaseline
                                 anchors.left: parent.left
@@ -593,18 +591,19 @@ Rectangle {
                                 gradient: Gradient {
                                     orientation: Gradient.Horizontal
                                     GradientStop { position: 0.0; color: "transparent" }
-                                    GradientStop { position: 1.0; color: Theme.windowBg }
+                                    GradientStop { position: 1.0; color: cell.selected ? Qt.tint(Theme.windowBg, Theme.withAlpha(Theme.accent, 0.08)) : Theme.windowBg }
                                 }
                             }
                         }
 
-                        // Quiet single-line provenance footer (legible 11px)
+                        // Quiet single-line provenance footer
                         Text {
                             id: cellFooter
                             anchors.left: parent.left
                             anchors.right: parent.right
                             anchors.bottom: parent.bottom
-                            anchors.leftMargin: cell.selected ? Theme.s3 : 0
+                            anchors.leftMargin: Theme.s5
+                            anchors.rightMargin: Theme.s5
                             anchors.bottomMargin: Theme.s3
                             text: (cell.source === "google" ? "Google Fonts" : cell.sourceLabel)
                                   + "  ·  "

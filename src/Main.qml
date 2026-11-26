@@ -106,6 +106,7 @@ ApplicationWindow {
     Shortcut { sequence: "Escape"; context: Qt.ApplicationShortcut; enabled: !win.dialogOpen
                onActivated: {
                    if (backend.staged || backend.staging) { backend.clearStage(); backend.selectFirst(); return }
+                   if (win.inDiscover && catalog.selectedId !== "") { catalog.selectFamily(""); return }
                    if (backend.filter !== "") { backend.filter = ""; searchField.text = ""; return }
                    if (win.textEntryFocused) rail.forceActiveFocus()
                } }
@@ -406,7 +407,7 @@ ApplicationWindow {
             }
             Rectangle { visible: win.sidebarOpen; implicitWidth: Theme.hairline; Layout.fillHeight: true; color: Theme.border }
 
-            // ── Discover mode: Open-source catalog + Attribution inspector ─
+            // ── Discover mode: Open-source catalog + collapsible inspector ─
             CatalogView {
                 id: catalogView
                 visible: win.inDiscover
@@ -415,10 +416,10 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }
-            Rectangle { visible: win.inDiscover; implicitWidth: Theme.hairline; Layout.fillHeight: true; color: Theme.border }
+            Rectangle { visible: win.inDiscover && catalog.selectedId !== ""; implicitWidth: Theme.hairline; Layout.fillHeight: true; color: Theme.border }
             CatalogInspector {
                 id: catalogInspector
-                visible: win.inDiscover
+                visible: win.inDiscover && catalog.selectedId !== ""
                 Layout.preferredWidth: Theme.wInspector + 28
                 Layout.minimumWidth: Theme.wInspectorMin
                 Layout.fillHeight: true

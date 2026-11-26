@@ -166,6 +166,14 @@ Rectangle {
                             ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay
                             ToolTip.text: (panel.fam.shortlisted ?? false) ? qsTr("Remove from Shortlist") : qsTr("Shortlist")
                         }
+                        ToolButton {
+                            Layout.alignment: Qt.AlignTop
+                            flat: true
+                            icon.name: "x"
+                            onClicked: catalog.selectFamily("")
+                            ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay
+                            ToolTip.text: qsTr("Close  Esc")
+                        }
                     }
 
                     Label {

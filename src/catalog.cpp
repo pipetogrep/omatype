@@ -432,6 +432,35 @@ bool Catalog::parseGoogleDownloadManifest(const QByteArray &json, QList<CatalogF
             files->append(cf);
         }
         // Sort variable files first, then by weight ascending, roman before italic.
+        // Deduplicate static files that share the same (weight, italic) across
+        // optical sizes (e.g. 18pt/24pt/28pt) or condensed/expanded variants,
+        // preferring the standard upright/normal-width cut.
+        auto staticScore = [](const QString &filename) -> int {
+            const QString lower = filename.toLower();
+            int penalty = 0;
+            if (lower.contains(QStringLiteral("condensed")) || lower.contains(QStringLiteral("narrow"))) penalty += 100;
+            if (lower.contains(QStringLiteral("expanded")) || lower.contains(QStringLiteral("extended"))) penalty += 100;
+            if (lower.contains(QStringLiteral("semi")) && lower.contains(QStringLiteral("cond"))) penalty += 50;
+            if (lower.contains(QStringLiteral("pt"))) penalty += 10;
+            return penalty;
+        };
+
+        QList<CatalogFile> vars;
+        QHash<int, CatalogFile> bestStatic;
+        for (const CatalogFile &cf : *files) {
+            if (cf.variable) {
+                vars.append(cf);
+            } else {
+                const int key = cf.weight * 2 + (cf.italic ? 1 : 0);
+                if (!bestStatic.contains(key) || staticScore(cf.filename) < staticScore(bestStatic.value(key).filename)) {
+                    bestStatic.insert(key, cf);
+                }
+            }
+        }
+        files->clear();
+        for (const CatalogFile &v : vars) files->append(v);
+        for (auto it = bestStatic.cbegin(); it != bestStatic.cend(); ++it) files->append(it.value());
+
         std::sort(files->begin(), files->end(), [](const CatalogFile &a, const CatalogFile &b) {
             if (a.variable != b.variable) return a.variable;
             if (a.weight != b.weight) return a.weight < b.weight;
