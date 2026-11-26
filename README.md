@@ -1,5 +1,7 @@
 # Omatype
 
+[![Support on Ko-fi](https://img.shields.io/badge/Ko--fi-support-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/pipetogrep)
+
 An open-source font browser and manager for Omarchy — bringing an Adobe Fonts-style discovery and one-click installation workflow to Linux design tools like FigCraft and ArtCraft.
 
 Browse open-source type catalogs (Google Fonts and curated open-source foundries) with live previews, designer attribution, shortlisting, weight management, and one-click installation without juggling zip files — alongside full local font management, deactivation, collections, and specimen views.
@@ -317,6 +319,11 @@ appears on a machine that has that tool.
 
 Nothing outside your home folder is touched, and no password is needed for
 anything but installing the app itself.
+
+## Support
+
+Omatype is free and open source. If it saves you time, you can support its
+development on [Ko-fi](https://ko-fi.com/pipetogrep).
 
 ## Attribution
 
