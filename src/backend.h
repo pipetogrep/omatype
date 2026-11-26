@@ -179,6 +179,11 @@ class Backend : public QObject {
     Q_PROPERTY(QString validationTitle READ validationTitle NOTIFY validationChanged)
     Q_PROPERTY(QVariantList registeredApps READ registeredApps NOTIFY appsChanged)
     Q_PROPERTY(QVariantList runningManualApps READ runningManualApps NOTIFY appsChanged)
+    // Apps an install would restart, and whether the person has said to.
+    // Off at every launch: a restart can lose unsaved work, so it is asked
+    // for each session, never assumed.
+    Q_PROPERTY(QVariantList restartableApps READ restartableApps NOTIFY appsChanged)
+    Q_PROPERTY(bool restartApps READ restartApps WRITE setRestartApps NOTIFY restartAppsChanged)
     Q_PROPERTY(int registeredAppCount READ registeredAppCount NOTIFY appsChanged)
 
     Q_PROPERTY(bool reducedMotion READ reducedMotion WRITE setReducedMotion NOTIFY reducedMotionChanged)
@@ -283,6 +288,9 @@ public:
     QString validationTitle() const { return m_validationTitle; }
     QVariantList registeredApps() const;
     QVariantList runningManualApps() const;
+    QVariantList restartableApps() const;
+    bool restartApps() const { return m_restartApps; }
+    void setRestartApps(bool on);
     int registeredAppCount() const { return m_library.apps.size(); }
 
     bool reducedMotion() const { return m_reducedMotion; }
@@ -419,6 +427,7 @@ signals:
     void compareChanged();
     void tidyChanged();
     void appsChanged();
+    void restartAppsChanged();
     void appReloaded(const QString &name, bool ok, const QString &message);
     void reducedMotionChanged();
     void highContrastChanged();
@@ -458,7 +467,10 @@ private:
     void scanStage();
     void onStageScanFinished();
     void validateStagedFaces();
-    void runFontCache(const QString &dir);
+    // Re-indexes the font folder; with restartApps, then restarts the
+    // auto-reload apps that are running (installs only, when asked).
+    void runFontCache(const QString &dir, bool restartApps = false);
+    QStringList restartTargets(bool autoOnly) const;
     void releaseStageTemp();
     QString expandHome(const QString &path) const;
     // library
@@ -528,6 +540,7 @@ private:
     bool m_stagedTruncated = false;
     QString m_conflictPolicy = QStringLiteral("replace");
     bool m_installInvalid = false;
+    bool m_restartApps = false;
 
     // Repertoire and reports
     QProcess *m_repertoireProcess = nullptr;

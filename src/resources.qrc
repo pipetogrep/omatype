@@ -8,6 +8,7 @@
         <file>QuietMenuButton.qml</file>
         <file>OverflowTabs.qml</file>
         <file>SectionLabel.qml</file>
+        <file>RestartAppsCheck.qml</file>
         <file>Specimen.qml</file>
         <file>Inspector.qml</file>
         <file>HelpSheet.qml</file>

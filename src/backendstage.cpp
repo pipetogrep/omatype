@@ -438,7 +438,7 @@ void Backend::installStaged() {
     note += tr(" Apps already running see it after a restart.");
     setStatus(note);
     emit installed(group);
-    runFontCache(dir);
+    runFontCache(dir, m_restartApps);
 }
 
 // fc-cache only builds an index, but a stale one is why a just-installed font
@@ -446,14 +446,14 @@ void Backend::installStaged() {
 // re-indexed, not just the folder that changed: fontconfig trusts a directory
 // cache written in the same second as the directory last changed, so caching
 // only the new subfolder can leave the parent's listing stale.
-void Backend::runFontCache(const QString &dir) {
+void Backend::runFontCache(const QString &dir, bool restartApps) {
     Q_UNUSED(dir);
     if (m_cacheProcess) m_cacheProcess->deleteLater();
     m_cacheProcess = new QProcess(this);
-    auto done = [this] {
+    auto done = [this, restartApps] {
         setBusy(false);
         refresh();
-        reloadRunningApps(true);
+        if (restartApps) reloadRunningApps(true);
         emit appsChanged();
     };
     connect(m_cacheProcess, &QProcess::finished, this, done);
@@ -470,7 +470,7 @@ void Backend::recordCatalogInstall(const QString &family, const QString &source,
     if (!source.isEmpty()) m_library.sources.insert(family, source);
     saveLibrary();
     setBusy(true);
-    runFontCache(dir);
+    runFontCache(dir, m_restartApps);
 }
 
 // ── Registered design apps & safe reload ────────────────────────────────────
@@ -935,8 +935,8 @@ void Backend::reloadRegisteredApp(const QString &id) {
     timer->start();
 }
 
-void Backend::reloadRunningApps(bool autoOnly) {
-    if (m_library.apps.isEmpty()) return;
+QStringList Backend::restartTargets(bool autoOnly) const {
+    if (m_library.apps.isEmpty()) return {};
     const QList<RunningProc> procs = listUserProcesses();
     QStringList ids;
     for (const RegisteredApp &app : m_library.apps) {
@@ -946,7 +946,27 @@ void Backend::reloadRunningApps(bool autoOnly) {
             ids.append(app.id);
         }
     }
-    for (const QString &id : ids) {
+    return ids;
+}
+
+QVariantList Backend::restartableApps() const {
+    QVariantList out;
+    const QStringList ids = restartTargets(true);
+    for (const RegisteredApp &app : m_library.apps) {
+        if (ids.contains(app.id))
+            out.append(QVariantMap{{QStringLiteral("id"), app.id}, {QStringLiteral("name"), app.name}});
+    }
+    return out;
+}
+
+void Backend::setRestartApps(bool on) {
+    if (m_restartApps == on) return;
+    m_restartApps = on;
+    emit restartAppsChanged();
+}
+
+void Backend::reloadRunningApps(bool autoOnly) {
+    for (const QString &id : restartTargets(autoOnly)) {
         reloadRegisteredApp(id);
     }
 }

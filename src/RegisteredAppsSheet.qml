@@ -169,7 +169,7 @@ Sheet {
                     spacing: Theme.s2
                     CheckBox {
                         id: customAuto
-                        text: qsTr("Auto-reload on font install")
+                        text: qsTr("Offer to restart after installing")
                         checked: true
                     }
                     Item { Layout.fillWidth: true }
@@ -264,7 +264,7 @@ Sheet {
                             checked: rrow.modelData.autoReload
                             onToggled: backend.setAppAutoReload(rrow.modelData.id, checked)
                             ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay
-                            ToolTip.text: qsTr("Automatically reload after installing a font (when off, shows a one-click Reload button)")
+                            ToolTip.text: qsTr("Offered as a restart when you install a font; when off, a Reload button shows after the install instead")
                         }
                         Button {
                             flat: true

@@ -40,7 +40,10 @@ Rectangle {
         tagEntry.clear()
     }
     onSelChanged: followSelection()
-    onStagedChanged: followSelection()
+    onStagedChanged: {
+        followSelection()
+        if (staged) backend.refreshRunningApps()
+    }
     Component.onCompleted: followSelection()
 
     component Chip: Rectangle {
@@ -699,6 +702,8 @@ Rectangle {
                         color: Theme.textMuted
                         font.pixelSize: Theme.fsLabel
                     }
+
+                    RestartAppsCheck { Layout.topMargin: Theme.s1 }
 
                     Button {
                         objectName: "inspectorInstall"

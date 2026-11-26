@@ -24,6 +24,7 @@ Rectangle {
 
     onFamChanged: {
         selectedFilenames = []
+        backend.refreshRunningApps()
         if ((fam.id ?? "") !== feedbackId) {
             feedbackText = ""
             feedbackError = false
@@ -268,13 +269,26 @@ Rectangle {
                         }
                     }
 
+                    RestartAppsCheck {
+                        visible: !(panel.fam.installed ?? false) && apps.length > 0
+                    }
+
                     RowLayout {
                         visible: panel.fam.installed ?? false
                         Layout.fillWidth: true
                         spacing: Theme.s3
                         TextLink { text: qsTr("Open in Library"); onClicked: panel.openInLibraryRequested(panel.fam.family) }
                         Item { Layout.fillWidth: true }
-                        TextLink { text: qsTr("Uninstall"); onClicked: catalog.uninstallFamily(panel.fam.id) }
+                        TextLink {
+                            text: qsTr("Uninstall")
+                            onClicked: {
+                                // The install note is about an install that is now undone.
+                                panel.feedbackText = ""
+                                panel.feedbackError = false
+                                panel.reloadNote = ""
+                                catalog.uninstallFamily(panel.fam.id)
+                            }
+                        }
                     }
 
                     Rectangle {
