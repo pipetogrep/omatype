@@ -17,6 +17,4 @@ __pycache__/
 
 # Development material stays local
 NOTES.local.md
-/tests/
 /tools/
-/bin/test

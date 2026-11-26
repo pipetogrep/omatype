@@ -54,6 +54,17 @@ Rectangle {
             RowLayout {
                 spacing: Theme.s2
                 Label {
+                    visible: !backend.staged && (backend.selectedInfo.designer ?? "") !== ""
+                    text: qsTr("by %1").arg(backend.selectedInfo.designer ?? "")
+                    color: Theme.textSecondary
+                    font.weight: Theme.wHeading
+                }
+                Label {
+                    visible: !backend.staged && (backend.selectedInfo.designer ?? "") !== ""
+                    text: "·"
+                    color: Theme.textMuted
+                }
+                Label {
                     text: backend.staged
                         ? qsTr("%1 staged from %2").arg(Theme.plural(backend.stagedSelected.length, qsTr("face"), qsTr("faces"))).arg(backend.stagedSource)
                         : Theme.plural((backend.selected.styles ?? []).length, qsTr("style"), qsTr("styles"))

@@ -10,7 +10,7 @@ Rectangle {
     id: root
     color: Theme.pasteboard
 
-    property int previewSize: 34
+    property int previewSize: 28
     property string layoutMode: "grid" // "grid" | "list"
 
     readonly property var samplePresets: [
@@ -23,11 +23,11 @@ Rectangle {
 
     readonly property var categories: [
         { key: "", label: qsTr("All") },
-        { key: "Sans Serif", label: qsTr("Sans Serif") },
+        { key: "Sans Serif", label: qsTr("Sans") },
         { key: "Serif", label: qsTr("Serif") },
         { key: "Display", label: qsTr("Display") },
-        { key: "Handwriting", label: qsTr("Handwriting") },
-        { key: "Monospace", label: qsTr("Monospace") }
+        { key: "Handwriting", label: qsTr("Script") },
+        { key: "Monospace", label: qsTr("Mono") }
     ]
 
     readonly property var scripts: [
@@ -189,7 +189,7 @@ Rectangle {
 
                 ComboBox {
                     id: scriptCombo
-                    Layout.preferredWidth: 126
+                    Layout.preferredWidth: 112
                     model: root.scripts
                     textRole: "label"
                     currentIndex: {
@@ -202,7 +202,7 @@ Rectangle {
 
                 ComboBox {
                     id: sortCombo
-                    Layout.preferredWidth: 126
+                    Layout.preferredWidth: 112
                     model: root.sortOptions
                     textRole: "label"
                     currentIndex: {
@@ -211,14 +211,6 @@ Rectangle {
                         return 0
                     }
                     onActivated: (idx) => catalog.sortBy = root.sortOptions[idx].key
-                }
-
-                Label {
-                    Layout.leftMargin: Theme.s2
-                    text: catalog.loading ? qsTr("Indexing…") : Theme.plural(catalog.filteredCount, qsTr("typeface"), qsTr("typefaces"))
-                    color: Theme.textMuted
-                    font.pixelSize: Theme.fsLabel
-                    font.family: Theme.monoFamily
                 }
 
                 ToolButton {
@@ -264,8 +256,8 @@ Rectangle {
                 readonly property int columns: root.layoutMode === "list" ? 1 : Math.max(1, Math.floor(width / 360))
                 cellWidth: Math.floor(width / columns)
                 cellHeight: root.layoutMode === "list"
-                    ? Math.max(156, Math.round(root.previewSize * 2.1 + 96))
-                    : Math.max(220, Math.round(root.previewSize * 2.4 + 132))
+                    ? Math.max(176, Math.round(root.previewSize * 2.8 + 108))
+                    : Math.max(248, Math.round(root.previewSize * 3.1 + 156))
                 cacheBuffer: cellHeight * 3
                 boundsBehavior: Flickable.StopAtBounds
                 ScrollBar.vertical: ScrollBar {}
@@ -406,9 +398,8 @@ Rectangle {
                                 clip: true
 
                                 Text {
-                                    anchors.left: parent.left
-                                    anchors.right: parent.right
-                                    anchors.verticalCenter: parent.verticalCenter
+                                    anchors.fill: parent
+                                    verticalAlignment: Text.AlignVCenter
                                     text: catalog.sampleText === "" ? "The quick brown fox jumps over the lazy dog" : catalog.sampleText
                                     textFormat: Text.PlainText
                                     font.family: cardWrap.faceReady ? faceLoader.item.name : Theme.fontFamily
@@ -416,8 +407,8 @@ Rectangle {
                                     color: Theme.specimenInk
                                     opacity: cardWrap.faceReady ? 1.0 : 0.22
                                     wrapMode: Text.Wrap
-                                    maximumLineCount: root.layoutMode === "list" ? 2 : 3
-                                    lineHeight: 1.22
+                                    maximumLineCount: 2
+                                    lineHeight: 1.28
                                     elide: Text.ElideRight
                                     Behavior on opacity { NumberAnimation { duration: 180 } }
                                 }
@@ -451,7 +442,7 @@ Rectangle {
                                 Button {
                                     objectName: "cardInstall_" + cardWrap.id
                                     implicitHeight: Theme.hControl
-                                    highlighted: !cardWrap.installed && !cardWrap.installing
+                                    highlighted: (cardHover.hovered || cardWrap.selected) && !cardWrap.installed && !cardWrap.installing
                                     enabled: !cardWrap.installing
                                     icon.name: cardWrap.installed ? "check" : "download"
                                     text: cardWrap.installing ? qsTr("Installing…")

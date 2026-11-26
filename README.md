@@ -6,75 +6,58 @@ An open-source font browser and manager for Omarchy — bringing an Adobe Fonts-
 
 Browse open-source type catalogs (Google Fonts and curated open-source foundries) with live previews, designer attribution, shortlisting, weight management, and one-click installation without juggling zip files — alongside full local font management, deactivation, collections, and specimen views.
 
-![OmaFont showing Playfair Display: the sidebar, the family list, the specimen and the Info pane](docs/omafont.png)
+![Omatype Discover view: open-source font catalog with live specimens, designer attribution, shortlisting, and one-click install](docs/discover.png)
+
+## Discover & One-Click Install
+
+Omatype brings an **Adobe Fonts-style discovery experience** to Linux and Omarchy — no zip files, no manual extracting:
+
+- **Google Fonts (1,950+ families)** indexed live with 24-hour local caching, plus **30 curated indie open-source typefaces** from **Velvetyne Type Foundry**, **Indestructible Type**, **The League of Moveable Type**, **Vercel (Geist)**, **GitHub Next (Monaspace)**, **Nerd Fonts**, and independent designers.
+- **Instant live previews** — streams tiny 3–12 KB subsetted TrueType previews on demand and caches them in `~/.cache/omatype/previews/` so scrolling through thousands of typefaces stays fast and responsive.
+- **Type-first browsing** — custom editable sample text with typographic presets (*Sentence*, *Editorial*, *Paragraph*, *Figures*, *Alphabet*), adjustable preview size, grid or full-width waterfall rows, and faceted filters for classification, variable fonts, writing systems, and sort order.
+- **Designer attribution & provenance** — every detail view credits the type designer(s), foundry/source, license (SIL OFL 1.1 / Apache 2.0), variable axes, scripts, and links to the upstream specimen and repository.
+- **Suitcase-style Shortlist** — bookmark candidates while exploring, compare them, and click **Install Shortlist** to install the entire set in one click.
+- **Granular weight management** — one-click install the variable font (recommended) or select individual static weights. Fonts install cleanly to `~/.local/share/fonts/<Family>/` alongside their license file and automatically refresh `fc-cache` so design apps like **FigCraft**, **ArtCraft**, Inkscape, GIMP, and Krita can pick them up.
 
 ## Install
 
-OmaFont is made for Omarchy.
+Omatype is made for Omarchy.
 
-Download the package from the [latest release](https://github.com/28allday/omafont-app/releases/latest),
-then open a terminal with **Super + Enter** and install it:
-
-```sh
-sudo pacman -U ~/Downloads/omafont-0.1.1-1-x86_64.pkg.tar.zst
-```
-
-Or download and install it from the terminal in one go:
-
-```sh
-curl -LO https://github.com/28allday/omafont-app/releases/download/v0.1.1/omafont-0.1.1-1-x86_64.pkg.tar.zst
-sudo pacman -U ./omafont-0.1.1-1-x86_64.pkg.tar.zst
-```
-
-Type your password when asked, and press Enter to confirm. Then open OmaFont
-from the app launcher: press **Super + Space** and type **OmaFont**. Font
-files also open in it from your file manager.
-
-(The package is unsigned, so pacman won't install it straight from a URL —
-download it first and install the local file. `SHA256SUMS` on the release page
-lets you check the download.)
-
-### Building it yourself
-
-On ARM (aarch64), or if you would rather build from source:
+### Building from source
 
 ```sh
 sudo pacman -S --needed base-devel git
-git clone https://github.com/28allday/omafont-app.git ~/omafont-app
-cd ~/omafont-app
+git clone https://github.com/pipetogrep/omatype.git ~/omatype
+cd ~/omatype
 ./bin/install
 ```
 
-It builds on your computer in a minute or two and installs the same package.
+Run `./bin/build` to compile `./build/omatype` without installing a package, and `./bin/test` to run the offscreen Qt Test suite.
 
-### Updating
+### Command line
 
-Install the newer package from the [latest release](https://github.com/28allday/omafont-app/releases/latest)
-the same way; pacman replaces the old one. If you built it yourself:
+The same engine works headlessly without a window:
 
-```sh
-cd ~/omafont-app
-git pull
-./bin/install
+```bash
+omatype search "Playfair"                    # search Google Fonts & indie foundries
+omatype search --source indie                # browse curated indie foundries
+omatype get "Space Grotesk"                  # 1-click install (variable font + OFL.txt + fc-cache)
+omatype get "Inter" --static                 # install static weights instead of variable
+omatype list                                 # installed families, yours first (--all includes language fonts)
+omatype info Inter                           # styles, designer, licence, glyph count, files
+omatype install ~/Downloads/Pack.zip         # install local files, folders or archives
+omatype remove "Playfair Display"
+omatype validate ~/Downloads/Pack/*.ttf      # or a family name
+omatype deactivate "Noto Sans Tamil"
+omatype activate "Noto Sans Tamil"
+omatype export Inter ~/Desktop/inter-files
 ```
 
-Close and reopen OmaFont after updating. `omafont --version` says which
-version you have.
+Add `--json` to any command for scripting.
 
-### Uninstalling
+## Local Library (from OmaFont)
 
-```sh
-sudo pacman -R omafont
-```
-
-That removes the app. Fonts you installed with it stay where they are, in
-`~/.local/share/fonts`. To also forget your collections, tags and notes, and
-switch every deactivated font back on, delete these:
-
-```sh
-rm -rf ~/.config/omafont
-rm -f ~/.config/fontconfig/conf.d/60-omafont-deactivated.conf
-```
+![Local library view: sidebar, family list, specimen and Info pane](docs/omafont.png)
 
 ## The window
 
