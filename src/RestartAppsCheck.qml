@@ -14,14 +14,11 @@ CheckBox {
     leftPadding: 0
     checked: backend.restartApps
     onToggled: backend.restartApps = checked
-    text: qsTr("Restart %1 after installing").arg(names())
+    text: qsTr("Restart running apps after installing")
     font.pixelSize: Theme.fsLabel
-
-    function names() {
-        const n = apps.map(a => a.name)
-        if (n.length <= 1) return n.join("")
-        return qsTr("%1 and %2").arg(n.slice(0, -1).join(", ")).arg(n[n.length - 1])
-    }
+    ToolTip.visible: hovered
+    ToolTip.delay: Theme.tooltipDelay
+    ToolTip.text: apps.map(a => a.name).join(", ")
 
     // Which apps are running changes while Omatype is open; the views that
     // hold this call backend.refreshRunningApps() when what they show changes.
