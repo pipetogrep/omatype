@@ -98,8 +98,10 @@ Rectangle {
                 TextField {
                     id: catalogSearchField
                     objectName: "searchField"
+                    Layout.fillWidth: true
                     Layout.preferredWidth: 112
                     Layout.minimumWidth: 88
+                    Layout.maximumWidth: 112
                     text: catalog.query
                     placeholderText: qsTr("Search…")
                     leftPadding: Theme.s2 + Theme.szIcon + Theme.s1
@@ -126,14 +128,11 @@ Rectangle {
                 Rectangle { implicitWidth: Theme.hairline; implicitHeight: 16; color: Theme.withAlpha(Theme.border, 0.6) }
 
                 // Category tabs
-                Repeater {
+                OverflowTabs {
+                    objectName: "categoryTabs"
                     model: root.categories
-                    FilterTab {
-                        required property var modelData
-                        text: modelData.label
-                        active: catalog.category === modelData.key
-                        onClicked: catalog.category = modelData.key
-                    }
+                    current: catalog.category
+                    onActivated: (key) => catalog.category = key
                 }
 
                 // Orthogonal Variable toggle (clean text toggle, no dead dark checkbox)
@@ -187,17 +186,21 @@ Rectangle {
                     }
                 }
 
-                Rectangle { implicitWidth: Theme.hairline; implicitHeight: 16; color: Theme.withAlpha(Theme.border, 0.5) }
+                Rectangle { visible: catalogSizeSlider.visible; implicitWidth: Theme.hairline; implicitHeight: 16; color: Theme.withAlpha(Theme.border, 0.5) }
 
                 // Size slider followed by matching toolbar readout
+                // The size readout steps aside when the right panel leaves the
+                // toolbar too little room; the tabs fold first.
                 Slider {
                     id: catalogSizeSlider
+                    visible: root.width >= 640
                     Layout.preferredWidth: 50
                     from: 24; to: 64; stepSize: 2
                     value: root.previewSize
                     onMoved: root.previewSize = Math.round(value)
                 }
                 Label {
+                    visible: catalogSizeSlider.visible
                     text: String(root.previewSize)
                     color: Theme.textSecondary
                     font.family: Theme.fontFamily
@@ -233,7 +236,9 @@ Rectangle {
                     }
                 }
 
+                // Below this width the grid is one column anyway.
                 ToolButton {
+                    visible: root.width >= 600
                     icon.name: root.layoutMode === "grid" ? "rows-3" : "layout-grid"
                     onClicked: root.layoutMode = root.layoutMode === "grid" ? "list" : "grid"
                     ToolTip.visible: hovered; ToolTip.delay: Theme.tooltipDelay

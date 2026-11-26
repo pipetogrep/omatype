@@ -381,8 +381,11 @@ ApplicationWindow {
                         TextField {
                             id: searchField
                             objectName: "librarySearchField"
+                            // Gives way before the toolbar runs under the panel.
+                            Layout.fillWidth: true
                             Layout.preferredWidth: 200
-                            Layout.maximumWidth: Theme.wSearch
+                            Layout.minimumWidth: 120
+                            Layout.maximumWidth: 200
                             placeholderText: backend.searchScope === "designer" ? qsTr("Designer or foundry")
                                            : backend.searchScope === "characters" ? qsTr("Characters…")
                                            : qsTr("Search…")
@@ -471,7 +474,10 @@ ApplicationWindow {
                         Slider {
                             id: sizeSlider
                             objectName: "sizeSlider"
+                            Layout.fillWidth: true
                             Layout.preferredWidth: 96
+                            Layout.minimumWidth: 48
+                            Layout.maximumWidth: 96
                             from: 0.5; to: 2.5
                             value: backend.specimenScale
                             onMoved: backend.specimenScale = value
@@ -508,19 +514,11 @@ ApplicationWindow {
                         anchors.rightMargin: Theme.s4
                         spacing: Theme.s1 + 2
 
-                        FilterTab {
-                            text: qsTr("All")
-                            active: backend.designFilter === ""
-                            onClicked: backend.designFilter = ""
-                        }
-                        Repeater {
-                            model: backend.designFacets
-                            FilterTab {
-                                required property var modelData
-                                text: modelData.name
-                                active: backend.designFilter === modelData.key
-                                onClicked: backend.designFilter = active ? "" : modelData.key
-                            }
+                        OverflowTabs {
+                            objectName: "designTabs"
+                            model: [{ key: "", label: qsTr("All") }].concat(backend.designFacets.map(f => ({ key: f.key, label: f.name })))
+                            current: backend.designFilter
+                            onActivated: (key) => backend.designFilter = (key === backend.designFilter ? "" : key)
                         }
 
                         Item { Layout.fillWidth: true }

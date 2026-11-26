@@ -6,6 +6,7 @@
         <file>SheetFooter.qml</file>
         <file>FilterTab.qml</file>
         <file>QuietMenuButton.qml</file>
+        <file>OverflowTabs.qml</file>
         <file>SectionLabel.qml</file>
         <file>FamilyRail.qml</file>
         <file>Specimen.qml</file>

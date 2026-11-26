@@ -200,6 +200,33 @@ private slots:
 
         catalog.clearShortlist();
         QCOMPARE(catalog.shortlistCount(), 0);
+
+        // Tab strips fold what does not fit behind a "more" button instead of
+        // running under the right panel.
+        auto *win = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(win);
+        QObject *tabs = win->findChild<QObject *>(QStringLiteral("categoryTabs"));
+        QVERIFY(tabs);
+        const int total = tabs->property("count").toInt();
+        QVERIFY(total > 1);
+        win->resize(2400, 900);
+        QTRY_VERIFY(!tabs->property("overflowing").toBool());
+        QCOMPARE(tabs->property("fitCount").toInt(), total);
+        win->resize(760, 900);
+        QTRY_VERIFY(tabs->property("overflowing").toBool());
+        QVERIFY(tabs->property("fitCount").toInt() < total);
+
+        const QString narrowShot = qEnvironmentVariable("OMATYPE_GRAB_NARROW");
+        if (!narrowShot.isEmpty()) {
+            win->setProperty("mode", QStringLiteral("library"));
+            win->resize(1100, 700);
+            QTest::qWait(1500);
+            win->grabWindow().save(narrowShot);
+            win->setProperty("mode", QStringLiteral("discover"));
+            catalog.selectFamily(QStringLiteral("jost"));
+            QTest::qWait(1500);
+            win->grabWindow().save(QString(narrowShot).replace(QStringLiteral(".png"), QStringLiteral("-discover.png")));
+        }
     }
 };
 
