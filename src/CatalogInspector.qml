@@ -16,8 +16,26 @@ Rectangle {
     readonly property bool hasSelection: (fam.id ?? "") !== ""
     readonly property var files: catalog.selectedFiles
     property var selectedFilenames: []
+    property string feedbackId: ""
+    property string feedbackText: ""
+    property bool feedbackError: false
 
-    onFamChanged: selectedFilenames = []
+    onFamChanged: {
+        selectedFilenames = []
+        if ((fam.id ?? "") !== feedbackId) {
+            feedbackText = ""
+            feedbackError = false
+        }
+    }
+
+    Connections {
+        target: catalog
+        function onInstallFinished(id, ok, message) {
+            panel.feedbackId = id
+            panel.feedbackText = message
+            panel.feedbackError = !ok
+        }
+    }
 
     function toggleFile(filename) {
         const idx = selectedFilenames.indexOf(filename)
@@ -245,6 +263,17 @@ Rectangle {
                         TextLink { text: qsTr("Open in Library"); onClicked: panel.openInLibraryRequested(panel.fam.family) }
                         Item { Layout.fillWidth: true }
                         TextLink { text: qsTr("Uninstall"); onClicked: catalog.uninstallFamily(panel.fam.id) }
+                    }
+
+                    Label {
+                        visible: panel.feedbackText !== "" && panel.feedbackId === (panel.fam.id ?? "")
+                        Layout.fillWidth: true
+                        Layout.topMargin: Theme.s1
+                        text: panel.feedbackText
+                        color: panel.feedbackError ? Theme.danger : Theme.textSecondary
+                        font.pixelSize: Theme.fsLabel
+                        wrapMode: Text.Wrap
+                        lineHeight: 1.35
                     }
                 }
             }

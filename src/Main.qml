@@ -478,10 +478,10 @@ ApplicationWindow {
             }
         }
 
-        // Footer: shown in Library mode, or in Discover mode only when busy / reporting status
+        // Footer: Library mode only (Discover feedback lives directly under the Install button)
         Rectangle {
             objectName: "statusBar"
-            visible: !win.inDiscover || backend.busy || backend.staging || catalog.installingAny || backend.status !== ""
+            visible: !win.inDiscover
             Layout.fillWidth: true
             implicitHeight: visible ? Theme.hStatusBar : 0
             color: Theme.windowBg
